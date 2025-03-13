@@ -1,0 +1,1 @@
+<template>Scores page</template>
