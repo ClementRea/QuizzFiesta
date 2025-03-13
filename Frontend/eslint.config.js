@@ -56,7 +56,10 @@ export default [
       'prefer-promise-reject-errors': 'off',
 
       // allow debugger during development only
-      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+      'no-unused-vars': 'off',
+      'vue/no-unused-components': 'off',
     }
   },
 
