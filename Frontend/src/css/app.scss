@@ -1,1 +1,96 @@
 // app global css in SCSS form
+
+//Fonts
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+  background-color: #FFE766;
+}
+
+//Setup des background colors
+.bg-light10 {
+  background-color: $light10 !important;
+}
+.bg-light20 {
+  background-color: $light20 !important;
+}
+.bg-light30 {
+  background-color: $light30 !important;
+}
+.bg-normal40 {
+  background-color: $normal40 !important;
+}
+.bg-normal50 {
+  background-color: $normal50 !important;
+}
+.bg-normal60 {
+  background-color: $normal60 !important;
+}
+.bg-dark70 {
+  background-color: $dark70 !important;
+}
+.bg-dark80 {
+  background-color: $dark80 !important;
+}
+.bg-dark90 {
+  background-color: $dark90 !important;
+}
+.bg-dark100 {
+  background-color: $dark100 !important;
+}
+
+//Setup des text-colors
+.text-light10 {
+  color: $light10 !important;
+}
+.text-light20 {
+  color: $light20 !important;
+}
+.text-light30 {
+  color: $light30 !important;
+}
+.text-normal40 {
+  color: $normal40 !important;
+}
+.text-normal50 {
+  color: $normal50 !important;
+}
+.text-normal60 {
+  color: $normal60 !important;
+}
+.text-dark70 {
+  color: $dark70 !important;
+}
+.text-dark80 {
+  color: $dark80 !important;
+}
+.text-dark90 {
+  color: $dark90 !important;
+}
+.text-dark100 {
+  color: $dark100 !important;
+}
+
+//Setup des input outlined
+.custom-border {
+  .q-field__control {
+    border-radius: 14px !important;
+  }
+  
+  &.q-field--outlined .q-field__control:before {
+    border: 1px solid $dark80 !important;
+    border-radius: 14px !important;
+  }
+}
+
+//tooltip
+.q-tooltip{
+  font-size: 14px;
+}
+
