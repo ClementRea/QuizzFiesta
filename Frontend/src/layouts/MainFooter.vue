@@ -1,0 +1,91 @@
+<template>
+  <q-layout>
+    <q-footer
+      class="bg-light20 q-py-sm"
+      style="border-radius: 50px 50px 0px 0px; height: 90px; position: fixed; bottom: 0"
+    >
+      <div class="row full-width justify-center q-px-sm q-gutter-x-lg">
+        <div class="column items-center q-px-sm cursor-pointer" @click="goTo('/scores')">
+          <q-btn
+            flat
+            round
+            :class="[{ 'bg-dark90': isActive('/scores'), 'bg-light20': !isActive('/scores') }]"
+            :text-color="isActive('/scores') ? 'light20' : 'dark90'"
+          >
+            <q-icon name="mdi-trophy-variant" size="md" />
+          </q-btn>
+          <div class="text-weight-medium q-mt-xs text-dark90">Scores</div>
+        </div>
+
+        <div class="column items-center q-px-sm cursor-pointer" @click="goTo('/search')">
+          <q-btn
+            flat
+            round
+            :class="[{ 'bg-dark90': isActive('/search'), 'bg-light20': !isActive('/search') }]"
+            :text-color="isActive('/search') ? 'light20' : 'dark90'"
+          >
+            <q-icon name="mdi-magnify" size="md" />
+          </q-btn>
+          <div class="text-weight-medium q-mt-xs text-dark90">Rechercher</div>
+        </div>
+
+        <div class="column items-center q-px-sm cursor-pointer" @click="goTo('/accueil')">
+          <q-btn
+            flat
+            round
+            :class="[{ 'bg-dark90': isActive('/accueil'), 'bg-light20': !isActive('/accueil') }]"
+            :text-color="isActive('/accueil') ? 'light20' : 'dark90'"
+          >
+            <q-icon name="mdi-home" size="md" />
+          </q-btn>
+          <div class="text-weight-medium q-mt-xs text-dark90">Accueil</div>
+        </div>
+
+        <div class="column items-center q-px-sm cursor-pointer" @click="goTo('/account')">
+          <q-btn
+            flat
+            round
+            :class="[{ 'bg-dark90': isActive('/account'), 'bg-light20': !isActive('/account') }]"
+            :text-color="isActive('/account') ? 'light20' : 'dark90'"
+          >
+            <q-icon name="mdi-account" size="md" />
+          </q-btn>
+          <div class="text-weight-medium q-mt-xs text-dark90">Comptes</div>
+        </div>
+      </div>
+    </q-footer>
+  </q-layout>
+</template>
+
+<script setup>
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
+
+//Fonction pour vérifier sur quelle route on se trouve
+const isActive = (path) => {
+  return route.path === path
+}
+
+//Fonction pour rediger vers une autre page
+const goTo = (path) => {
+  router.push(path)
+}
+</script>
+
+<style scoped>
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-gap: 2px;
+  width: 24px;
+  height: 24px;
+}
+
+.grid-item {
+  width: 100%;
+  height: 100%;
+}
+</style>
