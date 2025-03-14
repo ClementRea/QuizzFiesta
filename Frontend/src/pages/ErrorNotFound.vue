@@ -1,23 +1,23 @@
 <template>
-  <div class="fullscreen bg-blue text-white text-center q-pa-md flex flex-center">
+  <div class="fullscreen bg-normal40 text-center flex flex-center">
     <div>
-      <div style="font-size: 30vh">404</div>
+      <div style="width: 100%" class="flex justify-center">
+        <div style="width: 90%">
+          <q-img :src="monsterImg" :ratio="1" />
+        </div>
+      </div>
+      <div class="column text-dark90 text-body1 q-mt-xl">
+        <span>Vous avez trouvé le monstre de quizFiesta !</span>
+        <span>Revenez en lieux sûr pour le laisser tranquille</span>
+      </div>
 
-      <div class="text-h2" style="opacity: 0.4">Oops. Nothing here...</div>
+      <div style="font-size: 10vh" class="text-dark90">404</div>
 
-      <q-btn
-        class="q-mt-xl"
-        color="white"
-        text-color="blue"
-        unelevated
-        to="/"
-        label="Go Home"
-        no-caps
-      />
+      <q-btn color="light20" text-color="dark" to="/" label="Revenir en lieux sûr" no-caps />
     </div>
   </div>
 </template>
 
 <script setup>
-//
+import monsterImg from 'src/assets/monsterOfQuizFiesta.png'
 </script>
