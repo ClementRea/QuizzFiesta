@@ -1,1 +1,62 @@
-<template>Account</template>
+<template>
+  <AcountHeader />
+  <div class="bg-light10 full-width" style="border-radius: 20px 20px 0px 0px">
+    <div class="column flex flex-center q-gutter-y-md">
+      <div style="width: 100%" class="flex justify-center">
+        <div style="width: 20%; border: 1px solid black; border-radius: 16px" class="bg-normal40">
+          <q-img :src="getAvatarName(user?.avatar)" :ratio="1" />
+        </div>
+      </div>
+      <span class="text-dark90 text-h5">{{ user?.userName }}</span>
+      <q-btn
+        class="q-mb-lg"
+        color="dark90"
+        text-color="light20"
+        label="Editer le profil"
+        no-caps
+        unelevated
+      />
+
+      <AccountToggle />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import axios from 'axios'
+import { onMounted, ref } from 'vue'
+import AuthService from 'src/services/AuthService'
+import AccountToggle from '../../components/AccountToggle.vue'
+import AcountHeader from '../../components/AccountHeader.vue'
+
+const user = ref(null)
+const loading = ref(true)
+const error = ref(null)
+
+//Get the user
+const getUser = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    if (!AuthService.isAuthenticated()) {
+      loading.value = true
+      error.value = null
+    }
+    const userData = await axios.get('http://localhost:3000/api/auth/me')
+    user.value = userData.data.data.user
+    console.log(user.value)
+  } catch (error) {
+    console.error(error)
+    error.value = error
+  } finally {
+    loading.value = false
+  }
+}
+
+function getAvatarName(avatar) {
+  return `/src/assets/avatar/${avatar}`
+}
+
+onMounted(getUser)
+</script>

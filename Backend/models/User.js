@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
       type: String,
+      default: getRandomAvatar()
   },
   badges: [{
       type: mongoose.Schema.Types.ObjectId,
@@ -62,6 +63,12 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
       throw error;
   }
 };
+
+// Mettre un avatar aléatoire parmis les deux disponibles, à la création du comtpe
+function getRandomAvatar() {
+  const avatars = ['avatar1.png', 'avatar2.png'];
+  return avatars[Math.floor(Math.random() * avatars.length)]
+}
 
 const User = mongoose.model('User', userSchema);
 
