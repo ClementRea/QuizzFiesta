@@ -7,13 +7,20 @@
         </div>
       </div>
       <div class="column text-dark90 text-body1 q-mt-xl">
-        <span>Vous avez trouvé le monstre de quizFiesta !</span>
-        <span>Revenez en lieux sûr pour le laisser tranquille</span>
+        <span>Vous avez trouvé le monstre de QuizzFiesta</span>
+        <span>Mieux vaut pas le déranger ! </span>
       </div>
 
       <div style="font-size: 10vh" class="text-dark90">404</div>
 
-      <q-btn color="light20" text-color="dark" to="/" label="Revenir en lieux sûr" no-caps />
+      <q-btn
+        color="light20"
+        text-color="dark"
+        to="/"
+        label="Par ici !"
+        no-caps
+        class="text-body1"
+      />
     </div>
   </div>
 </template>
