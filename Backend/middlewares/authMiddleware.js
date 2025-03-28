@@ -7,7 +7,6 @@ exports.protect = async (req, res, next) => {
     try {
         let token;
         
-        // 1) Vérifier si le token existe
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
@@ -19,15 +18,11 @@ exports.protect = async (req, res, next) => {
             });
         }
 
-        // 2) Vérifier si le token est valide
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        console.log('Decoded token:', decoded); // Debug log
 
-        // 3) Vérifier si l'utilisateur existe toujours
         const user = await User.findById(decoded.id);
         
-        console.log('Found user:', user); // Debug log
 
         if (!user) {
             return res.status(401).json({
@@ -36,11 +31,9 @@ exports.protect = async (req, res, next) => {
             });
         }
 
-        // 4) Accorder l'accès à la route protégée
         req.user = user;
         next();
     } catch (error) {
-        console.error('Error in protect middleware:', error); // Debug log
         return res.status(401).json({
             status: 'error',
             message: 'Invalid token. Please log in again.'
