@@ -13,6 +13,7 @@
             outlined
             v-model="email"
             label="Email"
+            data-cy="email-input"
             class="custom-border"
             bg-color="white"
             label-color="dark80"
@@ -26,6 +27,7 @@
             outlined
             v-model="password"
             label="Mot de passe"
+            data-cy="password-input"
             class="custom-border"
             bg-color="white"
             label-color="dark80"
@@ -37,6 +39,7 @@
               <q-icon
                 :name="isPasswordVisible ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"
+                data-cy="toggle-password-visibility"
                 @click="isPasswordVisible = !isPasswordVisible"
               />
             </template>
