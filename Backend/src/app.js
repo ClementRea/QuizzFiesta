@@ -2,26 +2,35 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 const authRoutes = require('../routes/authRoutes');
+const userRoutes = require('../routes/usersRoutes');
 
 
 const app = express();
 
-// Middleware pour parser le JSON et les URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware de sécurité
-app.use(helmet()); 
+app.use(helmet());
 
-// Configuration CORS
+//On retire le header Cross-Origin-Resource-Policy pour les avatars
+app.use('/avatars', (req, res, next) => {
+  res.removeHeader('Cross-Origin-Resource-Policy');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../public/avatars'))); 
+
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:9000',
     credentials: true
 }));
 
 app.use(morgan('dev'));
+
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Route test pour vérifier si le serv est correctement lancé
 app.get('/api/health', (req, res) => {
@@ -33,6 +42,7 @@ app.get('/api/health', (req, res) => {
 
 //****ROUTES****//
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 // /api/quiz : gestion des quiz
 // /api/users : gestion des utilisateurs
 // /api/teams : gestion des équipes

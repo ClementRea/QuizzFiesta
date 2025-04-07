@@ -15,6 +15,7 @@
         label="Editer le profil"
         no-caps
         unelevated
+        @click="() => router.push(`/account/edit`)"
       />
 
       <AccountToggle />
@@ -25,6 +26,7 @@
 <script setup>
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
 import AccountToggle from '../../components/AccountToggle.vue'
 import AcountHeader from '../../components/AccountHeader.vue'
@@ -32,6 +34,8 @@ import AcountHeader from '../../components/AccountHeader.vue'
 const user = ref(null)
 const loading = ref(true)
 const error = ref(null)
+const avatarPreview = ref(null)
+const router = useRouter()
 
 //Get the user
 const getUser = async () => {
@@ -43,9 +47,8 @@ const getUser = async () => {
       loading.value = true
       error.value = null
     }
-    const userData = await axios.get('http://localhost:3000/api/auth/me')
+    const userData = await axios.get('http://localhost:3000/api/user/getMe')
     user.value = userData.data.data.user
-    console.log(user.value)
   } catch (error) {
     console.error(error)
     error.value = error
@@ -55,8 +58,22 @@ const getUser = async () => {
 }
 
 function getAvatarName(avatar) {
-  return `/src/assets/avatar/${avatar}`
-}
+  if (avatarPreview.value) {
+    return avatarPreview.value
+  }
 
+  if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+    return avatar
+  }
+
+  if (avatar && avatar.includes('avatar-')) {
+    return `http://localhost:3000/avatars/${avatar}`
+  }
+
+  if (avatar) {
+    return `/src/assets/avatar/${avatar}`
+  }
+  return `/src/assets/avatar/default-avatar.png`
+}
 onMounted(getUser)
 </script>

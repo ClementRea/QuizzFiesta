@@ -1,4 +1,3 @@
-// src/router/routes.js
 const routes = [
   {
     path: '/',
@@ -32,6 +31,11 @@ const routes = [
   {
     path: '/account',
     component: () => import('pages/Account/AccountIndexPage.vue'),
+  },
+  {
+    path: '/account/edit',
+    component: () => import('pages/Account/EditAccountPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/search',
