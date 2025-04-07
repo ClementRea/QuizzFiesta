@@ -50,7 +50,7 @@
           >
             <q-icon name="mdi-account" size="md" />
           </q-btn>
-          <div class="text-weight-medium q-mt-xs text-dark90">Comptes</div>
+          <div class="text-weight-medium q-mt-xs text-dark90">Compte</div>
         </div>
       </div>
     </q-footer>

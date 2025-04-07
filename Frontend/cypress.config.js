@@ -9,7 +9,7 @@ export default defineConfig({
         configFile: './vite.config.js',
       }
     },
-    specPattern: 'src/**/*.cy.{js,jsx,ts,tsx}',
+    specPattern: 'src/tests/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'cypress/support/component.js'
   },
   e2e: {
