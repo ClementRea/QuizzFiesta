@@ -92,31 +92,6 @@ exports.login = async (req, res, next) => {
   }
 };
 
-exports.getMe = async (req, res, next) => {
-  try {
-    console.log('User ID from token:', req.user.id);
-    
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'User not found'
-        });
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user
-        }
-    });
-  } catch (error) {
-    console.error('Error in getMe:', error);
-    next(error);
-  }
-};
-
 // Déconnexion
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {

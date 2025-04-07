@@ -12,6 +12,11 @@ const AuthService = {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
   },
 
+  //On récupère le token d'authentification
+  getToken() {
+    return localStorage.getItem('authToken');
+  },
+
   // On supprime le token d'authentification
   clearToken() {
     localStorage.removeItem('authToken')
@@ -25,7 +30,7 @@ const AuthService = {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      const response = await axios.get('http://localhost:3000/api/auth/me')
+      const response = await axios.get('http://localhost:3000/api/user/getMe')
       return response.data.status === 'success'
     } catch {
       this.clearToken()
