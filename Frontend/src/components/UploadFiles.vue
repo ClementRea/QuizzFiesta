@@ -4,7 +4,7 @@
       <q-card-section class="row justify-between items-center">
         <span class="text-dark90 text-bold text-body1">Nouvelle photo de profil</span>
         <q-btn class="text-dark90" dense flat icon="close" v-close-popup>
-          <q-tooltip v-if="!$q.platform.is.mobile">Close</q-tooltip>
+          <q-tooltip v-if="!$q.platform.is.mobile">Fermer</q-tooltip>
         </q-btn>
       </q-card-section>
       <q-card-section>

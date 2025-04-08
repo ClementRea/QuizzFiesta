@@ -65,7 +65,7 @@ import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import FormLayout from '../../layouts/FormLayout.vue'
-import Header from '../../layouts/MainHeader.vue'
+import Header from '../../components/AuthHeader.vue'
 import AuthService from 'src/services/AuthService'
 
 const email = ref('')

@@ -1,8 +1,14 @@
 <template>
-  <q-layout>
+  <q-layout class="layout-container">
     <q-footer
-      class="bg-light20 q-py-sm"
-      style="border-radius: 50px 50px 0px 0px; height: 90px; position: fixed; bottom: 0"
+      class="bg-light20 q-py-sm footer-container"
+      style="
+        border-radius: 50px 50px 0px 0px;
+        height: 90px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      "
     >
       <div class="row full-width justify-center q-px-sm q-gutter-x-lg">
         <div class="column items-center q-px-sm cursor-pointer" @click="goTo('/scores')">
@@ -87,5 +93,13 @@ const goTo = (path) => {
 .grid-item {
   width: 100%;
   height: 100%;
+}
+
+.footer-container {
+  z-index: 1000;
+}
+
+.layout-container {
+  min-height: 0px !important;
 }
 </style>
