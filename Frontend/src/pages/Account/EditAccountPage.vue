@@ -21,17 +21,23 @@
         </div>
 
         <div v-else class="q-gutter-y-lg">
-          <div class="flex justify-center">
+          <div class="flex justify-center column items-center q-mb-md">
             <div
               style="width: 30%; border: 1px solid black; border-radius: 16px"
-              class="bg-normal40"
+              class="bg-normal40 q-mb-md cursor-pointer"
               @click="EditAvatarDialog = true"
             >
               <q-img :src="getAvatarName(userData?.avatar)" :ratio="1" />
             </div>
+            <q-btn
+              no-caps
+              unelevated
+              label="Modifier la photo de profil"
+              color="dark80"
+              @click="EditAvatarDialog = true"
+            />
           </div>
           <div v-if="EditAvatarDialog">
-            <!-- <UploadFiles v-model="EditAvatarDialog" @selected="handleAvatarSelected" /> -->
             <EditAvatar v-model="EditAvatarDialog" @selected="handleAvatarSelected" />
           </div>
 
@@ -43,7 +49,7 @@
             bg-color="white"
             label-color="dark80"
             color="dark70"
-            :rules="[(val) => !!val || 'Le prénom est requis']"
+            :rules="[(val) => !!val || 'Le nom d\'utilisateur est requis']"
           />
 
           <q-input
@@ -185,7 +191,7 @@ const passwordRules = computed(() => {
   ]
 })
 
-// Configuration des boutons d'action
+// Boutons d'action
 const actionButtons = [
   {
     action: 'cancel',
@@ -340,10 +346,9 @@ const handleAction = async (action) => {
   }
 }
 const handleAvatarSelected = (file) => {
-  // L'événement 'avatar' du composant UploadFiles nous envoie directement le fichier
   avatarFile.value = file
 
-  // On peut créer une URL d'aperçu pour afficher l'image avant l'envoi
+  //URL d'aperçu pour afficher l'image avant l'envoi
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -354,21 +359,14 @@ const handleAvatarSelected = (file) => {
 }
 
 function getAvatarName(avatar) {
-  if (avatarPreview.value) {
-    return avatarPreview.value
-  }
+  if (avatarPreview.value) return avatarPreview.value
 
-  if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-    return avatar
-  }
+  if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) return avatar
 
-  if (avatar && avatar.includes('avatar-')) {
-    return `http://localhost:3000/avatars/${avatar}`
-  }
+  if (avatar && avatar.includes('avatar-')) return `http://localhost:3000/avatars/${avatar}`
 
-  if (avatar) {
-    return `/src/assets/avatar/${avatar}`
-  }
+  if (avatar) return `/src/assets/avatar/${avatar}`
+
   return `/src/assets/avatar/default-avatar.png`
 }
 
@@ -380,5 +378,6 @@ onMounted(getUser)
   position: relative;
   margin-top: -16px;
   z-index: 1;
+  margin-bottom: 90px;
 }
 </style>

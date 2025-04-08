@@ -5,10 +5,10 @@ const { protect } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 
-// Configuration du stockage des avatars
+// Stockage des avatars
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, 'public/avatars/'); // Assurez-vous que ce dossier existe
+    cb(null, 'public/avatars/');
   },
   filename: function(req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -26,14 +26,14 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialisation de multer
-const upload = multer({ 
+//On instancie multer en intégrant une limite de taille de 2Mo
+const upload = multer({
   storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // Limite à 2MB
+  limits: { fileSize: 2 * 1024 * 1024 }, 
   fileFilter: fileFilter 
 });
 
-// Routes avec middleware d'authentification et d'upload
+// Routes
 router.get('/getMe', protect, userController.getMe);
 router.put('/updateMe', protect, upload.single('avatar'), userController.updateMe);
 
