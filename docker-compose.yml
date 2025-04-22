@@ -1,0 +1,32 @@
+services:
+  # Frontend
+  frontend:
+    build: ./Frontend
+    container_name: quizzfiesta-frontend
+    ports:
+      - "9000:80"
+    environment:
+      - NODE_ENV=production
+      - VUE_APP_API_URL=http://localhost:3000/api
+    depends_on:
+      - backend
+    networks:
+      - quizzfiesta-network
+
+  # Backend
+  backend:
+    build: ./Backend
+    container_name: quizzfiesta-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+    env_file:
+      - ./Backend/.env
+    networks:
+      - quizzfiesta-network
+
+networks:
+  quizzfiesta-network:
+    driver: bridge
