@@ -1,19 +1,24 @@
 services:
-  # Frontend
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
     container_name: quizzfiesta-frontend
     ports:
-      - "9000:80"
+      - "9000:8080"
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
     environment:
-      - NODE_ENV=production
-      - VUE_APP_API_URL=http://localhost:3000/api
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     depends_on:
       - backend
     networks:
       - quizzfiesta-network
 
-  # Backend
   backend:
     build: ./Backend
     container_name: quizzfiesta-backend
