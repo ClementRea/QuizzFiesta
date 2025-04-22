@@ -73,7 +73,6 @@ function getAvatarName(avatar) {
   if (avatar) {
     return `/src/assets/avatar/${avatar}`
   }
-  return `/src/assets/avatar/default-avatar.png`
 }
 onMounted(getUser)
 </script>
