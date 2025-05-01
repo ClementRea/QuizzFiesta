@@ -49,6 +49,11 @@ const routes = [
     meta: { requiresAuth: true, showFooter: true }
   },
   {
+    path: '/settings',
+    component: () => import('pages/Settings/SettingsIndexPage.vue'),
+    meta: { requiresAuth: true, showFooter: true }
+  },
+  {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue')
   }

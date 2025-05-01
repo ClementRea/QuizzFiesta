@@ -92,7 +92,7 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// Déconnexion
+// LOGOUT
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
