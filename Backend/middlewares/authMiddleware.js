@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Dans authMiddleware.js
 
 exports.protect = async (req, res, next) => {
     try {
@@ -14,7 +13,7 @@ exports.protect = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 status: 'error',
-                message: 'You are not logged in. Please log in to get access.'
+                message: 'Vous n\'êtes pas connecté, connecter vous pour continuer.'
             });
         }
 
@@ -27,7 +26,7 @@ exports.protect = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({
                 status: 'error',
-                message: 'The user belonging to this token no longer exists.'
+                message: 'L\'utilisateur n\'existe pas.'
             });
         }
 
@@ -36,7 +35,7 @@ exports.protect = async (req, res, next) => {
     } catch (error) {
         return res.status(401).json({
             status: 'error',
-            message: 'Invalid token. Please log in again.'
+            message: 'Token invalide, veuillez réessayer.'
         });
     }
 };
@@ -46,7 +45,7 @@ exports.restrictTo = (...roles) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 status: 'error',
-                message: 'You do not have permission to perform this action'
+                message: 'Vous n\'avez pas les autorisations requises.'
             });
         }
         next();
