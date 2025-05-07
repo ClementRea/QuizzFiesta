@@ -1,0 +1,18 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# Installe toutes les dépendances, y compris celles de développement
+RUN npm ci
+
+# Installe nodemon globalement pour le hot reload
+RUN npm install -g nodemon
+
+COPY . .
+
+EXPOSE 3000
+
+# Utilise nodemon pour le hot reload
+CMD ["nodemon", "src/server.js"]
