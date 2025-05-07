@@ -20,7 +20,9 @@ services:
       - quizzfiesta-network
 
   backend:
-    build: ./Backend
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile.dev
     container_name: quizzfiesta-backend
     ports:
       - "3000:3000"
@@ -29,6 +31,8 @@ services:
       - /app/node_modules
     env_file:
       - ./Backend/.env
+    environment:
+      - NODE_ENV=development
     networks:
       - quizzfiesta-network
 
