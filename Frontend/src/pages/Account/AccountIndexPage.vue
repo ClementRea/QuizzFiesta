@@ -3,8 +3,12 @@
   <div class="bg-light10 full-width" style="border-radius: 20px 20px 0px 0px">
     <div class="column flex flex-center q-gutter-y-md">
       <div style="width: 100%" class="flex justify-center">
-        <div style="width: 20%; border: 1px solid black; border-radius: 16px" class="bg-normal40">
-          <q-img :src="getAvatarName(user?.avatar)" :ratio="1" />
+        <div>
+          <Avatar
+            :avatarUrl="user?.avatar"
+            style="width: 100%"
+            :size="$q.screen.xs ? 'md' : 'xl'"
+          />
         </div>
       </div>
       <span class="text-dark90 text-h5">{{ user?.userName }}</span>
@@ -28,14 +32,17 @@ import axios from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
+import { useQuasar } from 'quasar'
 import AccountToggle from '../../components/AccountToggle.vue'
 import AcountHeader from '../../components/AccountHeader.vue'
+import Avatar from 'src/components/GetAvatar.vue'
 
 const user = ref(null)
 const loading = ref(true)
 const error = ref(null)
 const avatarPreview = ref(null)
 const router = useRouter()
+const $q = useQuasar()
 
 //Get the user
 const getUser = async () => {
@@ -57,22 +64,5 @@ const getUser = async () => {
   }
 }
 
-function getAvatarName(avatar) {
-  if (avatarPreview.value) {
-    return avatarPreview.value
-  }
-
-  if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-    return avatar
-  }
-
-  if (avatar && avatar.includes('avatar-')) {
-    return `http://localhost:3000/avatars/${avatar}`
-  }
-
-  if (avatar) {
-    return `/src/assets/avatar/${avatar}`
-  }
-}
 onMounted(getUser)
 </script>

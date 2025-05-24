@@ -4,6 +4,7 @@
     <FormLayout
       title="Connexion"
       @submit="submitForm"
+      :disabledSubmit="!isFormValid"
       actionType="login"
       :disabledSubmitMessage="validationMessage"
     >

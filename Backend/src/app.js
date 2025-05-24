@@ -6,6 +6,7 @@ const path = require('path');
 require('dotenv').config();
 const authRoutes = require('../routes/authRoutes');
 const userRoutes = require('../routes/usersRoutes');
+const quizRoutes = require('../routes/quizRoutes');
 
 
 const app = express();
@@ -36,13 +37,14 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'success',
-        message: 'Server is up and running!'
+        message: "I'm Okay!"
     });
 });
 
 //****ROUTES****//
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/quiz', quizRoutes);
 // /api/quiz : gestion des quiz
 // /api/users : gestion des utilisateurs
 // /api/teams : gestion des équipes

@@ -22,13 +22,10 @@
 
         <div v-else class="q-gutter-y-lg">
           <div class="flex justify-center column items-center q-mb-md">
-            <div
-              style="width: 30%; border: 1px solid black; border-radius: 16px"
-              class="bg-normal40 q-mb-md cursor-pointer"
-              @click="EditAvatarDialog = true"
-            >
-              <q-img :src="getAvatarName(userData?.avatar)" :ratio="1" />
+            <div class="q-mb-md cursor-pointer" @click="EditAvatarDialog = true">
+              <Avatar :avatarUrl="userData.avatar" :previewUrl="avatarPreview" style="width: 7em" />
             </div>
+
             <q-btn
               no-caps
               unelevated
@@ -148,6 +145,7 @@ import axios from 'axios'
 import AuthService from 'src/services/AuthService'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import EditAvatar from 'src/components/EditAvatar.vue'
+import Avatar from 'src/components/GetAvatar.vue'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -278,7 +276,6 @@ const getUser = async () => {
       confirmPassword: '',
       avatar: user.avatar || '',
     }
-    console.log('avatar', user.avatar)
   } catch (err) {
     console.error(err)
     error.value = err.response?.data?.message || 'Une erreur est survenue'
@@ -345,10 +342,11 @@ const handleAction = async (action) => {
     }
   }
 }
+
+//Appercu de l'avatar
 const handleAvatarSelected = (file) => {
   avatarFile.value = file
 
-  //URL d'aperçu pour afficher l'image avant l'envoi
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -356,16 +354,6 @@ const handleAvatarSelected = (file) => {
     }
     reader.readAsDataURL(file)
   }
-}
-
-function getAvatarName(avatar) {
-  if (avatarPreview.value) return avatarPreview.value
-
-  if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) return avatar
-
-  if (avatar && avatar.includes('avatar-')) return `http://localhost:3000/avatars/${avatar}`
-
-  if (avatar) return `/src/assets/avatar/${avatar}`
 }
 
 onMounted(getUser)
