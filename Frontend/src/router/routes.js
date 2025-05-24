@@ -35,12 +35,17 @@ const routes = [
   },
   {
     path: '/account/edit',
-    component: () => import('pages/Account/EditAccountPage.vue'),
+    component: () => import('src/pages/Account/AccountPageUpdate.vue'),
     meta: { requiresAuth: true, showFooter: true },
   },
   {
     path: '/search',
     component: () => import('pages/Search/SearchIndexPage.vue'),
+    meta: { requiresAuth: true, showFooter: true }
+  },
+  {
+    path: '/quiz/create',
+    component: () => import('pages/Quiz/QuizCreateIndexPage.vue'),
     meta: { requiresAuth: true, showFooter: true }
   },
   {

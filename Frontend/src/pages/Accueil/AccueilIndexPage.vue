@@ -9,10 +9,38 @@
       <Avatar :avatarUrl="userData.avatar" :size="$q.screen.xs ? 'sm' : 'md'" />
     </div>
   </div>
+  <div>
+    <q-input
+      aria-placeholder="Rechercher un quiz"
+      placeholder="Rechercher (Management, Jeux...)"
+      outlined
+      rounded
+      bg-color="light20"
+      class="q-pa-md custom-input-shadow"
+    >
+      <template v-slot:prepend>
+        <q-icon name="search" />
+      </template>
+    </q-input>
+  </div>
+
+  <div class="flex justify-end">
+    <q-btn
+      label="Créer un quiz"
+      color="dark80"
+      rounded
+      class="q-ma-md"
+      text-color="light20"
+      size="md"
+      icon="mdi-plus"
+      @click="router.push('/quiz/create')"
+    />
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import axios from 'axios'
 import Avatar from 'src/components/GetAvatar.vue'
@@ -21,6 +49,7 @@ const $q = useQuasar()
 
 const loading = ref(true)
 const error = ref(null)
+const router = useRouter()
 
 const userData = ref({
   userName: '',
@@ -54,3 +83,9 @@ const getUser = async () => {
 
 onMounted(getUser)
 </script>
+
+<style scoped>
+.custom-input-shadow :deep(.q-field__control) {
+  box-shadow: inset 0 5px 4px rgba(0, 0, 0, 0.15);
+}
+</style>
