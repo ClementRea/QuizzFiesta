@@ -18,7 +18,6 @@
             bg-color="white"
             label-color="dark80"
             color="dark70"
-            data-cy="username-input"
             :rules="[
               (val) => !!val || 'Le nom d\'utilisateur est requis',
               (val) =>
@@ -33,7 +32,6 @@
             bg-color="white"
             label-color="dark80"
             color="dark70"
-            data-cy="email-input"
             :rules="[
               (val) => !!val || 'L\'email est requis',
               (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
@@ -47,7 +45,6 @@
             bg-color="white"
             label-color="dark80"
             color="dark70"
-            data-cy="password-input"
             :type="isFirstPwd ? 'password' : 'text'"
             :rules="[
               (val) => !!val || 'Le mot de passe est requis',
@@ -60,7 +57,6 @@
               <q-icon
                 :name="isFirstPwd ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
-                data-cy="toggle-password-visibility"
                 @click="isFirstPwd = !isFirstPwd"
               />
             </template>
@@ -73,7 +69,6 @@
             bg-color="white"
             label-color="dark80"
             color="dark70"
-            data-cy="confirm-password-input"
             :type="isSecondPwd ? 'password' : 'text'"
             :rules="[
               (val) => !!val || 'La confirmation du mot de passe est requise',
@@ -84,7 +79,6 @@
               <q-icon
                 :name="isSecondPwd ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
-                data-cy="toggle-confirm-visibility"
                 @click="isSecondPwd = !isSecondPwd"
               />
             </template>
