@@ -42,26 +42,6 @@
               :error="!quizData.description && showValidation"
               error-message="La description est obligatoire"
             />
-
-            <q-select
-              v-model="quizData.category"
-              :options="categoryOptions"
-              label="Catégorie *"
-              outlined
-              class="custom-border q-mb-md"
-              :error="!quizData.category && showValidation"
-              error-message="Veuillez sélectionner une catégorie"
-            />
-
-            <q-input
-              v-model.number="quizData.timeLimit"
-              label="Temps limite (secondes)"
-              type="number"
-              outlined
-              class="custom-border"
-              min="1"
-              max="180"
-            />
           </div>
 
           <!-- Étape 2: Création des questions -->
@@ -91,7 +71,7 @@
                 :key="index"
                 class="question-card q-mb-md q-pa-md bg-light20 rounded-borders"
               >
-                <div class="row items-center justify-between q-mb-sm">
+                <div class="row items-center justify-between q-mb-md">
                   <span class="text-weight-bold">Question {{ index + 1 }}</span>
                   <q-btn
                     flat
@@ -103,27 +83,11 @@
                   />
                 </div>
 
-                <q-input
-                  v-model="question.text"
-                  label="Texte de la question"
-                  outlined
-                  class="custom-border q-mb-sm"
+                <QuestionTypeSelector
+                  :question="question"
+                  :show-validation="showValidation"
+                  @update:question="updateQuestion(index, $event)"
                 />
-
-                <div class="row q-col-gutter-sm">
-                  <div v-for="(answer, ansIndex) in question.answers" :key="ansIndex" class="col-6">
-                    <q-input
-                      v-model="answer.text"
-                      :label="`Réponse ${ansIndex + 1}`"
-                      outlined
-                      class="custom-border"
-                    >
-                      <template v-slot:prepend>
-                        <q-radio v-model="question.correctAnswer" :val="ansIndex" color="dark80" />
-                      </template>
-                    </q-input>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -138,11 +102,6 @@
                   <h6 class="text-dark80 q-mb-sm">Informations générales</h6>
                   <p><strong>Titre :</strong> {{ quizData.title }}</p>
                   <p><strong>Description :</strong> {{ quizData.description }}</p>
-                  <p><strong>Catégorie :</strong> {{ quizData.category }}</p>
-                  <p>
-                    <strong>Temps limite :</strong> {{ quizData.timeLimit || 'Aucun' }}
-                    {{ quizData.timeLimit ? 'minutes' : '' }}
-                  </p>
                 </div>
 
                 <div class="col-12 col-md-6">
@@ -152,8 +111,9 @@
                     <p class="q-mb-xs"><strong>Aperçu :</strong></p>
                     <ul class="q-ma-none">
                       <li v-for="(question, index) in quizData.questions.slice(0, 3)" :key="index">
-                        {{ question.text?.substring(0, 50)
-                        }}{{ question.text?.length > 50 ? '...' : '' }}
+                        <strong>{{ getQuestionTypeLabel(question.type) }}:</strong>
+                        {{ question.content?.substring(0, 50)
+                        }}{{ question.content?.length > 50 ? '...' : '' }}
                       </li>
                       <li v-if="quizData.questions.length > 3">
                         ... et {{ quizData.questions.length - 3 }} autres questions
@@ -177,6 +137,7 @@ import { useQuasar } from 'quasar'
 import axios from 'axios'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import StepProgressBar from 'src/components/StepProgressBar.vue'
+import QuestionTypeSelector from 'src/components/QuestionTypeSelector.vue'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -191,49 +152,31 @@ const quizSteps = [
 const currentStep = ref(0)
 const showValidation = ref(false)
 
-// Données du quiz
+// Données du quiz (seulement les champs nécessaires au modèle backend)
 const quizData = ref({
   title: '',
   description: '',
-  category: '',
-  timeLimit: 45,
   questions: [],
 })
-
-const categoryOptions = [
-  'Culture générale',
-  'Sport',
-  'Histoire',
-  'Sciences',
-  'Arts',
-  'Technologie',
-  'Autre',
-]
 
 // Validation automatique selon l'étape
 const isCurrentStepValid = computed(() => {
   switch (currentStep.value) {
     case 0:
-      return (
-        quizData.value.title.trim() !== '' &&
-        quizData.value.description.trim() !== '' &&
-        quizData.value.category !== ''
-      )
-
+      return quizData.value.title.trim() !== '' && quizData.value.description.trim() !== ''
     case 1:
       return (
         quizData.value.questions.length > 0 &&
         quizData.value.questions.every(
           (q) =>
-            q.text?.trim() &&
-            q.answers?.every((a) => a.text?.trim()) &&
-            q.correctAnswer !== undefined,
+            q.content?.trim() &&
+            q.answer?.length > 0 &&
+            q.answer.every((a) => a.text?.trim()) &&
+            q.answer.some((a) => a.isCorrect),
         )
       )
-
     case 2:
       return true
-
     default:
       return false
   }
@@ -251,37 +194,51 @@ const validationMessage = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  //Vérif chaque étapes de la progress bar
-
-  // Etape 1 :
-  const step0Valid =
-    quizData.value.title.trim() !== '' &&
-    quizData.value.description.trim() !== '' &&
-    quizData.value.category !== ''
-
-  // Etape 2 :
+  // Vérifie chaque étape de la progress bar
+  const step0Valid = quizData.value.title.trim() !== '' && quizData.value.description.trim() !== ''
   const step1Valid =
     quizData.value.questions.length > 0 &&
     quizData.value.questions.every(
       (q) =>
-        q.text?.trim() && q.answers?.every((a) => a.text?.trim()) && q.correctAnswer !== undefined,
+        q.content?.trim() &&
+        q.answer?.length > 0 &&
+        q.answer.every((a) => a.text?.trim()) &&
+        q.answer.some((a) => a.isCorrect),
     )
-
-  //Etape 3 = récap donc on valdie le form à l'étape 2
+  // Etape 3 = récap donc on valide le form à l'étape 2
   return currentStep.value === 2 && step0Valid && step1Valid
 })
 
 // Gestion des questions
 const addQuestion = () => {
   quizData.value.questions.push({
-    text: '',
-    answers: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
-    correctAnswer: 0,
+    content: '',
+    type: 'CLASSIC',
+    answer: [{ text: '', isCorrect: true }],
+    points: 1,
+    timeGiven: 45,
   })
 }
 
 const removeQuestion = (index) => {
   quizData.value.questions.splice(index, 1)
+}
+
+const updateQuestion = (index, updatedQuestion) => {
+  quizData.value.questions[index] = updatedQuestion
+}
+
+// Fonction utilitaire pour obtenir le label du type de question
+const getQuestionTypeLabel = (type) => {
+  const typeMap = {
+    CLASSIC: 'Question classique',
+    MULTIPLE_CHOICE: 'Choix multiple',
+    ORDER: 'Mise en ordre',
+    ASSOCIATION: 'Association',
+    BLIND_TEST: 'Blind test',
+    FIND_INTRUDER: "Trouver l'intrus",
+  }
+  return typeMap[type] || type
 }
 
 // Événements de la progress bar
@@ -319,21 +276,17 @@ const handleAction = async (action) => {
 
   if (action === 'save' && isFormValid.value) {
     try {
-      // Préparer les données au format JSON (plus adapté à votre backend)
+      // Préparer les données au format attendu par le backend (modèle Quiz et Question)
       const payload = {
         title: quizData.value.title,
         description: quizData.value.description,
-        isPublic: false,
-        startDate: new Date(), // Requis par le modèle Quiz
+        startDate: new Date(), // requis par le modèle Quiz
         questions: quizData.value.questions.map((question) => ({
-          content: question.text,
-          type: 'MULTIPLE_CHOICE', // Correspond à votre ENUM
-          answer: question.answers.map((answer, index) => ({
-            text: answer.text,
-            isCorrect: index === question.correctAnswer,
-          })),
-          points: 10,
-          timeGiven: quizData.value.timeLimit || 45,
+          content: question.content,
+          type: question.type,
+          answer: question.answer,
+          points: question.points,
+          timeGiven: question.timeGiven,
         })),
       }
 
