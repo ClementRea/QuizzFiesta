@@ -1,4 +1,3 @@
-<!-- GetAvatar.vue -->
 <template>
   <div class="q-mb-md">
     <div

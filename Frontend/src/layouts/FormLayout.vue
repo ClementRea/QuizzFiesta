@@ -4,7 +4,7 @@
 
     <slot name="content"></slot>
 
-    <div v-if="showActions" class="row col items-center q-pa-md q-mt-md q-gutter-x-md">
+    <div v-if="showActions" class="row items-center justify-center q-pa-md q-mt-md q-gutter-x-md">
       <slot name="before-actions"></slot>
 
       <template v-if="actionButtons.length > 0">
@@ -30,37 +30,42 @@
       </template>
 
       <template v-else>
-        <!-- Bouton secondaire (clair) - utilisé pour l'action alternative -->
-        <q-btn
-          rounded
-          outline
-          class="text-dark80 q-pa-sm col-5"
-          :label="actionType === 'login' ? 's\'inscrire' : 'se connecter'"
-          type="submit"
-          :aria-label="
-            actionType === 'login' ? 'S\'inscrire sur la plateforme' : 'Se connecter à votre compte'
-          "
-          @click="onSubmit(actionType === 'login' ? 'register' : 'login')"
-          :disable="isButtonDisabled({ action: actionType === 'login' ? 'register' : 'login' })"
-        />
-
-        <!-- Bouton principal (foncé) - utilisé pour l'action principale -->
-        <q-btn
-          rounded
-          color="dark80"
-          class="text-light20 q-pa-sm col-5"
-          :label="actionType === 'login' ? 'se connecter' : 's\'inscrire'"
-          type="submit"
-          :aria-label="
-            actionType === 'login' ? 'Se connecter à votre compte' : 'S\'inscrire sur la plateforme'
-          "
-          @click="onSubmit(actionType)"
-          :disable="isButtonDisabled({ action: actionType })"
-        >
-          <q-tooltip v-if="isButtonDisabled({ action: actionType })" class="bg-dark90">
-            {{ disabledSubmitMessage }}
-          </q-tooltip>
-        </q-btn>
+        <!-- secondary Btn -->
+        <div class="">
+          <q-btn
+            rounded
+            outline
+            class="text-dark80 q-pa-sm col-5"
+            :label="actionType === 'login' ? 's\'inscrire' : 'se connecter'"
+            type="submit"
+            :aria-label="
+              actionType === 'login'
+                ? 'S\'inscrire sur la plateforme'
+                : 'Se connecter à votre compte'
+            "
+            @click="onSubmit(actionType === 'login' ? 'register' : 'login')"
+            :disable="isButtonDisabled({ action: actionType === 'login' ? 'register' : 'login' })"
+          />
+          <!-- main Btn -->
+          <q-btn
+            rounded
+            color="dark80"
+            class="text-light20 q-pa-sm col-5"
+            :label="actionType === 'login' ? 'se connecter' : 's\'inscrire'"
+            type="submit"
+            :aria-label="
+              actionType === 'login'
+                ? 'Se connecter à votre compte'
+                : 'S\'inscrire sur la plateforme'
+            "
+            @click="onSubmit(actionType)"
+            :disable="isButtonDisabled({ action: actionType })"
+          >
+            <q-tooltip v-if="isButtonDisabled({ action: actionType })" class="bg-dark90">
+              {{ disabledSubmitMessage }}
+            </q-tooltip>
+          </q-btn>
+        </div>
       </template>
     </div>
   </div>

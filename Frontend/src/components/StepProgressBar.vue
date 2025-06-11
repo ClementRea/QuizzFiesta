@@ -8,14 +8,14 @@
         :class="getStepClass(index)"
         @click="onStepClick(index)"
       >
-        <!-- Ligne de connexion (sauf pour le dernier élément) -->
+        <!-- Connector line (except for the last step) -->
         <div
           v-if="index < steps.length - 1"
           class="step-connector"
           :class="getConnectorClass(index)"
         ></div>
 
-        <!-- Cercle de l'étape -->
+        <!-- Step circle -->
         <div class="step-circle">
           <q-icon v-if="isStepCompleted(index)" name="check" size="18px" class="text-white" />
           <span v-else class="step-number" :class="getNumberClass(index)">
@@ -23,7 +23,7 @@
           </span>
         </div>
 
-        <!-- Label de l'étape -->
+        <!-- Step label -->
         <div class="step-label">
           <span :class="getLabelClass(index)">{{ step.label }}</span>
         </div>
@@ -283,7 +283,6 @@ const goToPreviousStep = () => {
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .step-progress-bar {
     max-width: 100%;

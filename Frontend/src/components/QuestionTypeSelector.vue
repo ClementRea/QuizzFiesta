@@ -1,6 +1,6 @@
 <template>
   <div class="question-type-selector">
-    <!-- Sélecteur de type de question -->
+    <!-- Question type selector -->
     <q-select
       v-model="localQuestion.type"
       :options="questionTypeOptions"
@@ -14,7 +14,7 @@
       @update:model-value="onTypeChange"
     />
 
-    <!-- Contenu de la question -->
+    <!-- Question content -->
     <q-input
       v-model="localQuestion.content"
       label="Texte de la question *"
@@ -25,9 +25,7 @@
     <div class="answers-section">
       <!-- CLASSIC -->
       <div v-if="localQuestion.type === 'CLASSIC'" class="classic-answers">
-        <div class="text-subtitle2 text-dark90 text-bold">
-          Saisissez la réponse attendue. L'utilisateur devra taper sa réponse.
-        </div>
+        <div class="text-subtitle2 text-dark90 text-bold">Saisissez la réponse de la question</div>
 
         <q-input
           v-model="localQuestion.answer[0].text"
@@ -41,15 +39,6 @@
       <div v-if="localQuestion.type === 'MULTIPLE_CHOICE'" class="multiple-choice-answers">
         <div class="row items-center justify-between">
           <h6 class="text-dark80 q-ma-none">Choix de réponses</h6>
-          <q-btn
-            flat
-            dense
-            icon="add"
-            label="Ajouter un choix"
-            @click="addAnswer"
-            size="sm"
-            :disable="localQuestion.answer.length >= 6"
-          />
         </div>
         <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
           Cochez la ou les bonnes réponses. Au moins une réponse doit être correcte.
@@ -84,21 +73,24 @@
             :title="`Supprimer le choix ${index + 1}`"
           />
         </div>
+        <div class="row justify-center q-mt-lg">
+          <q-btn
+            icon="add"
+            class="bg-normal40 text-bold"
+            rounded
+            text-color="dark80"
+            label="Ajouter un choix"
+            @click="addAnswer"
+            size="sm"
+            :disable="localQuestion.answer.length >= 6"
+          />
+        </div>
       </div>
 
       <!-- ORDER -->
       <div v-if="localQuestion.type === 'ORDER'" class="order-answers">
         <div class="row items-center justify-between q-mb-sm">
           <h6 class="text-dark80 q-ma-none">Éléments à ordonner</h6>
-          <q-btn
-            flat
-            dense
-            icon="add"
-            label="Ajouter élément"
-            @click="addAnswer"
-            size="sm"
-            :disable="localQuestion.answer.length >= 8"
-          />
         </div>
         <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
           Saisissez les éléments dans le bon ordre (du 1er au dernier). Les joueurs devront les
@@ -134,21 +126,24 @@
             :title="`Supprimer l'élément ${index + 1}`"
           />
         </div>
+        <div class="row justify-center q-mt-lg">
+          <q-btn
+            class="bg-normal40 text-bold"
+            rounded
+            text-color="dark80"
+            icon="add"
+            label="Ajouter élément"
+            @click="addAnswer"
+            size="sm"
+            :disable="localQuestion.answer.length >= 8"
+          />
+        </div>
       </div>
 
       <!-- ASSOCIATION -->
       <div v-if="localQuestion.type === 'ASSOCIATION'" class="association-answers">
         <div class="row items-center justify-between q-mb-sm">
           <h6 class="text-dark80 q-ma-none">Paires à associer</h6>
-          <q-btn
-            flat
-            dense
-            icon="add"
-            label="Ajouter paire"
-            @click="addAssociationPair"
-            size="sm"
-            :disable="associationPairs.length >= 6"
-          />
         </div>
         <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
           Créez des paires d'éléments que les joueurs devront associer correctement.
@@ -185,6 +180,18 @@
               <q-input v-model="pair.right" :label="`Élément B *`" outlined class="custom-border" />
             </div>
           </div>
+        </div>
+        <div class="row justify-center q-mt-lg">
+          <q-btn
+            class="bg-normal40 text-bold"
+            rounded
+            text-color="dark80"
+            icon="add"
+            label="Ajouter paire"
+            @click="addAssociationPair"
+            size="sm"
+            :disable="associationPairs.length >= 6"
+          />
         </div>
       </div>
 
@@ -275,7 +282,7 @@
           ⚠️ Vous devez sélectionner quel élément est l'intrus
         </div>
       </div>
-      <!-- Configuration des points et temps -->
+      <!-- Points and time configuration -->
       <div class="row q-col-gutter-md q-mt-md">
         <div class="col-6">
           <q-input
@@ -318,7 +325,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:question'])
 
-// Types de questions disponibles
+// Available question types
 const questionTypeOptions = [
   { label: 'Question classique', value: 'CLASSIC' },
   { label: 'Choix multiple', value: 'MULTIPLE_CHOICE' },
@@ -328,7 +335,7 @@ const questionTypeOptions = [
   { label: "Trouver l'intrus", value: 'FIND_INTRUDER' },
 ]
 
-// Question locale
+// Local question
 const defaultQuestion = () => ({
   content: '',
   type: 'CLASSIC',
@@ -339,16 +346,16 @@ const defaultQuestion = () => ({
 
 const localQuestion = ref({ ...defaultQuestion(), ...props.question })
 
-// Pour l'association
+// For association type
 const associationPairs = ref([
   { left: '', right: '' },
   { left: '', right: '' },
 ])
 
-// Pour trouver l'intrus
+// For find intruder type
 const intruderIndex = ref(0)
 
-// Fonction d'initialisation des réponses selon le type
+// Initialize answers based on question type
 function initAnswersByType(type) {
   switch (type) {
     case 'CLASSIC':
@@ -389,12 +396,11 @@ function initAnswersByType(type) {
   }
 }
 
-// Initialisation selon le type et props
-
-// Initialisation unique
+// Initialization based on type and props
+// Unique initialization
 localQuestion.value = { ...defaultQuestion(), ...props.question }
 
-// Watch sur la prop question : ne met à jour localQuestion que si le contenu a changé (évite la boucle)
+// Watch on question prop: only update localQuestion if content changed (avoid infinite loop)
 watch(
   () => props.question,
   (newQuestion) => {
@@ -405,7 +411,7 @@ watch(
   { deep: true },
 )
 
-// Émettre les changements
+// Emit changes
 watch(
   localQuestion,
   (newQuestion) => {
@@ -439,14 +445,14 @@ const addAnswer = () => {
 const removeAnswer = (index) => {
   localQuestion.value.answer.splice(index, 1)
 
-  // Pour ORDER on réajuste les ordres
+  // For ORDER, adjust order numbers
   if (localQuestion.value.type === 'ORDER') {
     localQuestion.value.answer.forEach((answer, i) => {
       answer.correctOrder = i + 1
     })
   }
 
-  //pour FIND_INTRUDER on réajuste l'intrus
+  // For FIND_INTRUDER, adjust intruder index
   if (localQuestion.value.type === 'FIND_INTRUDER') {
     if (intruderIndex.value === index) {
       intruderIndex.value = 0
@@ -480,7 +486,7 @@ const updateIntruder = (newIndex) => {
   })
 }
 
-// Watch effect pour l'association
+// Watch effect for association type
 watchEffect(() => {
   if (localQuestion.value.type === 'ASSOCIATION') {
     updateAssociationAnswers()
