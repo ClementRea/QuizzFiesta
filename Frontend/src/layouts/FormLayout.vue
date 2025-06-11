@@ -1,6 +1,9 @@
 <template>
   <div class="column q-pa-md q-pt-lg">
-    <span v-if="showTitle" class="text-h4 text-dark80 text-bold q-mb-xl">{{ title }}</span>
+    <div v-if="showTitle" class="row items-center q-mb-xl">
+      <BackArrow v-if="$route.meta.showBackArrow" />
+      <span class="text-h4 text-dark80 text-bold q-ma-none">{{ title }}</span>
+    </div>
 
     <slot name="content"></slot>
 
@@ -72,6 +75,8 @@
 </template>
 
 <script setup>
+import BackArrow from 'src/components/BackArrow.vue'
+
 const props = defineProps({
   title: {
     type: String,
@@ -101,19 +106,6 @@ const props = defineProps({
   actionButtons: {
     type: Array,
     default: () => [],
-    // Structure attendue:
-    // [
-    //   {
-    //     action: 'login',
-    //     label: 'Se connecter',
-    //     color: 'light20',
-    //     class: 'text-dark80 q-pa-sm col-5',
-    //     ariaLabel: 'Se connecter à votre compte',
-    //     title: 'Accéder à votre compte existant',
-    //     disabled: false,
-    //     disabledTooltip: 'Message explicatif'
-    //   }
-    // ]
   },
   disabledActions: {
     type: Array,
