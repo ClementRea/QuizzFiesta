@@ -8,10 +8,9 @@
         border: '1px solid black',
         borderRadius: '16px',
       }"
-      @click="router.push('/account')"
     >
       <q-img
-        :src="processedAvatarUrl"
+        :src="processedLogoUrl"
         :ratio="1"
         fit="cover"
         no-spinner
@@ -22,13 +21,10 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
 import { computed } from 'vue'
 
-const router = useRouter()
-
 const props = defineProps({
-  avatarUrl: {
+  logoUrl: {
     type: String,
     default: null,
   },
@@ -51,17 +47,13 @@ const sizeMap = {
   xl: '160px',
 }
 
-const processedAvatarUrl = computed(() => {
+const processedLogoUrl = computed(() => {
   if (props.previewUrl) return props.previewUrl
 
-  const avatar = props.avatarUrl
+  const logo = props.logoUrl
 
-  if (!avatar) return '/src/assets/avatar/default-avatar.png'
+  if (!logo) return '/src/assets/avatar/logoOrganisation.png'
 
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-
-  if (avatar.includes('avatar-')) return `http://localhost:3000/avatars/${avatar}`
-
-  return `/src/assets/avatar/${avatar}`
+  return logo.startsWith('http') ? logo : `/api/v1/files/${logo}`
 })
 </script>

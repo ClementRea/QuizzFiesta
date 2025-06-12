@@ -49,6 +49,11 @@ const routes = [
     meta: { requiresAuth: true, showFooter: true, showBackArrow: true }
   },
   {
+    path: '/organisation/create',
+    component: () => import('pages/Organisation/OrganisationCreateIndexPage.vue'),
+    meta: { requiresAuth: true, showFooter: true, showBackArrow: true }
+  },
+  {
     path: '/scores',
     component: () => import('pages/Scores/ScoresIndexPage.vue'),
     meta: { requiresAuth: true, showFooter: true, showBackArrow: true }

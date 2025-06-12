@@ -3,7 +3,6 @@
     <q-footer class="bg-light20 q-py-sm footer-container" style="border-radius: 50px 50px 0px 0px">
       <q-toolbar class="no-wrap">
         <div class="row full-width justify-evenly items-center no-wrap q-px-xs">
-          <!-- Utilisation de justify-evenly pour distribuer l'espace sur les grands écrans -->
           <div
             class="col-auto flex flex-center column items-center q-px-sm cursor-pointer"
             @click="goTo('/scores')"
