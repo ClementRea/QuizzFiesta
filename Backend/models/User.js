@@ -37,6 +37,30 @@ const userSchema = new mongoose.Schema({
   team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team'
+  },
+  refreshTokens: [{
+      tokenHash: String, // Hash du token pour sécurité
+      family: String,    // Famille de tokens pour détecter la réutilisation
+      createdAt: {
+          type: Date,
+          default: Date.now
+      },
+      expiresAt: {
+          type: Date,
+          default: function() { return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); } // 7 jours
+      },
+      lastUsed: Date,
+      userAgent: String,
+      ipAddress: String
+  }],
+  tokenVersion: {
+      type: Number,
+      default: 0
+  },
+  suspiciousActivity: {
+      detected: { type: Boolean, default: false },
+      lastDetection: Date,
+      reason: String
   }
 }, {
   timestamps: true

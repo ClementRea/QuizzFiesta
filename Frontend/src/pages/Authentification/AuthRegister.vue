@@ -149,7 +149,7 @@ const submitForm = async (type) => {
         password: password.value,
       })
 
-      AuthService.setToken(response.data.token)
+      AuthService.setTokens(response.data.accessToken, response.data.refreshToken)
 
       router.push('/accueil')
     } catch (error) {

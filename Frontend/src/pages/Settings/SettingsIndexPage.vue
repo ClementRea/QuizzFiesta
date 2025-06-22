@@ -46,7 +46,7 @@ const router = useRouter()
 const logout = async () => {
   try {
     await axios.post('http://localhost:3000/api/auth/logout')
-    AuthService.clearToken()
+    AuthService.clearTokens()
     router.push('/login')
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error)
