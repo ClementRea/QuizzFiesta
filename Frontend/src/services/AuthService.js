@@ -3,29 +3,36 @@ import axios from 'axios'
 const AuthService = {
   // On vérifie si l'utilisateur est authentifié
   isAuthenticated() {
-    return !!localStorage.getItem('authToken')
+    return !!localStorage.getItem('accessToken')
   },
 
-  // On configure le token d'authentification
-  setToken(token) {
-    localStorage.setItem('authToken', token)
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  // On configure les tokens d'authentification  
+  setTokens(accessToken, refreshToken) {
+    localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('refreshToken', refreshToken)
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
   },
 
-  //On récupère le token d'authentification
-  getToken() {
-    return localStorage.getItem('authToken');
+  //On récupère l'access token
+  getAccessToken() {
+    return localStorage.getItem('accessToken');
   },
 
-  // On supprime le token d'authentification
-  clearToken() {
-    localStorage.removeItem('authToken')
+  //On récupère le refresh token
+  getRefreshToken() {
+    return localStorage.getItem('refreshToken');
+  },
+
+  // On supprime les tokens
+  clearTokens() {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
     delete axios.defaults.headers.common['Authorization']
   },
 
   // On vérifie la validité du token
   async verifyToken() {
-    const token = localStorage.getItem('authToken')
+    const token = localStorage.getItem('accessToken')
     if (!token) return false
 
     try {
@@ -33,7 +40,7 @@ const AuthService = {
       const response = await axios.get('http://localhost:3000/api/user/getMe')
       return response.data.status === 'success'
     } catch {
-      this.clearToken()
+      this.clearTokens()
       return false
     }
   }

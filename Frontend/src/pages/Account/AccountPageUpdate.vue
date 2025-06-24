@@ -206,7 +206,6 @@ const actionButtons = [
     class: 'text-light20 q-pa-sm col-5',
     ariaLabel: 'Sauvegarder les modifications',
     title: 'Enregistrer les modifications du profil',
-    disabled: computed(() => !isFormValid.value),
   },
 ]
 
@@ -215,7 +214,6 @@ const isValidEmail = (email) => {
   return emailRegex.test(email)
 }
 
-// Validation du formulaire
 const isFormValid = computed(() => {
   // Vérification des champs de base
   const basicFieldsValid =
@@ -317,7 +315,7 @@ const handleAction = async (action) => {
       // Envoyer les données avec le fichier
       await axios.put('http://localhost:3000/api/user/updateMe', formData, {
         headers: {
-          Authorization: `Bearer ${AuthService.getToken()}`,
+          Authorization: `Bearer ${AuthService.getAccessToken()}`,
           'Content-Type': 'multipart/form-data', // Important pour FormData
         },
       })

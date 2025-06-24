@@ -4,7 +4,13 @@
       <BackArrow v-if="$route.meta.showBackArrow" />
       <span class="text-h4 text-dark90 text-bold q-ma-none">Profil</span>
     </div>
-    <q-icon name="mdi-cog" color="dark90" size="lg" @click="router.push('/settings')" />
+    <q-icon
+      name="mdi-cog"
+      color="dark90"
+      class="cursor-pointer"
+      size="lg"
+      @click="router.push('/settings')"
+    />
   </div>
 </template>
 

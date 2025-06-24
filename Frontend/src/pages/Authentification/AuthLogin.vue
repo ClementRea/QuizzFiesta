@@ -101,7 +101,7 @@ const submitForm = async (type) => {
         password: password.value,
       })
 
-      AuthService.setToken(response.data.token)
+      AuthService.setTokens(response.data.accessToken, response.data.refreshToken)
 
       const redirectPath = route.query.redirect || '/accueil'
       router.push(redirectPath)

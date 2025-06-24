@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('../routes/authRoutes');
 const userRoutes = require('../routes/usersRoutes');
 const quizRoutes = require('../routes/quizRoutes');
+const organisationRoutes = require('../routes/organisationRoutes');
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/organisation', organisationRoutes);
 // /api/quiz : gestion des quiz
 // /api/users : gestion des utilisateurs
 // /api/teams : gestion des équipes
