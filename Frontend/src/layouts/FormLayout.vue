@@ -1,7 +1,6 @@
 <template>
   <div class="column q-pa-md q-pt-lg">
     <div v-if="showTitle" class="row items-center q-mb-xl">
-      <BackArrow v-if="$route.meta.showBackArrow" />
       <span class="text-h4 text-dark80 text-bold q-ma-none">{{ title }}</span>
     </div>
 
@@ -75,8 +74,6 @@
 </template>
 
 <script setup>
-import BackArrow from 'src/components/BackArrow.vue'
-
 const props = defineProps({
   title: {
     type: String,
@@ -125,6 +122,7 @@ const onButtonClick = (action) => {
 }
 
 const isButtonDisabled = (button) => {
+  // Si le bouton a une propriété disabled explicite, on l'utilise
   if (button.disabled !== undefined) {
     return button.disabled
   }
@@ -134,6 +132,12 @@ const isButtonDisabled = (button) => {
     return true
   }
 
+  // Pour les boutons custom (actionType='custom'), on désactive le bouton 'save' si disabledSubmit est true
+  if (props.actionType === 'custom' && button.action === 'save') {
+    return props.disabledSubmit
+  }
+
+  // Pour les autres cas (login/register), on utilise la logique originale
   return props.disabledSubmit && props.actionType === button.action
 }
 </script>

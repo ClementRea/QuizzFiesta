@@ -40,7 +40,6 @@ import Avatar from 'src/components/GetAvatar.vue'
 const user = ref(null)
 const loading = ref(true)
 const error = ref(null)
-const avatarPreview = ref(null)
 const router = useRouter()
 const $q = useQuasar()
 

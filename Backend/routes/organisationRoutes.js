@@ -5,14 +5,18 @@ const { protect } = require('../middlewares/authMiddleware');
 
 // POST
 router.post('/create', protect, organisationController.createOrganisation);
-router.post('/update/:id', organisationController.updateOrganisation);
-router.post('/addMembers/:id', organisationController.addMembersToOrganisation);
-router.post('/removeMembers/:id', organisationController.removeMembersFromOrganisation);
+
+// PUT
+router.put('/update/:id', protect, organisationController.updateOrganisation);
+router.put('/members/add/:id', protect, organisationController.addMembersToOrganisation);
+router.put('/members/remove/:id', protect, organisationController.removeMembersFromOrganisation);
 
 // DELETE
-router.delete('/:id', organisationController.deleteOrganisation);
+router.delete('/:id', protect, organisationController.deleteOrganisation);
 
 // GET
 router.get('/', organisationController.getOrganisations);
+router.get('/myOrganisations', protect, organisationController.getMyOrganisations);
 router.get('/:id', organisationController.getOrganisationById);
-router.get('/myOrganisations', organisationController.getMyOrganisations);
+
+module.exports = router;

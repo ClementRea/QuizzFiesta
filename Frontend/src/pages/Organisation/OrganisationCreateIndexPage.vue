@@ -2,6 +2,7 @@
   <div class="full-width">
     <FormLayout
       title="Créer une organisation"
+      actionType="custom"
       :show-actions="true"
       :actionButtons="actionButtons"
       :disabledSubmit="!isFormValid"
@@ -59,6 +60,7 @@ import axios from 'axios'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import UploadFiles from 'src/components/UploadFiles.vue'
 import OrganisationAvatar from 'src/components/GetOrganisationAvatar.vue'
+import AuthService from 'src/services/AuthService'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -71,8 +73,23 @@ const form = ref({
 const showValidation = ref(false)
 const uploadFilesDialog = ref(false)
 const logoPreviewUrl = ref(null)
+const logoFile = ref(null)
 
-const isFormValid = computed(() => form.value.name.trim() !== '')
+const onLogoSelected = (file) => {
+  logoFile.value = file
+
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      logoPreviewUrl.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const isFormValid = computed(() => {
+  return form.value.name.trim() !== ''
+})
 
 const actionButtons = [
   {
@@ -90,8 +107,6 @@ const actionButtons = [
     class: 'text-light20 q-pa-sm col-5',
     ariaLabel: "Créer l'organisation",
     title: "Finaliser la création de l'organisation",
-    disabled: !isFormValid.value,
-    disabledTooltip: "Le nom de l'organisation est obligatoire",
   },
 ]
 
@@ -100,21 +115,69 @@ const handleAction = async (action) => {
     router.push('/accueil')
     return
   }
-  if (action === 'save' && isFormValid.value) {
+  if (action === 'save') {
     try {
-      const payload = {
-        name: form.value.name,
-        description: form.value.description,
-        logoUrl: form.value.logoUrl || undefined,
+      // Vérifier l'authentification
+      if (!AuthService.isAuthenticated()) {
+        $q.notify({
+          type: 'negative',
+          message: 'Vous devez être connecté pour créer une organisation',
+          position: 'top',
+        })
+        router.push('/login')
+        return
       }
-      await axios.post('http://localhost:3000/api/organisation', payload, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
+
+      const formData = new FormData()
+      formData.append('name', form.value.name.trim())
+      formData.append('description', form.value.description.trim())
+      if (logoFile.value) {
+        formData.append('logo', logoFile.value)
+      }
+
+      const response = await axios.post('http://localhost:3000/api/organisation/create', formData, {
+        headers: {
+          Authorization: `Bearer ${AuthService.getAccessToken()}`,
+          'Content-Type': 'multipart/form-data',
+        },
       })
-      $q.notify({ type: 'positive', message: 'Organisation créée avec succès !', position: 'top' })
-      router.push('/accueil')
+
+      if (response.data.status === 'success') {
+        $q.notify({
+          type: 'positive',
+          message: response.data.message || 'Organisation créée avec succès !',
+          position: 'top',
+        })
+        router.push('/accueil')
+      }
     } catch (error) {
-      $q.notify({ type: 'negative', message: 'Erreur lors de la création', position: 'top' })
+      if (error.response?.status === 401) {
+        $q.notify({
+          type: 'negative',
+          message: 'Session expirée, veuillez vous reconnecter',
+          position: 'top',
+        })
+        AuthService.clearTokens()
+        router.push('/login')
+      } else if (error.response?.status === 400) {
+        $q.notify({
+          type: 'negative',
+          message: error.response.data.message || 'Données invalides',
+          position: 'top',
+        })
+      } else if (error.response?.status === 413) {
+        $q.notify({
+          type: 'negative',
+          message: 'Le fichier logo est trop volumineux (max 5MB)',
+          position: 'top',
+        })
+      } else {
+        $q.notify({
+          type: 'negative',
+          message: error.response?.data?.message || "Erreur lors de la création de l'organisation",
+          position: 'top',
+        })
+      }
       console.error(error)
     }
   } else {
