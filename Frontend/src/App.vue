@@ -1,17 +1,24 @@
 <template>
-  <div class="main-container">
-    <router-view />
-    <Footer v-if="$route.meta.showFooter" />
+  <div id="q-app">
+    <q-layout view="hHh lpR fFf">
+      <AppHeader v-if="$route.meta.showHeader" />
+
+      <router-view />
+    </q-layout>
   </div>
 </template>
 
 <script setup>
-import Footer from 'src/layouts/AppFooter.vue'
+import AppHeader from 'src/components/MainNavbar.vue'
 </script>
 
-<style scoped>
-.main-container {
+<style>
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+#q-app {
   min-height: 100vh;
-  padding-bottom: 90px;
 }
 </style>

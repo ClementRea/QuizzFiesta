@@ -1,5 +1,4 @@
 <template>
-  <AcountHeader />
   <div class="bg-light10 full-width" style="border-radius: 20px 20px 0px 0px">
     <div class="column flex flex-center q-gutter-y-md">
       <div style="width: 100%" class="flex justify-center">
@@ -34,7 +33,6 @@ import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
 import { useQuasar } from 'quasar'
 import AccountToggle from '../../components/AccountToggle.vue'
-import AcountHeader from '../../components/AccountHeader.vue'
 import Avatar from 'src/components/GetAvatar.vue'
 
 const user = ref(null)

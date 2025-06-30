@@ -5,8 +5,6 @@
         <span class="text-h6 text-dark90 text-bold">Bonjour {{ userData.userName }} !</span>
         <span class="text-body1 text-dark90">Trouvez des quiz ici</span>
       </div>
-
-      <Avatar :avatarUrl="userData.avatar" :size="$q.screen.xs ? 'sm' : 'md'" />
     </div>
   </div>
   <div>
@@ -43,7 +41,6 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import axios from 'axios'
-import Avatar from 'src/components/GetAvatar.vue'
 
 const $q = useQuasar()
 

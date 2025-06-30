@@ -8,7 +8,6 @@
         border: '1px solid black',
         borderRadius: '16px',
       }"
-      @click="router.push('/account')"
     >
       <q-img
         :src="processedAvatarUrl"

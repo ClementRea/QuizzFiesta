@@ -1,6 +1,5 @@
 <template>
   <div class="q-pa-md">
-    <BackArrow />
     <div class="flex flex-center q-mt-xl">
       <q-card class="q-pa-lg shadow-2" style="max-width: 400px; width: 100%">
         <div class="text-h6 text-center q-mb-md">Actions rapides</div>

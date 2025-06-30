@@ -1,7 +1,6 @@
 <template>
   <div class="formLayout">
     <FormLayout
-      title="Editer mon profil"
       @action="handleAction"
       actionType="custom"
       :actionButtons="actionButtons"
