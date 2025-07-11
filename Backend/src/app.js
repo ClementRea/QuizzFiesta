@@ -23,7 +23,14 @@ app.use('/avatars', (req, res, next) => {
   res.removeHeader('Cross-Origin-Resource-Policy');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
-}, express.static(path.join(__dirname, '../public/avatars'))); 
+}, express.static(path.join(__dirname, '../public/avatars')));
+
+//On retire le header Cross-Origin-Resource-Policy pour les logos
+app.use('/logos', (req, res, next) => {
+  res.removeHeader('Cross-Origin-Resource-Policy');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../public/logos')));
 
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:9000',

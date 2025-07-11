@@ -22,14 +22,55 @@
           style="min-height: 400px"
         >
           <!-- General information -->
-          <div v-if="currentStep === 0" class="general-info-step">
+          <div v-if="currentStep === 0" class="flex column">
             <h5 class="text-dark80 q-mb-md q-ma-none">Informations générales</h5>
+
+            <!-- Logo upload section -->
+            <div class="q-mb-md">
+              <!-- Logo preview above button -->
+              <div v-if="logoPreviewUrl" class="flex flex-center q-mb-md">
+                <div class="logo-preview relative-position">
+                  <q-img
+                    :src="logoPreviewUrl"
+                    style="height: 100px; width: 100px; border-radius: 12px"
+                    fit="cover"
+                  />
+                  <q-btn
+                    round
+                    dense
+                    icon="close"
+                    size="sm"
+                    color="negative"
+                    class="absolute-top-right"
+                    style="margin: -8px"
+                    @click="removeLogo"
+                  />
+                </div>
+              </div>
+
+              <!-- Button to choose logo -->
+              <div class="flex flex-center">
+                <q-btn
+                  color="primary"
+                  outline
+                  icon="add_photo_alternate"
+                  :label="logoFile ? 'Changer le logo' : 'Choisir un logo'"
+                  @click="uploadFilesDialog = true"
+                />
+              </div>
+            </div>
+
+            <UploadFiles
+              v-model="uploadFilesDialog"
+              title="Logo du quiz"
+              @selected="onLogoSelected"
+            />
 
             <q-input
               v-model="quizData.title"
               label="Titre du quiz *"
               outlined
-              class="custom-border q-mb-md"
+              class="q-mb-md"
               :error="!quizData.title && showValidation"
               error-message="Le titre est obligatoire"
             />
@@ -40,7 +81,7 @@
               type="textarea"
               rows="3"
               outlined
-              class="custom-border q-mb-md"
+              class="q-mb-md"
               :error="!quizData.description && showValidation"
               error-message="La description est obligatoire"
             />
@@ -168,10 +209,11 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import axios from 'axios'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import StepProgressBar from 'src/components/StepProgressBar.vue'
 import QuestionTypeSelector from 'src/components/QuestionTypeSelector.vue'
+import UploadFiles from 'src/components/UploadFiles.vue'
+import QuizService from 'src/services/QuizService'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -185,8 +227,28 @@ const quizSteps = [
 
 const currentStep = ref(0)
 const showValidation = ref(false)
+const uploadFilesDialog = ref(false)
+const logoFile = ref(null)
+const logoPreviewUrl = ref(null)
 
-// Quiz data (only fields required)
+const onLogoSelected = (file) => {
+  logoFile.value = file
+
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      logoPreviewUrl.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const removeLogo = () => {
+  logoFile.value = null
+  logoPreviewUrl.value = null
+}
+
+// Quiz data
 const quizData = ref({
   title: '',
   description: '',
@@ -336,7 +398,8 @@ const handleAction = async (action) => {
       const payload = {
         title: quizData.value.title,
         description: quizData.value.description,
-        startDate: new Date(), // required by Quiz model
+        startDate: new Date(),
+        logo: logoFile.value,
         questions: quizData.value.questions.map((question) => ({
           content: question.content,
           type: question.type,
@@ -346,11 +409,7 @@ const handleAction = async (action) => {
         })),
       }
 
-      await axios.post('http://localhost:3000/api/quiz/create', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      await QuizService.createQuiz(payload)
 
       $q.notify({
         type: 'positive',

@@ -62,7 +62,6 @@ const file = ref(null)
 const imagePreview = ref(null)
 const isOpen = ref(props.modelValue)
 
-// Surveiller les changements de la prop modelValue
 watch(
   () => props.modelValue,
   (newVal) => {
@@ -70,7 +69,6 @@ watch(
   },
 )
 
-// Émettre des événements lorsque le dialogue se ferme
 watch(
   () => isOpen.value,
   (newVal) => {
@@ -81,7 +79,6 @@ watch(
   },
 )
 
-// Fonction pour générer la prévisualisation
 const onFileSelected = () => {
   if (!file.value) {
     imagePreview.value = null
@@ -95,7 +92,6 @@ const onFileSelected = () => {
   reader.readAsDataURL(file.value)
 }
 
-// Fonction pour confirmer la sélection et renvoyer le fichier au parent
 const confirmSelection = () => {
   if (file.value) {
     emit('selected', file.value)

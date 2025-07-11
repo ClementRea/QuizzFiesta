@@ -7,6 +7,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Searchbar -->
   <div>
     <q-input
       aria-placeholder="Rechercher un quiz"
@@ -22,16 +24,43 @@
     </q-input>
   </div>
 
-  <div class="flex justify-end">
+  <div class="row q-gutter-sm q-pa-md">
+    <!-- Bouton Rejoindre un quiz -->
+    <q-btn
+      label="Rejoindre un quiz"
+      color="primary"
+      rounded
+      class="col"
+      size="md"
+      icon="mdi-gamepad-variant"
+      no-caps
+      @click="router.push('/quiz/join')"
+    />
+
+    <!-- Bouton Créer un quiz -->
     <q-btn
       label="Créer un quiz"
       color="dark80"
       rounded
-      class="q-ma-md"
-      text-color="light20"
+      class="col"
       size="md"
       icon="mdi-plus"
+      no-caps
       @click="router.push('/quiz/create')"
+    />
+  </div>
+
+  <!-- Bouton Gérer mes quiz -->
+  <div class="q-px-md q-pb-md">
+    <q-btn
+      label="Gérer mes Quiz"
+      color="secondary"
+      rounded
+      class="full-width"
+      size="md"
+      icon="mdi-cog"
+      no-caps
+      @click="router.push('/quiz/manage')"
     />
   </div>
 </template>

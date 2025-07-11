@@ -32,6 +32,9 @@ const quizSchema = new mongoose.Schema({
   },
   joinCode: {
     type: String,
+  },
+  logo: {
+    type: String,
   }
 })
 

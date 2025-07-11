@@ -20,15 +20,15 @@
   >
     <div v-if="showImage" class="relative-position overflow-hidden">
       <q-img
-        v-if="object.image"
-        :src="object.image"
+        v-if="getImageUrl(object)"
+        :src="getImageUrl(object)"
         :ratio="imageRatio"
         :style="{
           transition: 'transform 0.3s ease',
           transform: isHovered && clickable ? 'scale(1.05)' : 'scale(1)',
         }"
         spinner-color="primary"
-        :alt="object.title"
+        :alt="object.title || object.name"
       >
         <template #error>
           <div class="absolute-full flex flex-center bg-grey-3">
@@ -476,6 +476,53 @@ const isHovered = ref(false)
 const internalGeneratingCode = ref(false)
 const internalLoading = ref(false)
 
+// Méthode pour obtenir l'URL complète de l'image (inspirée de GetAvatar.vue)
+const getImageUrl = (obj) => {
+  if (!obj) return null
+
+  // Priorité : logo -> image -> avatar
+  const imageField = obj.logo || obj.image || obj.avatar
+
+  if (!imageField) return null
+
+  // Si c'est déjà une URL complète (commence par http)
+  if (
+    typeof imageField === 'string' &&
+    (imageField.startsWith('http://') || imageField.startsWith('https://'))
+  ) {
+    return imageField
+  }
+
+  // Si c'est un nom de fichier, construire l'URL relative au backend
+  if (typeof imageField === 'string') {
+    // Déterminer le dossier selon le type d'objet et le champ
+    let folder = 'logos' // par défaut
+
+    if (obj.logo) {
+      folder = 'logos'
+    } else if (obj.avatar) {
+      folder = 'avatars'
+    } else if (obj.image) {
+      // Pour d'autres types d'images, déterminer selon le contexte
+      folder =
+        detectedObjectType.value === 'quiz'
+          ? 'logos'
+          : detectedObjectType.value === 'user'
+            ? 'avatars'
+            : 'images'
+    }
+
+    // Utiliser une URL relative qui fonctionnera en dev et prod
+    // En supposant que le backend et frontend sont sur le même domaine en prod
+    const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
+    const protocol = window.location.protocol
+    const hostname = window.location.hostname
+
+    return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
+  }
+
+  return null
+}
 const handleHover = (state) => {
   if (props.clickable) {
     isHovered.value = state
@@ -778,7 +825,10 @@ const iconSize = computed(() => {
   return sizes[props.size]
 })
 
-const showImage = computed(() => props.size !== 'xs' || props.object.image)
+const showImage = computed(() => {
+  // Toujours montrer la section image si on a une image/logo/avatar OU si la taille n'est pas xs
+  return props.size !== 'xs' || getImageUrl(props.object)
+})
 const showSubtitle = computed(() => props.size !== 'xs')
 const showDescription = computed(() => ['md', 'lg', 'xl'].includes(props.size))
 const showMetadata = computed(() => props.size !== 'xs')

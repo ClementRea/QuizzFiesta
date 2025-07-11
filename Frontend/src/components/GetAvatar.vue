@@ -21,10 +21,7 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
 import { computed } from 'vue'
-
-const router = useRouter()
 
 const props = defineProps({
   avatarUrl: {
@@ -59,7 +56,14 @@ const processedAvatarUrl = computed(() => {
 
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
 
-  if (avatar.includes('avatar-')) return `http://localhost:3000/avatars/${avatar}`
+  if (avatar.includes('avatar-')) {
+    // Utiliser une URL dynamique qui fonctionnera en dev et prod
+    const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
+    const protocol = window.location.protocol
+    const hostname = window.location.hostname
+
+    return `${protocol}//${hostname}${backendPort}/avatars/${avatar}`
+  }
 
   return `/src/assets/avatar/${avatar}`
 })

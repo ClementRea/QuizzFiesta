@@ -32,15 +32,6 @@
         <q-btn
           flat
           no-caps
-          :class="{ 'text-primary': isActive('/quiz'), 'text-dark': !isActive('/quiz') }"
-          class="text-weight-medium"
-          @click="router.push('/quiz')"
-        >
-          Quiz
-        </q-btn>
-        <q-btn
-          flat
-          no-caps
           :class="{ 'text-primary': isActive('/scores'), 'text-dark': !isActive('/scores') }"
           class="text-weight-medium"
           @click="router.push('/scores')"

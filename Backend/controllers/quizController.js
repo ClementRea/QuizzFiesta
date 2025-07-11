@@ -1,7 +1,9 @@
+const User = require('../models/User');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
-const mongoose = require('mongoose');
+const LobbyParticipant = require('../models/LobbyParticipant');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 // Filtrer les champs
 const filterObj = (obj, ...allowedFields) => {
@@ -20,7 +22,13 @@ const generateJoinCode = () => {
 // Créer un quiz
 exports.quizCreate = async (req, res, next) => {
   try {
-    if (!req.body.questions || req.body.questions.length === 0) {
+    // Parser les questions si elles sont en format JSON string (avec FormData)
+    let questions = req.body.questions;
+    if (typeof questions === 'string') {
+      questions = JSON.parse(questions);
+    }
+
+    if (!questions || questions.length === 0) {
       return res.status(400).json({
         status: 'error',
         message: 'Un quiz doit contenir au moins une question'
@@ -41,23 +49,28 @@ exports.quizCreate = async (req, res, next) => {
 
     quizData.createdBy = req.user.id;
     
+    // Ajouter le logo si un fichier a été uploadé
+    if (req.file) {
+      quizData.logo = req.file.filename;
+    }
+    
     if (quizData.isPublic) {
       quizData.joinCode = generateJoinCode();
     }
 
-    // on créer d'abor le quiz, pour obtenir son id et ensuite lui assginer des questions
+    // on créer d'abord le quiz, pour obtenir son id et ensuite lui assigner des questions
     const quiz = await Quiz.create(quizData);
 
     //*****QUESTIONS*****///
-    const questionPromises = req.body.questions.map(async (questionData) => {
+    const questionPromises = questions.map(async (questionData) => {
       questionData.quizId = quiz._id;
       
       return await Question.create(questionData);
     });
 
-    const questions = await Promise.all(questionPromises);
+    const createdQuestions = await Promise.all(questionPromises);
     
-    quiz.questions = questions.map(question => question._id);
+    quiz.questions = createdQuestions.map(question => question._id);
     await quiz.save();
 
     res.status(201).json({
@@ -207,7 +220,18 @@ exports.getQuizById = async (req, res, next) => {
       });
     }
 
-    if (!quiz.isPublic && quiz.createdBy._id.toString() !== req.user.id && !req.user.isAdmin) {
+    // Vérifications d'autorisation
+    const isCreator = quiz.createdBy._id.toString() === req.user.id;
+    const isAdmin = req.user.isAdmin;
+    const isPublic = quiz.isPublic;
+    
+    // Vérifier si l'utilisateur est dans le lobby (a rejoint via le code)
+    const isInLobby = await LobbyParticipant.findOne({
+      quizId: quiz._id,
+      userId: req.user.id
+    });
+
+    if (!isPublic && !isCreator && !isAdmin && !isInLobby) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à accéder à ce quiz'
@@ -230,25 +254,18 @@ exports.getQuizById = async (req, res, next) => {
 exports.getQuizByJoinCode = async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({ 
-      joinCode: req.params.joinCode,
-      isPublic: true 
-    });
+      joinCode: req.params.joinCode
+    }).populate('createdBy', 'userName');
 
     if (!quiz) {
       return res.status(404).json({
         status: 'error',
-        message: 'Quiz non trouvé ou non public'
+        message: 'Quiz non trouvé avec ce code'
       });
     }
 
-    const now = new Date();
-    if (quiz.startDate > now || (quiz.endDate && quiz.endDate < now)) {
-      return res.status(403).json({
-        status: 'error',
-        message: 'Ce quiz n\'est pas actuellement disponible'
-      });
-    }
-
+    // Si le quiz a un code, cela signifie qu'il est "lancé" et accessible
+    // Peu importe s'il est public ou privé, le code donne accès
     res.status(200).json({
       status: 'success',
       data: {
@@ -257,6 +274,62 @@ exports.getQuizByJoinCode = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error in getQuizByJoinCode:', error);
+    next(error);
+  }
+};
+
+// Générer un code de partage pour un quiz
+exports.generateJoinCode = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    if (quiz.isPublic) {
+    } else {
+      if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Seul le créateur peut lancer ce quiz privé'
+        });
+      }
+    }
+
+    // Générer un nouveau code (même si un existe déjà)
+    let newCode;
+    let isUnique = false;
+    
+    // S'assurer que le code est unique
+    while (!isUnique) {
+      newCode = generateJoinCode();
+      const existingQuiz = await Quiz.findOne({ joinCode: newCode });
+      if (!existingQuiz) {
+        isUnique = true;
+      }
+    }
+
+    quiz.joinCode = newCode;
+    await quiz.save();
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        joinCode: quiz.joinCode,
+        quiz: {
+          _id: quiz._id,
+          title: quiz.title,
+          description: quiz.description,
+          isPublic: quiz.isPublic
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in generateJoinCode:', error);
     next(error);
   }
 };
@@ -366,5 +439,319 @@ exports.deleteQuiz = async (req, res, next) => {
   } catch (error) {
     console.error('Error in deleteQuiz:', error);
     next(error);
+  }
+};
+
+// ========== MÉTHODES POUR LA SALLE D'ATTENTE (LOBBY) ==========
+
+// Map pour stocker les connexions SSE des participants
+const lobbyConnections = new Map();
+
+// Send a notification in the lobby
+function broadcastToLobby(quizId, message, excludeUserId = null) {
+  for (const [key, connection] of lobbyConnections.entries()) {
+    if (key.startsWith(`${quizId}-`)) {
+      const userId = key.split('-')[1];
+      
+      // Exclure l'utilisateur spécifié (celui qui a envoyé l'action)
+      if (excludeUserId && userId === excludeUserId) {
+        continue;
+      }
+
+      try {
+        connection.write(`data: ${JSON.stringify(message)}\n\n`);
+      } catch (error) {
+        console.error('Error broadcasting to connection:', error);
+        // Supprimer la connexion défaillante
+        lobbyConnections.delete(key);
+      }
+    }
+  }
+}
+
+// Join waiting room
+exports.joinLobby = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    // Verify if the quiz is accessible
+    if (!quiz.joinCode) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Ce quiz n\'est pas accessible publiquement'
+      });
+    }
+
+    // Create or update participant
+    const participantData = {
+      quizId: quiz._id,
+      userId: req.user.id,
+      userName: req.user.userName,
+      avatar: req.user.avatar,
+      isOrganizer: quiz.createdBy.toString() === req.user.id,
+      connectionStatus: 'connected',
+      lastSeen: new Date()
+    };
+
+    await LobbyParticipant.findOneAndUpdate(
+      { quizId: quiz._id, userId: req.user.id },
+      participantData,
+      { upsert: true, new: true }
+    );
+
+    //Get all players
+    const participants = await LobbyParticipant.find({ quizId: quiz._id })
+      .sort({ joinedAt: 1 });
+
+    // notify other players
+    broadcastToLobby(quiz._id, {
+      type: 'participant_joined',
+      participant: {
+        id: req.user.id,
+        userName: req.user.userName,
+        avatar: req.user.avatar,
+        isOrganizer: participantData.isOrganizer,
+        isReady: false,
+        connectionStatus: 'connected',
+        joinedAt: new Date()
+      }
+    }, req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        participants: participants.map(p => ({
+          id: p.userId,
+          userName: p.userName,
+          avatar: p.avatar,
+          isOrganizer: p.isOrganizer,
+          isReady: p.isReady,
+          connectionStatus: p.connectionStatus,
+          joinedAt: p.joinedAt
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error in joinLobby:', error);
+    next(error);
+  }
+};
+
+// leave waiting room
+exports.leaveLobby = async (req, res, next) => {
+  try {
+    const participant = await LobbyParticipant.findOneAndDelete({
+      quizId: req.params.id,
+      userId: req.user.id
+    });
+
+    if (participant) {
+      // Notify other players
+      broadcastToLobby(req.params.id, {
+        type: 'participant_left',
+        participantId: req.user.id,
+        userName: req.user.userName
+      }, req.user.id);
+
+      // Fermer la connexion SSE si elle existe
+      const connectionKey = `${req.params.id}-${req.user.id}`;
+      if (lobbyConnections.has(connectionKey)) {
+        const res = lobbyConnections.get(connectionKey);
+        res.end();
+        lobbyConnections.delete(connectionKey);
+      }
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Vous avez quitté la salle d\'attente'
+    });
+  } catch (error) {
+    console.error('Error in leaveLobby:', error);
+    next(error);
+  }
+};
+
+// Players list
+exports.getLobbyParticipants = async (req, res, next) => {
+  try {
+    const participants = await LobbyParticipant.find({ quizId: req.params.id })
+      .sort({ joinedAt: 1 });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        participants: participants.map(p => ({
+          id: p.userId,
+          userName: p.userName,
+          avatar: p.avatar,
+          isOrganizer: p.isOrganizer,
+          isReady: p.isReady,
+          connectionStatus: p.connectionStatus,
+          joinedAt: p.joinedAt
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error in getLobbyParticipants:', error);
+    next(error);
+  }
+};
+
+// Change the "ready" status of a players
+exports.setLobbyReady = async (req, res, next) => {
+  try {
+    const { isReady } = req.body;
+
+    const participant = await LobbyParticipant.findOneAndUpdate(
+      { quizId: req.params.id, userId: req.user.id },
+      { isReady, lastSeen: new Date() },
+      { new: true }
+    );
+
+    if (!participant) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Participant non trouvé dans la salle d\'attente'
+      });
+    }
+
+    broadcastToLobby(req.params.id, {
+      type: 'participant_ready_changed',
+      participantId: req.user.id,
+      isReady
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: { isReady }
+    });
+  } catch (error) {
+    console.error('Error in setLobbyReady:', error);
+    next(error);
+  }
+};
+
+// Start quiz
+exports.startQuizFromLobby = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    if (quiz.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Seul l\'organisateur peut démarrer le quiz'
+      });
+    }
+
+    const participantCount = await LobbyParticipant.countDocuments({ quizId: quiz._id });
+    
+    if (participantCount === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Il faut au moins un participant pour démarrer le quiz'
+      });
+    }
+
+    broadcastToLobby(req.params.id, {
+      type: 'quiz_starting',
+      message: 'Le quiz va commencer dans 3 secondes...',
+      quizId: quiz._id
+    });
+
+    quiz.actualStartDate = new Date();
+    await quiz.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Quiz démarré avec succès'
+    });
+
+    setTimeout(async () => {
+      await LobbyParticipant.deleteMany({ quizId: quiz._id });
+      for (const [key, connection] of lobbyConnections.entries()) {
+        if (key.startsWith(`${quiz._id}-`)) {
+          connection.end();
+          lobbyConnections.delete(key);
+        }
+      }
+    }, 5000);
+
+  } catch (error) {
+    console.error('Error in startQuizFromLobby:', error);
+    next(error);
+  }
+};
+
+exports.getLobbyEvents = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    res.write('data: {"type":"connected","message":"Connexion établie"}\n\n');
+
+    // Stocker la connexion
+    const connectionKey = `${req.params.id}-${req.user.id}`;
+    lobbyConnections.set(connectionKey, res);
+
+    await LobbyParticipant.findOneAndUpdate(
+      { quizId: req.params.id, userId: req.user.id },
+      { connectionStatus: 'connected', lastSeen: new Date() }
+    );
+
+    req.on('close', async () => {
+      lobbyConnections.delete(connectionKey);
+      
+      await LobbyParticipant.findOneAndUpdate(
+        { quizId: req.params.id, userId: req.user.id },
+        { connectionStatus: 'disconnected', lastSeen: new Date() }
+      );
+
+      broadcastToLobby(req.params.id, {
+        type: 'participant_connection_changed',
+        participantId: req.user.id,
+        connectionStatus: 'disconnected'
+      }, req.user.id);
+    });
+
+    const pingInterval = setInterval(() => {
+      if (lobbyConnections.has(connectionKey)) {
+        res.write('data: {"type":"ping"}\n\n');
+      } else {
+        clearInterval(pingInterval);
+      }
+    }, 30000);
+
+  } catch (error) {
+    console.error('Error in getLobbyEvents:', error);
+    res.end();
   }
 };

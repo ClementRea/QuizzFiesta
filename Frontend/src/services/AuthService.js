@@ -1,29 +1,33 @@
 import axios from 'axios'
 
+// URL dynamique selon l'environnement
+const getApiBaseUrl = () => {
+  const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
+  const protocol = window.location.protocol
+  const hostname = window.location.hostname
+
+  return `${protocol}//${hostname}${backendPort}/api`
+}
+
 const AuthService = {
-  // On vérifie si l'utilisateur est authentifié
   isAuthenticated() {
     return !!localStorage.getItem('accessToken')
   },
 
-  // On configure les tokens d'authentification  
   setTokens(accessToken, refreshToken) {
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
   },
 
-  //On récupère l'access token
   getAccessToken() {
     return localStorage.getItem('accessToken');
   },
 
-  //On récupère le refresh token
   getRefreshToken() {
     return localStorage.getItem('refreshToken');
   },
 
-  // On supprime les tokens
   clearTokens() {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -37,11 +41,25 @@ const AuthService = {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      const response = await axios.get('http://localhost:3000/api/user/getMe')
+      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`)
       return response.data.status === 'success'
     } catch {
       this.clearTokens()
       return false
+    }
+  },
+
+  async getMe() {
+    const token = localStorage.getItem('accessToken')
+    if (!token) throw new Error('No access token')
+
+    try {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`)
+      return response.data
+    } catch (error) {
+      this.clearTokens()
+      throw error
     }
   }
 }
