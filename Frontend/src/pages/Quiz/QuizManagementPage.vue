@@ -39,15 +39,11 @@
           </q-btn>
         </div>
 
-        <div v-else class="q-gutter-md">
-          <ObjectLayout
+        <div v-else class="q-gutter-md flex row">
+          <QuizObject
             v-for="quiz in quizzes"
             :key="quiz._id"
-            :object="quiz"
-            size="md"
-            clickable
-            auto-actions
-            object-type="quiz"
+            :quiz="quiz"
             @updated="handleQuizUpdated"
             @deleted="handleQuizDeleted"
           />
@@ -62,7 +58,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
-import ObjectLayout from 'src/layouts/ObjectLayout.vue'
+import QuizObject from 'src/components/QuizObject.vue'
 
 const router = useRouter()
 const $q = useQuasar()
