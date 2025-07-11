@@ -81,7 +81,7 @@ export default defineConfig((/* ctx */) => {
       config: {
         notify: {
           position: 'bottom'
-        }
+        },
       },
 
       // iconSet: 'material-icons', // Quasar icon set
@@ -96,7 +96,8 @@ export default defineConfig((/* ctx */) => {
 
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Notify',
+        'Dialog'
       ]
     },
 
