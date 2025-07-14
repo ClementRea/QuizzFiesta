@@ -1,5 +1,5 @@
 <template>
-  <div class="question-type-selector">
+  <div class="question-type-selector" role="form" aria-label="Configuration de la question">
     <!-- Question type selector -->
     <q-select
       v-model="localQuestion.type"
@@ -12,6 +12,8 @@
       outlined
       class="custom-border q-mb-md"
       @update:model-value="onTypeChange"
+      aria-label="Choisir le type de question"
+      aria-describedby="question-type-help"
     />
 
     <!-- Question content -->
@@ -20,27 +22,48 @@
       label="Texte de la question *"
       outlined
       class="custom-border q-mb-md"
+      aria-label="Texte de la question"
+      aria-required="true"
     />
 
-    <div class="answers-section">
+    <div
+      class="answers-section"
+      role="group"
+      :aria-label="`Configuration des réponses pour ${getQuestionTypeLabel(localQuestion.type)}`"
+    >
       <!-- CLASSIC -->
-      <div v-if="localQuestion.type === 'CLASSIC'" class="classic-answers">
-        <div class="text-subtitle2 text-dark90 text-bold">Saisissez la réponse de la question</div>
+      <div
+        v-if="localQuestion.type === 'CLASSIC'"
+        class="classic-answers"
+        role="group"
+        aria-label="Réponse unique"
+      >
+        <div class="text-subtitle2 text-dark90 text-bold" id="classic-help">
+          Saisissez la réponse de la question
+        </div>
 
         <q-input
           v-model="localQuestion.answer[0].text"
           label="Réponse *"
           outlined
           class="custom-border"
+          aria-label="Réponse à la question"
+          aria-required="true"
+          aria-describedby="classic-help"
         />
       </div>
 
       <!-- MULTIPLE_CHOICE -->
-      <div v-if="localQuestion.type === 'MULTIPLE_CHOICE'" class="multiple-choice-answers">
+      <div
+        v-if="localQuestion.type === 'MULTIPLE_CHOICE'"
+        class="multiple-choice-answers"
+        role="group"
+        aria-label="Choix multiples"
+      >
         <div class="row items-center justify-between">
           <h6 class="text-dark80 q-ma-none">Choix de réponses</h6>
         </div>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
+        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg" id="multiple-choice-help">
           Cochez la ou les bonnes réponses. Au moins une réponse doit être correcte.
         </div>
 
@@ -48,18 +71,25 @@
           v-for="(answer, index) in localQuestion.answer"
           :key="index"
           class="row items-center q-mb-sm"
+          role="group"
+          :aria-label="`Choix ${index + 1}`"
         >
           <q-checkbox
             v-model="answer.isCorrect"
             class="q-mr-sm"
             color="dark80"
             :label="`Correct`"
+            :aria-label="`Marquer le choix ${index + 1} comme correct`"
+            tabindex="0"
           />
           <q-input
             v-model="answer.text"
             :label="`Choix ${index + 1} *`"
             outlined
             class="custom-border col"
+            :aria-label="`Texte du choix ${index + 1}`"
+            aria-required="true"
+            aria-describedby="multiple-choice-help"
           />
           <q-btn
             v-if="localQuestion.answer.length > 2"
@@ -71,6 +101,8 @@
             @click="removeAnswer(index)"
             class="q-ml-sm"
             :title="`Supprimer le choix ${index + 1}`"
+            :aria-label="`Supprimer le choix ${index + 1}`"
+            tabindex="0"
           />
         </div>
         <div class="row justify-center q-mt-lg">
@@ -83,7 +115,13 @@
             @click="addAnswer"
             size="sm"
             :disable="localQuestion.answer.length >= 6"
+            tabindex="0"
+            aria-label="Ajouter un nouveau choix de réponse"
+            :aria-describedby="localQuestion.answer.length >= 6 ? 'max-choices-reached' : null"
           />
+          <div v-if="localQuestion.answer.length >= 6" id="max-choices-reached" class="sr-only">
+            Nombre maximum de choix atteint (6)
+          </div>
         </div>
       </div>
 
@@ -324,6 +362,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:question'])
+
+// Méthode utilitaire pour l'accessibilité
+const getQuestionTypeLabel = (type) => {
+  const typeMap = {
+    CLASSIC: 'Question classique',
+    MULTIPLE_CHOICE: 'Choix multiple',
+    ORDER: 'Mise en ordre',
+    ASSOCIATION: 'Association',
+    BLIND_TEST: 'Blind test',
+    FIND_INTRUDER: "Trouver l'intrus",
+  }
+  return typeMap[type] || type
+}
 
 // Available question types
 const questionTypeOptions = [

@@ -1,12 +1,17 @@
 <template>
-  <div class="column q-pa-md q-pt-lg">
+  <div class="column q-pa-md q-pt-lg" role="main">
     <div v-if="showTitle" class="row items-center q-mb-xl">
-      <span class="text-h4 text-dark80 text-bold q-ma-none">{{ title }}</span>
+      <h1 class="text-h4 text-dark80 text-bold q-ma-none">{{ title }}</h1>
     </div>
 
     <slot name="content"></slot>
 
-    <div v-if="showActions" class="row items-center justify-center q-pa-md q-mt-md q-gutter-x-md">
+    <div
+      v-if="showActions"
+      class="row items-center justify-center q-pa-md q-mt-md q-gutter-x-md"
+      role="group"
+      aria-label="Actions du formulaire"
+    >
       <slot name="before-actions"></slot>
 
       <template v-if="actionButtons.length > 0">
@@ -22,6 +27,7 @@
           :title="button.title"
           @click="onButtonClick(button.action)"
           :disable="isButtonDisabled(button)"
+          tabindex="0"
         >
           <q-tooltip v-if="isButtonDisabled(button) && button.disabledTooltip" class="bg-dark90">
             {{ button.disabledTooltip }}
@@ -47,6 +53,7 @@
             "
             @click="onSubmit(actionType === 'login' ? 'register' : 'login')"
             :disable="isButtonDisabled({ action: actionType === 'login' ? 'register' : 'login' })"
+            tabindex="0"
           />
           <!-- main Btn -->
           <q-btn
@@ -62,6 +69,7 @@
             "
             @click="onSubmit(actionType)"
             :disable="isButtonDisabled({ action: actionType })"
+            tabindex="0"
           >
             <q-tooltip v-if="isButtonDisabled({ action: actionType })" class="bg-dark90">
               {{ disabledSubmitMessage }}

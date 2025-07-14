@@ -20,10 +20,12 @@
         <div
           class="step-content q-pa-xl bg-light20 rounded-borders q-mt-lg"
           style="min-height: 400px"
+          role="region"
+          :aria-label="`Étape ${currentStep + 1}: ${quizSteps[currentStep]?.label}`"
         >
           <!-- General information -->
           <div v-if="currentStep === 0" class="flex column">
-            <h5 class="text-dark80 q-mb-md q-ma-none">Informations générales</h5>
+            <h2 class="text-dark80 q-mb-md q-ma-none">Informations générales</h2>
 
             <!-- Logo upload section -->
             <div class="q-mb-md">
@@ -70,9 +72,12 @@
               v-model="quizData.title"
               label="Titre du quiz *"
               outlined
-              class="q-mb-md"
+              class="q-mb-md custom-border"
               :error="!quizData.title && showValidation"
               error-message="Le titre est obligatoire"
+              aria-label="Titre du quiz"
+              aria-required="true"
+              tabindex="0"
             />
 
             <q-input
@@ -81,20 +86,28 @@
               type="textarea"
               rows="3"
               outlined
-              class="q-mb-md"
+              class="q-mb-md custom-border"
               :error="!quizData.description && showValidation"
               error-message="La description est obligatoire"
+              aria-label="Description du quiz"
+              aria-required="true"
+              tabindex="0"
             />
           </div>
 
           <!-- Create questions -->
           <div v-if="currentStep === 1" class="questions-step">
             <div class="row items-center justify-between q-mb-md">
-              <h5 class="text-dark80 q-ma-none">Création des questions</h5>
+              <h2 class="text-dark80 q-ma-none">Création des questions</h2>
             </div>
 
-            <div v-if="quizData.questions.length === 0" class="column flex-center q-pa-xl">
-              <q-icon name="quiz" size="48px" class="text-normal60 q-mb-md" />
+            <div
+              v-if="quizData.questions.length === 0"
+              class="column flex-center q-pa-xl"
+              role="status"
+              aria-live="polite"
+            >
+              <q-icon name="quiz" size="48px" class="text-normal60 q-mb-md" aria-hidden="true" />
               <p class="text-normal60 q-mb-md">
                 Aucune question créée. Commencez par ajouter votre première question.
               </p>
@@ -103,13 +116,17 @@
                 icon="add"
                 label="Ajouter une question"
                 @click="addQuestionAndScroll"
+                tabindex="0"
+                aria-label="Ajouter la première question du quiz"
               />
             </div>
 
-            <div v-else>
+            <div v-else role="list" aria-label="Liste des questions du quiz">
               <div
                 v-for="(question, index) in quizData.questions"
                 :key="index"
+                role="listitem"
+                :aria-label="`Question ${index + 1}`"
                 class="q-mb-md bg-light20 rounded-borders q-pa-sm"
                 style="border: 1px solid #bdbdbd"
                 :ref="(el) => setQuestionRef(el, index)"

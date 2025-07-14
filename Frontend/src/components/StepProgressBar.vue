@@ -1,22 +1,38 @@
 <template>
-  <div class="step-progress-container q-mb-lg">
-    <div class="step-progress-bar">
+  <div class="step-progress-container q-mb-lg" role="region" aria-label="Progression des étapes">
+    <div
+      class="step-progress-bar"
+      role="progressbar"
+      :aria-valuenow="currentStep + 1"
+      :aria-valuemin="1"
+      :aria-valuemax="steps.length"
+      :aria-valuetext="`Étape ${currentStep + 1} sur ${steps.length}: ${steps[currentStep]?.label}`"
+    >
       <div
         v-for="(step, index) in steps"
         :key="step.id"
         class="step-item"
         :class="getStepClass(index)"
         @click="onStepClick(index)"
+        @keydown.enter="onStepClick(index)"
+        @keydown.space.prevent="onStepClick(index)"
+        :tabindex="isStepAccessible(index) ? 0 : -1"
+        role="button"
+        :aria-label="`Étape ${index + 1}: ${step.label}${isStepCompleted(index) ? ' - Terminée' : index === currentStep ? ' - En cours' : isStepAccessible(index) ? ' - Accessible' : ' - Non accessible'}`"
+        :aria-current="index === currentStep ? 'step' : false"
+        :aria-disabled="!isStepAccessible(index)"
       >
         <!-- Connector line (except for the last step) -->
         <div
           v-if="index < steps.length - 1"
           class="step-connector"
           :class="getConnectorClass(index)"
+          role="presentation"
+          aria-hidden="true"
         ></div>
 
         <!-- Step circle -->
-        <div class="step-circle">
+        <div class="step-circle" aria-hidden="true">
           <q-icon v-if="isStepCompleted(index)" name="check" size="18px" class="text-white" />
           <span v-else class="step-number" :class="getNumberClass(index)">
             {{ index + 1 }}
@@ -24,14 +40,18 @@
         </div>
 
         <!-- Step label -->
-        <div class="step-label">
+        <div class="step-label" aria-hidden="true">
           <span :class="getLabelClass(index)">{{ step.label }}</span>
         </div>
       </div>
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="step-navigation q-mt-xl row q-gutter-md justify-center">
+    <div
+      class="step-navigation q-mt-xl row q-gutter-md justify-center"
+      role="group"
+      aria-label="Navigation entre les étapes"
+    >
       <q-btn
         v-if="currentStep > 0"
         outline
@@ -41,6 +61,8 @@
         @click="goToPreviousStep"
         class="col-auto q-px-lg"
         icon="chevron_left"
+        tabindex="0"
+        aria-label="Aller à l'étape précédente"
       />
 
       <q-btn
@@ -52,8 +74,11 @@
         :disable="!isCurrentStepValid"
         class="col-auto q-px-lg"
         icon-right="chevron_right"
+        tabindex="0"
+        aria-label="Aller à l'étape suivante"
+        :aria-describedby="!isCurrentStepValid ? 'step-validation-message' : null"
       >
-        <q-tooltip v-if="!isCurrentStepValid" class="bg-dark90">
+        <q-tooltip v-if="!isCurrentStepValid" class="bg-dark90" id="step-validation-message">
           {{ validationMessage }}
         </q-tooltip>
       </q-btn>

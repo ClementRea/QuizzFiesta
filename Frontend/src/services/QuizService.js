@@ -1,7 +1,7 @@
 import axios from 'axios'
 import AuthService from './AuthService'
 
-// URL dynamique selon l'environnement
+// URL dynamique
 const getApiBaseUrl = () => {
   const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
   const protocol = window.location.protocol
@@ -10,16 +10,23 @@ const getApiBaseUrl = () => {
   return `${protocol}//${hostname}${backendPort}/api`
 }
 
-const API_URL = `${getApiBaseUrl()}/quiz`
-
 class QuizService {
   constructor() {
     this.api = axios.create({
-      baseURL: API_URL,
+      baseURL: getApiBaseUrl(),
     })
 
+    // Intercepteur de requête - Ajouter le token et vérifier l'expiration
     this.api.interceptors.request.use(
-      (config) => {
+      async (config) => {
+        // Vérifier et renouveler le token si nécessaire AVANT d'envoyer la requête
+        const isValid = await AuthService.ensureValidToken()
+        if (!isValid) {
+          // Rediriger vers la page de connexion si le renouvellement échoue
+          window.location.href = '/login'
+          return Promise.reject(new Error('Authentication failed'))
+        }
+
         const token = AuthService.getAccessToken()
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
@@ -29,21 +36,32 @@ class QuizService {
       (error) => Promise.reject(error)
     )
 
+    // Intercepteur de réponse - Gérer les erreurs 401
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
+        const originalRequest = error.config
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true
+
           try {
+            // Tentative de renouvellement du token
             await AuthService.refreshAccessToken()
             const newToken = AuthService.getAccessToken()
-            error.config.headers.Authorization = `Bearer ${newToken}`
-            return this.api.request(error.config)
+
+            // Réessayer la requête originale avec le nouveau token
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            return this.api.request(originalRequest)
           } catch (refreshError) {
-            AuthService.logout()
+            // Si le refresh échoue, rediriger vers la page de connexion
+            console.log('Token refresh failed, redirecting to login')
+            AuthService.clearTokens()
             window.location.href = '/login'
             return Promise.reject(refreshError)
           }
         }
+
         return Promise.reject(error)
       }
     )

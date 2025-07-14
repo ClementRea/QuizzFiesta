@@ -65,7 +65,7 @@ exports.register = async (req, res, next) => {
             status: 'success register',
             accessToken,
             refreshToken,
-            expiresIn: 15 * 60, // 15 minutes en secondes
+            expiresIn: 10 * 60, // 10 minutes en secondes
             data: {
                 user
             }
@@ -142,7 +142,7 @@ exports.login = async (req, res, next) => {
         status: 'success login',
         accessToken,
         refreshToken,
-        expiresIn: 15 * 60, // 15 minutes
+        expiresIn: 10 * 60, // 10 minutes
         data: {
             user
         }
@@ -260,7 +260,7 @@ exports.refreshToken = async (req, res, next) => {
       status: 'success',
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      expiresIn: 15 * 60 // 15 minutes
+      expiresIn: 10 * 60 // 10 minutes
     });
 
   } catch (error) {

@@ -3,6 +3,11 @@
     class="shadow-8 rounded-borders cursor-pointer"
     style="max-width: 450px; border-radius: 16px; overflow: hidden"
     bordered
+    tabindex="0"
+    role="button"
+    :aria-label="`${detectedObjectType === 'quiz' ? 'Quiz' : detectedObjectType === 'organisation' ? 'Organisation' : 'Élément'}: ${object.title || object.name}. ${object.description ? object.description.substring(0, 100) + '...' : ''}`"
+    @keydown.enter="handlePlay"
+    @keydown.space.prevent="handlePlay"
   >
     <!-- Image Header -->
     <div v-if="showImage" class="relative-position" style="height: 200px">
@@ -78,7 +83,11 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="row q-gutter-md q-mt-md items-center">
+      <div
+        class="row q-gutter-md q-mt-md items-center"
+        role="group"
+        aria-label="Actions disponibles"
+      >
         <!-- Primary Actions -->
         <q-btn
           v-if="object.joinCode && detectedObjectType === 'quiz'"
@@ -88,6 +97,8 @@
           label="Jouer"
           size="md"
           class="col-auto"
+          tabindex="0"
+          aria-label="Jouer au quiz"
           @click.stop="handlePlay"
         />
 
@@ -99,6 +110,8 @@
           label="Générer code"
           size="md"
           class="col-auto"
+          tabindex="0"
+          aria-label="Générer un code pour ce quiz"
           @click.stop="handleGenerateCode"
         />
 
@@ -110,6 +123,8 @@
           label="Rejoindre"
           size="md"
           class="col-auto"
+          tabindex="0"
+          aria-label="Rejoindre cette organisation"
           @click.stop="handleJoin"
         />
 
@@ -216,7 +231,6 @@ const handleGenerateCode = () => emit('generateCode', props.object)
 </script>
 
 <style scoped>
-/* Media queries for responsive design */
 @media (max-width: 600px) {
   .row.q-gutter-md {
     flex-direction: column !important;

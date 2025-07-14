@@ -14,7 +14,7 @@ class TokenService {
             },
             process.env.JWT_SECRET,
             { 
-                expiresIn: '15m',
+                expiresIn: '10m',
                 issuer: 'quizzfiesta',
                 audience: 'quizzfiesta-client'
             }

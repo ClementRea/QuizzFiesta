@@ -9,22 +9,23 @@
   </div>
 
   <!-- Searchbar -->
-  <div>
+  <div role="search" aria-label="Recherche de quiz">
     <q-input
-      aria-placeholder="Rechercher un quiz"
+      aria-label="Rechercher un quiz par nom ou catégorie"
       placeholder="Rechercher (Management, Jeux...)"
       outlined
       rounded
       bg-color="light20"
       class="q-pa-md custom-input-shadow"
+      tabindex="0"
     >
       <template v-slot:prepend>
-        <q-icon name="search" />
+        <q-icon name="search" aria-hidden="true" />
       </template>
     </q-input>
   </div>
 
-  <div class="row q-gutter-sm q-pa-md">
+  <div class="row q-gutter-sm q-pa-md" role="group" aria-label="Actions principales">
     <!-- Bouton Rejoindre un quiz -->
     <q-btn
       label="Rejoindre un quiz"
@@ -35,6 +36,8 @@
       icon="mdi-gamepad-variant"
       no-caps
       @click="router.push('/quiz/join')"
+      tabindex="0"
+      aria-label="Rejoindre un quiz existant avec un code"
     />
 
     <!-- Bouton Créer un quiz -->
@@ -47,6 +50,8 @@
       icon="mdi-plus"
       no-caps
       @click="router.push('/quiz/create')"
+      tabindex="0"
+      aria-label="Créer un nouveau quiz"
     />
   </div>
 
@@ -61,6 +66,8 @@
       icon="mdi-cog"
       no-caps
       @click="router.push('/quiz/manage')"
+      tabindex="0"
+      aria-label="Gérer et modifier mes quiz existants"
     />
   </div>
 </template>

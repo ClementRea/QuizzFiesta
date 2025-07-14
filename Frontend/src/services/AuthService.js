@@ -34,6 +34,62 @@ const AuthService = {
     delete axios.defaults.headers.common['Authorization']
   },
 
+  // Nouvelle méthode pour renouveler automatiquement l'access token
+  async refreshAccessToken() {
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+
+    try {
+      const response = await axios.post(`${getApiBaseUrl()}/auth/refresh-token`, {
+        refreshToken
+      })
+
+      if (response.data.status === 'success') {
+        // Sauvegarder les nouveaux tokens
+        this.setTokens(response.data.accessToken, response.data.refreshToken)
+        return response.data.accessToken
+      } else {
+        throw new Error('Failed to refresh token')
+      }
+    } catch (error) {
+      // Si le refresh échoue, nettoyer tous les tokens
+      this.clearTokens()
+      throw error
+    }
+  },
+
+  // Vérifier si le token est expiré ou proche de l'expiration
+  isTokenExpired() {
+    const token = this.getAccessToken()
+    if (!token) return true
+
+    try {
+      // Décoder le token JWT (partie payload)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const now = Date.now() / 1000
+
+      // Vérifier si le token expire dans les 2 prochaines minutes
+      return payload.exp <= (now)
+    } catch {
+      return true
+    }
+  },
+
+  // Méthode pour renouveler automatiquement si nécessaire
+  async ensureValidToken() {
+    if (this.isTokenExpired()) {
+      try {
+        await this.refreshAccessToken()
+        return true
+      } catch {
+        return false
+      }
+    }
+    return true
+  },
+
   // On vérifie la validité du token
   async verifyToken() {
     const token = localStorage.getItem('accessToken')

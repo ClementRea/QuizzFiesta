@@ -102,3 +102,44 @@ body {
   font-size: 14px;
 }
 
+// utils class for screen readers
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// visible focus styles
+button:focus-visible,
+.q-btn:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible:not(input):not(.q-input):not(.q-select):not(select):not(textarea) {
+  outline: 2px solid $primary !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+// improve contrast for interactive elements
+button:focus-visible,
+.q-btn:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid $primary !important;
+  outline-offset: 2px !important;
+}
+
+// All clickable elements should have a minimum size of 44px (WCAG 2.1 AA)
+.q-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
