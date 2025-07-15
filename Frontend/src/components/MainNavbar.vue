@@ -263,7 +263,7 @@ import Avatar from 'src/components/GetAvatar.vue'
 import BackArrow from 'src/components/BackArrow.vue'
 import logo from '../assets/logo_quiz_fiesta.svg'
 import AuthService from 'src/services/AuthService'
-import axios from 'axios'
+import UserService from 'src/services/UserService'
 
 const route = useRoute()
 const router = useRouter()
@@ -308,11 +308,11 @@ const isActive = (path) => {
 // Déconnexion
 const logout = async () => {
   try {
-    await axios.post('http://localhost:3000/api/auth/logout')
-    AuthService.clearTokens()
+    await AuthService.logout()
     router.push('/login')
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error)
+    router.push('/login')
   }
 }
 
@@ -320,12 +320,8 @@ const logout = async () => {
 const getUserData = async () => {
   try {
     if (AuthService.isAuthenticated()) {
-      const response = await axios.get('http://localhost:3000/api/user/getMe', {
-        headers: {
-          Authorization: `Bearer ${AuthService.getAccessToken()}`,
-        },
-      })
-      userAvatar.value = response.data.data.user.avatar
+      const response = await UserService.getMe()
+      userAvatar.value = response.data.user.avatar
     }
   } catch (error) {
     console.error('Erreur récupération utilisateur:', error)

@@ -42,6 +42,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node, // SSR, Electron, config files
+        ...globals.jest, // Jest globals pour les tests
         process: 'readonly', // process.env.*
         ga: 'readonly', // Google Analytics
         cordova: 'readonly',

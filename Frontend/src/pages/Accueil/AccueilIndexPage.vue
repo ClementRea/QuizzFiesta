@@ -76,7 +76,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import axios from 'axios'
+import UserService from 'src/services/UserService'
 
 const $q = useQuasar()
 
@@ -94,8 +94,8 @@ const getUser = async () => {
   error.value = null
 
   try {
-    const response = await axios.get('http://localhost:3000/api/user/getMe')
-    const user = response.data.data.user
+    const response = await UserService.getMe()
+    const user = response.data.user
 
     userData.value = {
       userName: user.userName || '',

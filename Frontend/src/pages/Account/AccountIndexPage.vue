@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import axios from 'axios'
+import UserService from 'src/services/UserService'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
@@ -51,8 +51,8 @@ const getUser = async () => {
       loading.value = true
       error.value = null
     }
-    const userData = await axios.get('http://localhost:3000/api/user/getMe')
-    user.value = userData.data.data.user
+    const userData = await UserService.getMe()
+    user.value = userData.data.user
   } catch (error) {
     console.error(error)
     error.value = error

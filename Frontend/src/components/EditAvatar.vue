@@ -3,18 +3,23 @@
 </template>
 
 <script setup>
-import axios from 'axios'
 import { ref } from 'vue'
-import AuthService from 'src/services/AuthService'
 import UploadFiles from './UploadFiles.vue'
 
 const EditAvatarDialog = ref(false)
 
-const handleAvatarSelected = async (file) => {
-  await axios.put('http://localhost:3000/api/user/updateMe', {
-    headers: {
-      Authorization: `Bearer ${AuthService.getToken()}`,
-    },
-  })
+// Définir les props et émissions
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const emit = defineEmits(['update:modelValue', 'selected'])
+
+const handleAvatarSelected = (file) => {
+  emit('selected', file)
+  emit('update:modelValue', false)
 }
 </script>
