@@ -1,7 +1,7 @@
 import axios from 'axios'
 import AuthService from './AuthService'
 
-// URL dynamique
+// Dynamic URL based on environment
 const getApiBaseUrl = () => {
   const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
   const protocol = window.location.protocol
@@ -15,56 +15,7 @@ class QuizService {
     this.api = axios.create({
       baseURL: getApiBaseUrl(),
     })
-
-    // Intercepteur de requête - Ajouter le token et vérifier l'expiration
-    this.api.interceptors.request.use(
-      async (config) => {
-        // Vérifier et renouveler le token si nécessaire AVANT d'envoyer la requête
-        const isValid = await AuthService.ensureValidToken()
-        if (!isValid) {
-          // Rediriger vers la page de connexion si le renouvellement échoue
-          window.location.href = '/login'
-          return Promise.reject(new Error('Authentication failed'))
-        }
-
-        const token = AuthService.getAccessToken()
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-      },
-      (error) => Promise.reject(error)
-    )
-
-    // Intercepteur de réponse - Gérer les erreurs 401
-    this.api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true
-
-          try {
-            // Tentative de renouvellement du token
-            await AuthService.refreshAccessToken()
-            const newToken = AuthService.getAccessToken()
-
-            // Réessayer la requête originale avec le nouveau token
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
-            return this.api.request(originalRequest)
-          } catch (refreshError) {
-            // Si le refresh échoue, rediriger vers la page de connexion
-            console.log('Token refresh failed, redirecting to login')
-            AuthService.clearTokens()
-            window.location.href = '/login'
-            return Promise.reject(refreshError)
-          }
-        }
-
-        return Promise.reject(error)
-      }
-    )
+    // Note: Authentication is handled globally by AuthService
   }
 
   async joinQuizByCode(joinCode) {
@@ -114,14 +65,14 @@ class QuizService {
 
   async createQuiz(quizData) {
     try {
-      // Si il y a un logo (fichier), utiliser FormData
+      // If there's a logo (file), use FormData
       if (quizData.logo && quizData.logo instanceof File) {
         const formData = new FormData()
 
-        // Ajouter le fichier logo
+        // Add the logo file
         formData.append('logo', quizData.logo)
 
-        // Ajouter les autres données du quiz
+        // Add other quiz data
         formData.append('title', quizData.title)
         formData.append('description', quizData.description)
         formData.append('startDate', quizData.startDate)
@@ -134,7 +85,7 @@ class QuizService {
         })
         return response.data
       } else {
-        // Sinon, envoyer en JSON classique
+        // Otherwise, send as classic JSON
         const response = await this.api.post('/create', quizData)
         return response.data
       }
@@ -179,7 +130,7 @@ class QuizService {
     }
   }
 
-  // Méthodes pour la salle d'attente (lobby)
+  // Methods for waiting room (lobby)
   async joinLobby(quizId) {
     try {
       const response = await this.api.post(`/${quizId}/lobby/join`)
@@ -251,7 +202,7 @@ class QuizService {
       return {
         status: 'not_started',
         timeRemaining: startDate - now,
-        message: 'Le quiz n\'a pas encore commencé'
+        message: 'The quiz has not started yet'
       }
     }
 
@@ -259,14 +210,14 @@ class QuizService {
       return {
         status: 'ended',
         timeRemaining: 0,
-        message: 'Le quiz est terminé'
+        message: 'The quiz is over'
       }
     }
 
     return {
       status: 'active',
       timeRemaining: endDate ? endDate - now : null,
-      message: 'Le quiz est en cours'
+      message: 'The quiz is in progress'
     }
   }
 }

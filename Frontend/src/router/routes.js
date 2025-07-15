@@ -1,7 +1,7 @@
 const routes = [
   {
     path: '/',
-    redirect: '/accueil'
+    redirect: '/login'
   },
   {
     path: '/accueil',

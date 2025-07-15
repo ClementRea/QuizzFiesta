@@ -3,14 +3,20 @@ import AuthService from 'src/services/AuthService'
 import axios from 'axios'
 
 export default boot(({ router }) => {
-  // Configuration d'un intercepteur global pour Axios
+  // Configuration globale des intercepteurs Axios pour l'authentification
+
+  // Intercepteur de requête - Ajouter le token et gérer l'expiration
   axios.interceptors.request.use(
     async (config) => {
-      // Vérifier et renouveler le token automatiquement pour toutes les requêtes
+      // Skip auth for authentication endpoints
+      if (config.url?.includes('/auth/')) {
+        return config
+      }
+
+      // Ensure valid token before making any request
       const isValid = await AuthService.ensureValidToken()
-      if (!isValid && config.url && !config.url.includes('/auth/')) {
-        // Rediriger vers login si le token ne peut pas être renouvelé
-        // (sauf pour les requêtes d'authentification)
+      if (!isValid) {
+        // Redirect to login if token cannot be renewed
         router.push('/login')
         return Promise.reject(new Error('Authentication failed'))
       }
@@ -24,7 +30,7 @@ export default boot(({ router }) => {
     (error) => Promise.reject(error)
   )
 
-  // Intercepteur global pour les réponses 401
+  // Intercepteur de réponse - Gérer les erreurs 401
   axios.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -33,7 +39,7 @@ export default boot(({ router }) => {
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true
 
-        // Ne pas essayer de refresh sur les routes d'auth
+        // Don't try to refresh on auth routes
         if (originalRequest.url?.includes('/auth/')) {
           return Promise.reject(error)
         }
@@ -55,17 +61,9 @@ export default boot(({ router }) => {
     }
   )
 
-  // Vérification initiale du token au chargement de l'application
+  // Configuration initiale du token au démarrage
   const accessToken = localStorage.getItem('accessToken')
   if (accessToken) {
-    // Configuration de Axios avec le token existant
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
-
-    // Vérification de la validité du token en arrière-plan
-    AuthService.verifyToken().catch(() => {
-      if (router.currentRoute.value.meta.requiresAuth) {
-        router.push('/login')
-      }
-    })
   }
 })

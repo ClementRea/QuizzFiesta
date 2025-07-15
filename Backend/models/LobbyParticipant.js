@@ -43,11 +43,9 @@ const lobbyParticipantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index pour éviter les doublons
 lobbyParticipantSchema.index({ quizId: 1, userId: 1 }, { unique: true });
 
-// Index pour nettoyer les participants inactifs
-lobbyParticipantSchema.index({ lastSeen: 1 }, { expireAfterSeconds: 300 }); // 1 heure
+lobbyParticipantSchema.index({ lastSeen: 1 }, { expireAfterSeconds: 300 });
 
 const LobbyParticipant = mongoose.model('LobbyParticipant', lobbyParticipantSchema);
 
