@@ -105,17 +105,13 @@ const AuthService = {
     }
   },
 
-  async getMe() {
-    const token = localStorage.getItem('accessToken')
-    if (!token) throw new Error('No access token')
-
+  async logout() {
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`)
-      return response.data
+      await axios.post(`${getApiBaseUrl()}/auth/logout`)
     } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+    } finally {
       this.clearTokens()
-      throw error
     }
   }
 }

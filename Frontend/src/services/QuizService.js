@@ -96,7 +96,7 @@ class QuizService {
 
   async updateQuiz(quizId, quizData) {
     try {
-      const response = await this.api.post(`/update/${quizId}`, quizData)
+      const response = await this.api.put(`/update/${quizId}`, quizData)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -123,7 +123,7 @@ class QuizService {
 
   async addQuestionsToQuiz(quizId, questions) {
     try {
-      const response = await this.api.post(`/addQuestions/${quizId}`, { questions })
+      const response = await this.api.put(`/addQuestions/${quizId}`, { questions })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -160,7 +160,7 @@ class QuizService {
 
   async setLobbyReady(quizId, isReady) {
     try {
-      const response = await this.api.post(`/${quizId}/lobby/ready`, { isReady })
+      const response = await this.api.put(`/${quizId}/lobby/ready`, { isReady })
       return response.data
     } catch (error) {
       throw error.response?.data || error

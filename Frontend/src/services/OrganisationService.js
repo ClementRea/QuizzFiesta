@@ -84,7 +84,7 @@ class OrganisationService {
 
   async updateOrganisation(organisationId, organisationData) {
     try {
-      const response = await this.api.post(`/organisations/update/${organisationId}`, organisationData)
+      const response = await this.api.put(`/organisations/update/${organisationId}`, organisationData)
       return response.data
     } catch (error) {
       throw error.response?.data || error

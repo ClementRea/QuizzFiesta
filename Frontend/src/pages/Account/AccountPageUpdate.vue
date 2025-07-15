@@ -140,8 +140,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import axios from 'axios'
-import AuthService from 'src/services/AuthService'
+import UserService from 'src/services/UserService'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import EditAvatar from 'src/components/EditAvatar.vue'
 import Avatar from 'src/components/GetAvatar.vue'
@@ -262,8 +261,8 @@ const getUser = async () => {
   error.value = null
 
   try {
-    const response = await axios.get('http://localhost:3000/api/user/getMe')
-    const user = response.data.data.user
+    const response = await UserService.getMe()
+    const user = response.data.user
 
     userData.value = {
       userName: user.userName || '',
@@ -293,31 +292,53 @@ const handleAction = async (action) => {
 
   if (action === 'save') {
     try {
-      // Créer un FormData pour pouvoir envoyer des fichiers
-      const formData = new FormData()
+      let response
 
-      // Ajouter les données de base
-      formData.append('userName', userData.value.userName)
-      formData.append('email', userData.value.email)
-
-      // Ajouter l'avatar s'il a été sélectionné
-      if (avatarFile.value) {
-        formData.append('avatar', avatarFile.value)
+      // Si on change le mot de passe ET qu'on a un avatar
+      if (isChangingPassword.value && avatarFile.value) {
+        // Mise à jour complète avec avatar et mot de passe
+        response = await UserService.updateProfile({
+          userName: userData.value.userName,
+          email: userData.value.email,
+          currentPassword: userData.value.currentPassword,
+          newPassword: userData.value.newPassword,
+          avatar: avatarFile.value,
+        })
       }
+      // Si on change seulement le mot de passe
+      else if (isChangingPassword.value) {
+        response = await UserService.updatePassword(
+          userData.value.currentPassword,
+          userData.value.newPassword,
+        )
 
-      // Ajouter les données de mot de passe si nécessaire
-      if (isChangingPassword.value) {
-        formData.append('currentPassword', userData.value.currentPassword)
-        formData.append('newPassword', userData.value.newPassword)
+        // Puis mettre à jour les autres infos si nécessaire
+        if (userData.value.userName || userData.value.email) {
+          await UserService.updateMe({
+            userName: userData.value.userName,
+            email: userData.value.email,
+          })
+        }
       }
+      // Si on change seulement l'avatar
+      else if (avatarFile.value) {
+        response = await UserService.updateAvatar(avatarFile.value)
 
-      // Envoyer les données avec le fichier
-      await axios.put('http://localhost:3000/api/user/updateMe', formData, {
-        headers: {
-          Authorization: `Bearer ${AuthService.getAccessToken()}`,
-          'Content-Type': 'multipart/form-data', // Important pour FormData
-        },
-      })
+        // Puis mettre à jour les autres infos si nécessaire
+        if (userData.value.userName || userData.value.email) {
+          await UserService.updateMe({
+            userName: userData.value.userName,
+            email: userData.value.email,
+          })
+        }
+      }
+      // Sinon mise à jour simple des infos
+      else {
+        response = await UserService.updateMe({
+          userName: userData.value.userName,
+          email: userData.value.email,
+        })
+      }
 
       $q.notify({
         color: 'positive',
