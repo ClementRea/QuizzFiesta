@@ -36,16 +36,24 @@ const uploadLogo = multer({
 
 //POST
 router.post('/create', protect, uploadLogo.single('logo'), quizController.quizCreate);
-router.post('/update/:id', protect, quizController.quizUpdate);
-router.post('/addQuestions/:id', protect, quizController.addQuestionsToQuiz);
 router.post('/generateCode/:id', protect, quizController.generateJoinCode);
 
 // Routes pour la salle d'attente (lobby)
 router.post('/:id/lobby/join', protect, quizController.joinLobby);
 router.post('/:id/lobby/leave', protect, quizController.leaveLobby);
-router.get('/:id/lobby/participants', protect, quizController.getLobbyParticipants);
-router.post('/:id/lobby/ready', protect, quizController.setLobbyReady);
 router.post('/:id/lobby/start', protect, quizController.startQuizFromLobby);
+
+//PUT
+router.put('/update/:id', protect, quizController.quizUpdate);
+router.put('/addQuestions/:id', protect, quizController.addQuestionsToQuiz);
+router.put('/:id/lobby/ready', protect, quizController.setLobbyReady);
+
+//GET
+router.get('/', protect, quizController.getAllQuizes);
+router.get('/myQuizes', protect, quizController.getMyQuizes);
+router.get('/:id', protect, quizController.getQuizById);
+router.get('/join/:joinCode', quizController.getQuizByJoinCode);
+router.get('/:id/lobby/participants', protect, quizController.getLobbyParticipants);
 router.get('/:id/lobby/events', protect, quizController.getLobbyEvents);
 
 //DELETE
