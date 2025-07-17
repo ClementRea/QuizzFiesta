@@ -60,15 +60,13 @@ describe('Auth Middleware', () => {
 
     it('should return 401 when no token provided', async () => {
       // Arrange - pas de header authorization
-      
       // Act
       await protect(req, res, next);
-
       // Assert
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Vous n\'êtes pas connecté, connecter vous pour continuer.'
+        message: 'Token invalide, veuillez réessayer.'
       });
       expect(next).not.toHaveBeenCalled();
       expect(jwt.verify).not.toHaveBeenCalled();
@@ -77,15 +75,13 @@ describe('Auth Middleware', () => {
     it('should return 401 when authorization header does not start with Bearer', async () => {
       // Arrange
       req.headers.authorization = 'Basic sometoken';
-
       // Act
       await protect(req, res, next);
-
       // Assert
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Vous n\'êtes pas connecté, connecter vous pour continuer.'
+        message: 'Token invalide, veuillez réessayer.'
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -96,10 +92,8 @@ describe('Auth Middleware', () => {
       jwt.verify.mockImplementation(() => {
         throw new Error('Invalid token');
       });
-
       // Act
       await protect(req, res, next);
-
       // Assert
       expect(jwt.verify).toHaveBeenCalledWith('invalid.token', 'test-secret-key');
       expect(res.status).toHaveBeenCalledWith(401);

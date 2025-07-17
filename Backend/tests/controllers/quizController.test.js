@@ -22,8 +22,24 @@ jest.mock('../../models/Question', () => ({
   create: jest.fn()
 }));
 
+jest.mock('../../models/User', () => ({
+  findById: jest.fn()
+}));
+
+jest.mock('../../models/LobbyParticipant', () => ({
+  findOne: jest.fn(),
+  create: jest.fn()
+}));
+
 jest.mock('mongoose', () => ({
-  startSession: jest.fn()
+  startSession: jest.fn(),
+  Schema: class MockSchema {
+    constructor() {}
+    static Types = {
+      ObjectId: jest.fn()
+    }
+  },
+  model: jest.fn()
 }));
 
 jest.mock('crypto', () => ({

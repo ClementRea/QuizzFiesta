@@ -11,6 +11,16 @@ jest.mock('jsonwebtoken', () => ({
   sign: jest.fn(() => 'mocked-jwt-token')
 }));
 
+jest.mock('../../services/tokenService', () => ({
+  generateAccessToken: jest.fn(() => 'mocked-access-token'),
+  generateRefreshToken: jest.fn(() => 'mocked-refresh-token'),
+  generateTokenFamily: jest.fn(() => 'mocked-token-family'),
+  extractSecurityInfo: jest.fn(() => ({ userAgent: 'test-agent', ipAddress: '127.0.0.1' })),
+  detectSuspiciousActivity: jest.fn(() => ({ suspicious: false })),
+  cleanExpiredTokens: jest.fn((user) => user),
+  hashRefreshToken: jest.fn(() => 'mocked-hash')
+}));
+
 describe('authController', () => {
   let req, res, next;
 
@@ -36,12 +46,22 @@ describe('authController', () => {
     it('should create user and return token if email is new', async () => {
       req.body = { email: 'test@mail.com', password: '123', userName: 'bob', role: 'user' };
       User.findOne.mockResolvedValue(null);
-      User.create.mockResolvedValue({ _id: '2', email: 'test@mail.com', userName: 'bob', role: 'user', password: '123' });
+      const userMock = { 
+        _id: '2', 
+        email: 'test@mail.com', 
+        userName: 'bob', 
+        role: 'user', 
+        password: '123', 
+        refreshTokens: [],
+        save: jest.fn().mockResolvedValue()
+      };
+      User.create.mockResolvedValue(userMock);
       await register(req, res, next);
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         status: 'success register',
-        token: expect.any(String),
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
         data: { user: expect.objectContaining({ email: 'test@mail.com' }) }
       }));
     });
@@ -95,6 +115,7 @@ describe('authController', () => {
         userName: 'bob',
         role: 'user',
         password: '123',
+        refreshTokens: [],
         comparePassword: jest.fn().mockResolvedValue(true),
         save: jest.fn().mockResolvedValue(),
       };
@@ -106,7 +127,8 @@ describe('authController', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         status: 'success login',
-        token: expect.any(String),
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
         data: { user: expect.objectContaining({ email: 'test@mail.com' }) }
       }));
     });
