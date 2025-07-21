@@ -1,14 +1,12 @@
 <template>
   <div class="full-width">
     <FormLayout
-      title="Créer un quiz"
       :show-actions="true"
       :actionButtons="actionButtons"
       :disabledSubmit="!isFormValid"
       @action="handleAction"
     >
       <template v-slot:content>
-        <!-- Progress Bar  -->
         <StepProgressBar
           :steps="quizSteps"
           v-model:current-step="currentStep"
@@ -23,13 +21,10 @@
           role="region"
           :aria-label="`Étape ${currentStep + 1}: ${quizSteps[currentStep]?.label}`"
         >
-          <!-- General information -->
           <div v-if="currentStep === 0" class="flex column">
             <h2 class="text-dark80 q-mb-md q-ma-none">Informations générales</h2>
 
-            <!-- Logo upload section -->
             <div class="q-mb-md">
-              <!-- Logo preview above button -->
               <div v-if="logoPreviewUrl" class="flex flex-center q-mb-md">
                 <div class="logo-preview relative-position">
                   <q-img
@@ -50,7 +45,6 @@
                 </div>
               </div>
 
-              <!-- Button to choose logo -->
               <div class="flex flex-center">
                 <q-btn
                   color="primary"
@@ -235,7 +229,6 @@ import QuizService from 'src/services/QuizService'
 const router = useRouter()
 const $q = useQuasar()
 
-// Step configuration
 const quizSteps = [
   { id: 'general', label: 'Informations générales' },
   { id: 'questions', label: 'Création des questions' },
@@ -265,14 +258,12 @@ const removeLogo = () => {
   logoPreviewUrl.value = null
 }
 
-// Quiz data
 const quizData = ref({
   title: '',
   description: '',
   questions: [],
 })
 
-// Validation
 const isCurrentStepValid = computed(() => {
   switch (currentStep.value) {
     case 0:
@@ -307,7 +298,6 @@ const validationMessage = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  // Verify if the form is valid based on the current step
   const step0Valid = quizData.value.title.trim() !== '' && quizData.value.description.trim() !== ''
   const step1Valid =
     quizData.value.questions.length > 0 &&
@@ -318,11 +308,9 @@ const isFormValid = computed(() => {
         q.answer.every((a) => a.text?.trim()) &&
         q.answer.some((a) => a.isCorrect),
     )
-  // recap so we validate the form at step 2
   return currentStep.value === 2 && step0Valid && step1Valid
 })
 
-// For auto-scroll to the new question
 const questionRefs = ref([])
 const expandedQuestions = ref([])
 
@@ -338,14 +326,12 @@ const addQuestion = () => {
     points: 1,
     timeGiven: 45,
   })
-  // Open the new question
   expandedQuestions.value[quizData.value.questions.length - 1] = true
 }
 
 const addQuestionAndScroll = async () => {
   addQuestion()
   await nextTick()
-  // Scroll to the last question
   const lastIdx = quizData.value.questions.length - 1
   const el = questionRefs.value[lastIdx]
   if (el && el.scrollIntoView) {
@@ -363,7 +349,6 @@ const updateQuestion = (index, updatedQuestion) => {
   quizData.value.questions[index] = updatedQuestion
 }
 
-// Utility function to get the label for the question type
 const getQuestionTypeLabel = (type) => {
   const typeMap = {
     CLASSIC: 'Question classique',
@@ -376,12 +361,10 @@ const getQuestionTypeLabel = (type) => {
   return typeMap[type] || type
 }
 
-// Progress bar events
 const onStepChange = () => {
   showValidation.value = true
 }
 
-// Form action buttons
 const actionButtons = computed(() => [
   {
     action: 'cancel',
@@ -411,7 +394,6 @@ const handleAction = async (action) => {
 
   if (action === 'save' && isFormValid.value) {
     try {
-      // Prepare data in the format expected
       const payload = {
         title: quizData.value.title,
         description: quizData.value.description,

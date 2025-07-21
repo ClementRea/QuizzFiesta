@@ -7,7 +7,7 @@
       :disabledSubmit="!isFormValid"
       :disabledSubmitMessage="validationMessage"
     >
-      <template #content>
+      <template v-slot:content>
         <div v-if="loading" class="column items-center q-pa-md">
           <q-spinner color="primary" size="3em" />
           <div class="q-mt-md">Chargement des informations du compte...</div>
@@ -75,7 +75,7 @@
             color="dark70"
             :type="isPasswordVisible.current ? 'text' : 'password'"
           >
-            <template #append>
+            <template v-slot:append>
               <q-icon
                 :name="isPasswordVisible.current ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"
@@ -95,7 +95,7 @@
             :type="isPasswordVisible.new ? 'text' : 'password'"
             :rules="passwordRules"
           >
-            <template #append>
+            <template v-slot:append>
               <q-icon
                 :name="isPasswordVisible.new ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"
@@ -122,7 +122,7 @@
                 'Les mots de passe ne correspondent pas',
             ]"
           >
-            <template #append>
+            <template v-slot:append>
               <q-icon
                 :name="isPasswordVisible.confirm ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"

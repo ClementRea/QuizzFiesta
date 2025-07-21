@@ -1,92 +1,94 @@
 <template>
   <Header />
-  <div class="formLayout">
-    <FormLayout
-      title="Inscription"
-      @submit="submitForm"
-      :disabledSubmit="!isFormValid"
-      actionType="register"
-      :disabledSubmitMessage="validationMessage"
-    >
-      <template #content>
-        <div class="q-gutter-y-lg">
-          <q-input
-            outlined
-            v-model="userName"
-            label="Nom d'utilisateur"
-            class="custom-border"
-            bg-color="white"
-            label-color="dark80"
-            color="dark70"
-            :rules="[
-              (val) => !!val || 'Le nom d\'utilisateur est requis',
-              (val) =>
-                val.length >= 3 || 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
-            ]"
-          />
-          <q-input
-            outlined
-            v-model="email"
-            label="Email"
-            class="custom-border"
-            bg-color="white"
-            label-color="dark80"
-            color="dark70"
-            :rules="[
-              (val) => !!val || 'L\'email est requis',
-              (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
-            ]"
-          />
-          <q-input
-            outlined
-            v-model="password"
-            label="Mot de passe"
-            class="custom-border"
-            bg-color="white"
-            label-color="dark80"
-            color="dark70"
-            :type="isFirstPwd ? 'password' : 'text'"
-            :rules="[
-              (val) => !!val || 'Le mot de passe est requis',
-              (val) =>
-                (val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) ||
-                'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre',
-            ]"
-          >
-            <template #append>
-              <q-icon
-                :name="isFirstPwd ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isFirstPwd = !isFirstPwd"
-              />
-            </template>
-          </q-input>
-          <q-input
-            outlined
-            v-model="confirmPassword"
-            label="Confirmer le mot de passe"
-            class="custom-border"
-            bg-color="white"
-            label-color="dark80"
-            color="dark70"
-            :type="isSecondPwd ? 'password' : 'text'"
-            :rules="[
-              (val) => !!val || 'La confirmation du mot de passe est requise',
-              (val) => val === password || 'Les mots de passe ne correspondent pas',
-            ]"
-          >
-            <template #append>
-              <q-icon
-                :name="isSecondPwd ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="isSecondPwd = !isSecondPwd"
-              />
-            </template>
-          </q-input>
-        </div>
-      </template>
-    </FormLayout>
-  </div>
+  <main class="formLayout" aria-label="Page d'inscription">
+    <section aria-label="Formulaire d'inscription">
+      <FormLayout
+        title="Inscription"
+        @submit="submitForm"
+        :disabledSubmit="!isFormValid"
+        actionType="register"
+        :disabledSubmitMessage="validationMessage"
+      >
+        <template #content>
+          <div class="q-gutter-y-lg">
+            <q-input
+              outlined
+              v-model="userName"
+              label="Nom d'utilisateur"
+              class="custom-border"
+              bg-color="white"
+              label-color="dark80"
+              color="dark70"
+              :rules="[
+                (val) => !!val || 'Le nom d\'utilisateur est requis',
+                (val) =>
+                  val.length >= 3 || 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+              ]"
+            />
+            <q-input
+              outlined
+              v-model="email"
+              label="Email"
+              class="custom-border"
+              bg-color="white"
+              label-color="dark80"
+              color="dark70"
+              :rules="[
+                (val) => !!val || 'L\'email est requis',
+                (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
+              ]"
+            />
+            <q-input
+              outlined
+              v-model="password"
+              label="Mot de passe"
+              class="custom-border"
+              bg-color="white"
+              label-color="dark80"
+              color="dark70"
+              :type="isFirstPwd ? 'password' : 'text'"
+              :rules="[
+                (val) => !!val || 'Le mot de passe est requis',
+                (val) =>
+                  (val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) ||
+                  'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre',
+              ]"
+            >
+              <template #append>
+                <q-icon
+                  :name="isFirstPwd ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="isFirstPwd = !isFirstPwd"
+                />
+              </template>
+            </q-input>
+            <q-input
+              outlined
+              v-model="confirmPassword"
+              label="Confirmer le mot de passe"
+              class="custom-border"
+              bg-color="white"
+              label-color="dark80"
+              color="dark70"
+              :type="isSecondPwd ? 'password' : 'text'"
+              :rules="[
+                (val) => !!val || 'La confirmation du mot de passe est requise',
+                (val) => val === password || 'Les mots de passe ne correspondent pas',
+              ]"
+            >
+              <template #append>
+                <q-icon
+                  :name="isSecondPwd ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="isSecondPwd = !isSecondPwd"
+                />
+              </template>
+            </q-input>
+          </div>
+        </template>
+      </FormLayout>
+    </section>
+  </main>
 </template>
 
 <script setup>

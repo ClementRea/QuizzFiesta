@@ -1,14 +1,11 @@
 <template>
-  <UploadFiles v-model="EditAvatarDialog" @selected="handleAvatarSelected" />
+  <UploadFiles v-model="dialogVisible" @selected="handleAvatarSelected" />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import UploadFiles from './UploadFiles.vue'
 
-const EditAvatarDialog = ref(false)
-
-// Définir les props et émissions
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -17,6 +14,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'selected'])
+
+const dialogVisible = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value)
+  }
+})
 
 const handleAvatarSelected = (file) => {
   emit('selected', file)

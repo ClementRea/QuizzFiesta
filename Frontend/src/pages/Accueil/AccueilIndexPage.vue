@@ -1,75 +1,74 @@
 <template>
-  <div class="full-width">
-    <div class="row justify-between q-pa-md">
+  <main class="full-width" aria-label="Accueil QuizFiesta">
+    <header class="row justify-between q-pa-md">
       <div class="col column no-wrap">
-        <span class="text-h6 text-dark90 text-bold">Bonjour {{ userData.userName }} !</span>
-        <span class="text-body1 text-dark90">Trouvez des quiz ici</span>
+        <h1 class="text-h6 text-dark90 text-bold q-mb-none">Bonjour {{ userData.userName }} !</h1>
+        <h2 class="text-body1 text-dark90 q-mt-none q-mb-xs">Trouvez des quiz ici</h2>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <!-- Searchbar -->
-  <div role="search" aria-label="Recherche de quiz">
-    <q-input
-      aria-label="Rechercher un quiz par nom ou catégorie"
-      placeholder="Rechercher (Management, Jeux...)"
-      outlined
-      rounded
-      bg-color="light20"
-      class="q-pa-md custom-input-shadow"
-      tabindex="0"
-    >
-      <template v-slot:prepend>
-        <q-icon name="search" aria-hidden="true" />
-      </template>
-    </q-input>
-  </div>
+    <section aria-label="Recherche de quiz">
+      <form role="search" aria-label="Formulaire de recherche de quiz" @submit.prevent>
+        <q-input
+          aria-label="Rechercher un quiz par nom ou catégorie"
+          placeholder="Rechercher (Management, Jeux...)"
+          outlined
+          rounded
+          bg-color="light20"
+          class="q-pa-md custom-input-shadow"
+          tabindex="0"
+        >
+          <template v-slot:prepend>
+            <q-icon name="search" aria-hidden="true" />
+          </template>
+        </q-input>
+      </form>
+    </section>
 
-  <div class="row q-gutter-sm q-pa-md" role="group" aria-label="Actions principales">
-    <!-- Bouton Rejoindre un quiz -->
-    <q-btn
-      label="Rejoindre un quiz"
-      color="primary"
-      rounded
-      class="col"
-      size="md"
-      icon="mdi-gamepad-variant"
-      no-caps
-      @click="router.push('/quiz/join')"
-      tabindex="0"
-      aria-label="Rejoindre un quiz existant avec un code"
-    />
+    <nav aria-label="Actions principales">
+      <section class="row q-gutter-sm q-pa-md" role="group">
+        <q-btn
+          label="Rejoindre un quiz"
+          color="primary"
+          rounded
+          class="col"
+          size="md"
+          icon="mdi-gamepad-variant"
+          no-caps
+          @click="router.push('/quiz/join')"
+          tabindex="0"
+          aria-label="Rejoindre un quiz existant avec un code"
+        />
+        <q-btn
+          label="Créer un quiz"
+          color="dark80"
+          rounded
+          class="col"
+          size="md"
+          icon="mdi-plus"
+          no-caps
+          @click="router.push('/quiz/create')"
+          tabindex="0"
+          aria-label="Créer un nouveau quiz"
+        />
+      </section>
+    </nav>
 
-    <!-- Bouton Créer un quiz -->
-    <q-btn
-      label="Créer un quiz"
-      color="dark80"
-      rounded
-      class="col"
-      size="md"
-      icon="mdi-plus"
-      no-caps
-      @click="router.push('/quiz/create')"
-      tabindex="0"
-      aria-label="Créer un nouveau quiz"
-    />
-  </div>
-
-  <!-- Bouton Gérer mes quiz -->
-  <div class="q-px-md q-pb-md">
-    <q-btn
-      label="Gérer mes Quiz"
-      color="secondary"
-      rounded
-      class="full-width"
-      size="md"
-      icon="mdi-cog"
-      no-caps
-      @click="router.push('/quiz/manage')"
-      tabindex="0"
-      aria-label="Gérer et modifier mes quiz existants"
-    />
-  </div>
+    <section class="q-px-md q-pb-md" aria-label="Gestion de mes quiz">
+      <q-btn
+        label="Gérer mes Quiz"
+        color="secondary"
+        rounded
+        class="full-width"
+        size="md"
+        icon="mdi-cog"
+        no-caps
+        @click="router.push('/quiz/manage')"
+        tabindex="0"
+        aria-label="Gérer et modifier mes quiz existants"
+      />
+    </section>
+  </main>
 </template>
 
 <script setup>
