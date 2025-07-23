@@ -16,7 +16,7 @@
         <div v-else-if="error" class="column items-center q-pa-md">
           <q-icon name="error" color="negative" size="3em" />
           <div class="q-mt-md">Une erreur est survenue lors du chargement des données.</div>
-          <q-btn flat color="primary" label="Réessayer" @click="getUser" class="q-mt-md" />
+          <q-btn flat color="primary" text-color="secondary" label="Réessayer" @click="getUser" class="q-mt-md" />
         </div>
 
         <div v-else class="q-gutter-y-lg">
@@ -29,7 +29,8 @@
               no-caps
               unelevated
               label="Modifier la photo de profil"
-              color="dark80"
+              color="secondary"
+              text-color="primary"
               @click="EditAvatarDialog = true"
             />
           </div>
@@ -43,8 +44,8 @@
             label="Nom d'utilisateur"
             class="custom-border"
             bg-color="white"
-            label-color="dark80"
-            color="dark70"
+            label-color="secondary"
+            color="secondary"
             :rules="[(val) => !!val || 'Le nom d\'utilisateur est requis']"
           />
 
@@ -54,8 +55,8 @@
             label="Email"
             class="custom-border"
             bg-color="white"
-            label-color="dark80"
-            color="dark70"
+            label-color="secondary"
+            color="secondary"
             :rules="[
               (val) => !!val || 'L\'email est requis',
               (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
@@ -64,15 +65,15 @@
 
           <q-separator />
 
-          <div class="text-subtitle1 text-dark80 q-mb-sm">Changer votre mot de passe</div>
+          <div class="text-subtitle1 text-secondary q-mb-sm">Changer votre mot de passe</div>
           <q-input
             outlined
             v-model="userData.currentPassword"
             label="Mot de passe actuel"
             class="custom-border"
             bg-color="white"
-            label-color="dark80"
-            color="dark70"
+            label-color="secondary"
+            color="secondary"
             :type="isPasswordVisible.current ? 'text' : 'password'"
           >
             <template v-slot:append>
@@ -90,8 +91,8 @@
             label="Nouveau mot de passe"
             class="custom-border"
             bg-color="white"
-            label-color="dark80"
-            color="dark70"
+            label-color="secondary"
+            color="secondary"
             :type="isPasswordVisible.new ? 'text' : 'password'"
             :rules="passwordRules"
           >
@@ -110,8 +111,8 @@
             label="Confirmer le nouveau mot de passe"
             class="custom-border"
             bg-color="white"
-            label-color="dark80"
-            color="dark70"
+            label-color="secondary"
+            color="secondary"
             :type="isPasswordVisible.confirm ? 'text' : 'password'"
             :rules="[
               (val) =>
@@ -193,7 +194,7 @@ const actionButtons = [
     action: 'cancel',
     label: 'Annuler',
     color: 'white',
-    class: 'text-dark80 q-pa-sm border-dark80 col-5',
+    class: 'text-secondary q-pa-sm border-secondary col-5',
     ariaLabel: 'Annuler les modifications',
     title: 'Revenir sans sauvegarder les modifications',
   },
@@ -201,7 +202,7 @@ const actionButtons = [
     action: 'save',
     label: 'Sauvegarder',
     color: 'dark80',
-    class: 'text-light20 q-pa-sm col-5',
+    class: 'text-primary q-pa-sm col-5',
     ariaLabel: 'Sauvegarder les modifications',
     title: 'Enregistrer les modifications du profil',
   },

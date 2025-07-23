@@ -38,7 +38,7 @@
         role="group"
         aria-label="Réponse unique"
       >
-        <div class="text-subtitle2 text-dark90 text-bold" id="classic-help">
+        <div class="text-subtitle2 text-secondary text-bold" id="classic-help">
           Saisissez la réponse de la question
         </div>
 
@@ -61,9 +61,9 @@
         aria-label="Choix multiples"
       >
         <div class="row items-center justify-between">
-          <h6 class="text-dark80 q-ma-none">Choix de réponses</h6>
+          <h6 class="text-secondary q-ma-none">Choix de réponses</h6>
         </div>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg" id="multiple-choice-help">
+        <div class="text-subtitle2 text-secondary text-bold q-mb-lg" id="multiple-choice-help">
           Cochez la ou les bonnes réponses. Au moins une réponse doit être correcte.
         </div>
 
@@ -77,7 +77,7 @@
           <q-checkbox
             v-model="answer.isCorrect"
             class="q-mr-sm"
-            color="dark80"
+            color="secondary"
             :label="`Correct`"
             :aria-label="`Marquer le choix ${index + 1} comme correct`"
             tabindex="0"
@@ -108,9 +108,9 @@
         <div class="row justify-center q-mt-lg">
           <q-btn
             icon="add"
-            class="bg-normal40 text-bold"
+            class="bg-accent text-bold"
             rounded
-            text-color="dark80"
+            text-color="secondary"
             label="Ajouter un choix"
             @click="addAnswer"
             size="sm"
@@ -128,9 +128,9 @@
       <!-- ORDER -->
       <div v-if="localQuestion.type === 'ORDER'" class="order-answers">
         <div class="row items-center justify-between q-mb-sm">
-          <h6 class="text-dark80 q-ma-none">Éléments à ordonner</h6>
+          <h6 class="text-secondary q-ma-none">Éléments à ordonner</h6>
         </div>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
+        <div class="text-subtitle2 text-secondary text-bold q-mb-lg">
           Saisissez les éléments dans le bon ordre (du 1er au dernier). Les joueurs devront les
           remettre dans le bon ordre.
         </div>
@@ -141,7 +141,7 @@
           class="row items-center q-mb-sm"
         >
           <div
-            class="flex flex-center bg-dark80 text-white rounded-borders q-mr-sm"
+            class="flex flex-center bg-secondary text-white rounded-borders q-mr-sm"
             style="min-width: 32px; height: 32px; font-size: 14px; font-weight: bold"
           >
             {{ index + 1 }}
@@ -166,9 +166,9 @@
         </div>
         <div class="row justify-center q-mt-lg">
           <q-btn
-            class="bg-normal40 text-bold"
+            class="bg-accent text-bold"
             rounded
-            text-color="dark80"
+            text-color="secondary"
             icon="add"
             label="Ajouter élément"
             @click="addAnswer"
@@ -181,16 +181,16 @@
       <!-- ASSOCIATION -->
       <div v-if="localQuestion.type === 'ASSOCIATION'" class="association-answers">
         <div class="row items-center justify-between q-mb-sm">
-          <h6 class="text-dark80 q-ma-none">Paires à associer</h6>
+          <h6 class="text-secondary q-ma-none">Paires à associer</h6>
         </div>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
+        <div class="text-subtitle2 text-secondary text-bold q-mb-lg">
           Créez des paires d'éléments que les joueurs devront associer correctement.
         </div>
 
         <div
           v-for="(pair, index) in associationPairs"
           :key="index"
-          class="q-mb-md q-pa-md bg-light10 rounded-borders q-gutter-sm"
+          class="q-mb-md q-pa-md bg-primary rounded-borders q-gutter-sm"
         >
           <div class="row items-center q-mb-sm">
             <span class="text-weight-medium">Paire {{ index + 1 }}</span>
@@ -212,7 +212,7 @@
               <q-input v-model="pair.left" :label="`Élément A *`" outlined class="custom-border" />
             </div>
             <div class="col-2 flex flex-center">
-              <q-icon name="link" size="24px" color="dark80" />
+              <q-icon name="link" size="24px" color="secondary" />
             </div>
             <div class="col-5">
               <q-input v-model="pair.right" :label="`Élément B *`" outlined class="custom-border" />
@@ -221,9 +221,9 @@
         </div>
         <div class="row justify-center q-mt-lg">
           <q-btn
-            class="bg-normal40 text-bold"
+            class="bg-accent text-bold"
             rounded
-            text-color="dark80"
+            text-color="secondary"
             icon="add"
             label="Ajouter paire"
             @click="addAssociationPair"
@@ -235,8 +235,8 @@
 
       <!-- BLIND_TEST -->
       <div v-if="localQuestion.type === 'BLIND_TEST'" class="blind-test-answers">
-        <h6 class="text-dark80 q-mb-sm">Configuration du blind test</h6>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
+        <h6 class="text-secondary q-mb-sm">Configuration du blind test</h6>
+        <div class="text-subtitle2 text-secondary text-bold q-mb-lg">
           Importer ici un audio ou une image, les joueurs devront deviner ce qu'ils entendent /
           écoutent.
         </div>
@@ -262,7 +262,7 @@
       <!-- FIND_INTRUDER -->
       <div v-if="localQuestion.type === 'FIND_INTRUDER'" class="find-intruder-answers">
         <div class="row items-center justify-between q-mb-sm">
-          <h6 class="text-dark80 q-ma-none">Éléments proposés</h6>
+          <h6 class="text-secondary q-ma-none">Éléments proposés</h6>
           <q-btn
             flat
             dense
@@ -273,7 +273,7 @@
             :disable="localQuestion.answer.length >= 6"
           />
         </div>
-        <div class="text-subtitle2 text-dark90 text-bold q-mb-lg">
+        <div class="text-subtitle2 text-secondary text-bold q-mb-lg">
           Créez une liste avec un seul l'intrus. Les joueurs devront L'identifier.
         </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-light10 full-width" style="border-radius: 20px 20px 0px 0px">
+  <div class="bg-primary full-width" style="border-radius: 20px 20px 0px 0px">
     <div class="column flex flex-center q-gutter-y-md">
       <div style="width: 100%" class="flex justify-center">
         <div>
@@ -10,11 +10,11 @@
           />
         </div>
       </div>
-      <span class="text-dark90 text-h5">{{ user?.userName }}</span>
+      <span class="text-secondary text-h5">{{ user?.userName }}</span>
       <q-btn
         class="q-mb-lg"
-        color="dark90"
-        text-color="light20"
+        color="secondary"
+        text-color="primary"
         label="Editer le profil"
         no-caps
         unelevated

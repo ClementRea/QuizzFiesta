@@ -16,13 +16,13 @@
         />
 
         <div
-          class="step-content q-pa-xl bg-light20 rounded-borders q-mt-lg"
+          class="step-content q-pa-xl bg-primary rounded-borders q-mt-lg"
           style="min-height: 400px"
           role="region"
           :aria-label="`Étape ${currentStep + 1}: ${quizSteps[currentStep]?.label}`"
         >
           <div v-if="currentStep === 0" class="flex column">
-            <h2 class="text-dark80 q-mb-md q-ma-none">Informations générales</h2>
+            <h2 class="text-secondary q-mb-md q-ma-none">Informations générales</h2>
 
             <div class="q-mb-md">
               <div v-if="logoPreviewUrl" class="flex flex-center q-mb-md">
@@ -48,6 +48,7 @@
               <div class="flex flex-center">
                 <q-btn
                   color="primary"
+                  text-color="secondary"
                   outline
                   icon="add_photo_alternate"
                   :label="logoFile ? 'Changer le logo' : 'Choisir un logo'"
@@ -66,6 +67,9 @@
               v-model="quizData.title"
               label="Titre du quiz *"
               outlined
+              bg-color="white"
+              label-color="secondary"
+              color="secondary"
               class="q-mb-md custom-border"
               :error="!quizData.title && showValidation"
               error-message="Le titre est obligatoire"
@@ -81,6 +85,9 @@
               rows="3"
               outlined
               class="q-mb-md custom-border"
+              bg-color="white"
+              label-color="secondary"
+              color="secondary"
               :error="!quizData.description && showValidation"
               error-message="La description est obligatoire"
               aria-label="Description du quiz"
@@ -92,7 +99,7 @@
           <!-- Create questions -->
           <div v-if="currentStep === 1" class="questions-step">
             <div class="row items-center justify-between q-mb-md">
-              <h2 class="text-dark80 q-ma-none">Création des questions</h2>
+              <h2 class="text-secondary q-ma-none">Création des questions</h2>
             </div>
 
             <div
@@ -101,12 +108,13 @@
               role="status"
               aria-live="polite"
             >
-              <q-icon name="quiz" size="48px" class="text-normal60 q-mb-md" aria-hidden="true" />
-              <p class="text-normal60 q-mb-md">
+              <q-icon name="quiz" size="48px" class="text-secondary q-mb-md" aria-hidden="true" />
+              <p class="text-secondary q-mb-md">
                 Aucune question créée. Commencez par ajouter votre première question.
               </p>
               <q-btn
                 color="primary"
+                text-color="secondary"
                 icon="add"
                 label="Ajouter une question"
                 @click="addQuestionAndScroll"
@@ -121,7 +129,7 @@
                 :key="index"
                 role="listitem"
                 :aria-label="`Question ${index + 1}`"
-                class="q-mb-md bg-light20 rounded-borders q-pa-sm"
+                class="q-mb-md bg-primary rounded-borders q-pa-sm"
                 style="border: 1px solid #bdbdbd"
                 :ref="(el) => setQuestionRef(el, index)"
               >
@@ -138,7 +146,7 @@
                 >
                   <template #header>
                     <div class="row items-center full-width">
-                      <div class="col text-weight-bold text-dark80">
+                      <div class="col text-weight-bold text-secondary">
                         Question {{ index + 1
                         }}<span v-if="question.content">
                           : {{ question.content.substring(0, 30)
@@ -167,6 +175,7 @@
               <div class="row justify-center q-mt-lg">
                 <q-btn
                   color="primary"
+                  text-color="secondary"
                   icon="add"
                   label="Ajouter une question"
                   @click="addQuestionAndScroll"
@@ -177,7 +186,7 @@
 
           <!-- Recap -->
           <div v-if="currentStep === 2" class="summary-step">
-            <h5 class="text-dark80 q-mb-md">Récapitulatif</h5>
+            <h5 class="text-secondary q-mb-md">Récapitulatif</h5>
 
             <div
               class="summary-card q-pa-md bg-grey-2 rounded-borders"
@@ -185,13 +194,13 @@
             >
               <div class="row q-col-gutter-md">
                 <div class="col-12 col-md-6">
-                  <h6 class="text-dark80 q-mb-sm q-ma-none">Informations générales</h6>
+                  <h6 class="text-secondary q-mb-sm q-ma-none">Informations générales</h6>
                   <p><strong>Titre :</strong> {{ quizData.title }}</p>
                   <p><strong>Description :</strong> {{ quizData.description }}</p>
                 </div>
 
                 <div class="col-12 col-md-6">
-                  <h6 class="text-dark80 q-mb-sm q-ma-none">Questions</h6>
+                  <h6 class="text-secondary q-mb-sm q-ma-none">Questions</h6>
                   <p><strong>Nombre de questions :</strong> {{ quizData.questions.length }}</p>
                   <div v-if="quizData.questions.length > 0">
                     <p class="q-mb-xs"><strong>Aperçu :</strong></p>
@@ -370,15 +379,15 @@ const actionButtons = computed(() => [
     action: 'cancel',
     label: 'Annuler',
     color: 'white',
-    class: 'text-dark80 q-pa-sm border-dark80 col-5',
+    class: 'text-secondary q-pa-sm border-secondary col-5',
     ariaLabel: 'Annuler la création du quiz',
     title: 'Revenir sans sauvegarder',
   },
   {
     action: 'save',
     label: 'Créer le quiz',
-    color: 'dark80',
-    class: 'text-light20 q-pa-sm col-5',
+    color: 'secondary',
+    class: 'text-primary q-pa-sm col-5',
     ariaLabel: 'Créer le quiz',
     title: 'Finaliser la création du quiz',
     disabled: !isFormValid.value,

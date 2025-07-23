@@ -9,7 +9,7 @@
         actionType="login"
         :disabledSubmitMessage="validationMessage"
       >
-        <template #content>
+        <template v-slot:content>
           <div class="q-gutter-y-lg">
             <q-input
               outlined
@@ -17,8 +17,8 @@
               label="Email"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :rules="[
                 (val) => !!val || 'L\'email est requis',
                 (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
@@ -30,12 +30,12 @@
               label="Mot de passe"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :type="isPasswordVisible ? 'text' : 'password'"
               :rules="[(val) => !!val || 'Le mot de passe est requis']"
             >
-              <template #append>
+              <template v-slot:append>
                 <q-icon
                   :name="isPasswordVisible ? 'visibility' : 'visibility_off'"
                   class="cursor-pointer"
@@ -46,7 +46,7 @@
             <div class="text-right q-ma-none">
               <q-btn
                 flat
-                class="text-dark80"
+                class="text-secondary"
                 style="text-decoration: underline"
                 @click="router.push('/reset-password')"
                 >Mot de passe oublié ?</q-btn

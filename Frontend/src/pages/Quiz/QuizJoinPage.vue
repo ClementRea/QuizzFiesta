@@ -54,6 +54,7 @@
                     :disable="!isValidCode"
                     @click="searchQuiz"
                     color="primary"
+                    text-color="secondary"
                   />
                 </template>
               </q-input>
@@ -62,6 +63,7 @@
                 <q-btn
                   unelevated
                   color="primary"
+                  text-color="secondary"
                   size="lg"
                   :loading="loading"
                   :disable="!isValidCode"
@@ -152,6 +154,7 @@
                 <q-btn
                   unelevated
                   color="primary"
+                  text-color="secondary"
                   :disable="quizStatus.status !== 'active'"
                   @click="joinQuiz"
                   class="col"

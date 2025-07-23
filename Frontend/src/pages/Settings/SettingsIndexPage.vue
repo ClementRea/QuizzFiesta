@@ -6,6 +6,7 @@
         <div class="column q-gutter-md">
           <q-btn
             color="primary"
+            text-color="secondary"
             icon="mdi-plus-box"
             label="Créer un quiz"
             class="q-py-md"

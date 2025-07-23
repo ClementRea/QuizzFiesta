@@ -60,6 +60,7 @@
                 @click="refreshParticipants"
                 :loading="loadingParticipants"
                 color="primary"
+                text-color="secondary"
               >
                 <q-tooltip>Actualiser</q-tooltip>
               </q-btn>
@@ -150,7 +151,7 @@
                 v-for="message in messages"
                 :key="message.id"
                 class="q-pa-sm rounded-borders"
-                :class="message.type === 'system' ? 'bg-blue-1' : 'bg-grey-2'"
+                :class="message.type === 'system' ? 'bg-secondary' : 'bg-grey-2'"
               >
                 <div class="text-caption text-grey-7">{{ formatTime(message.timestamp) }}</div>
                 <div class="text-body2">{{ message.content }}</div>
@@ -190,6 +191,7 @@
                 v-if="isOrganizer"
                 unelevated
                 color="primary"
+                text-color="secondary"
                 icon="mdi-play"
                 label="Démarrer le quiz"
                 @click="startQuiz"
@@ -226,7 +228,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Annuler" color="primary" v-close-popup />
+          <q-btn flat label="Annuler" color="primary" text-color="secondary" v-close-popup />
           <q-btn flat label="Quitter" color="negative" @click="leaveQuiz" />
         </q-card-actions>
       </q-card>

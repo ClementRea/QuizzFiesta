@@ -1,7 +1,7 @@
 <template>
   <div class="column q-pa-md q-pt-lg" role="main">
     <div v-if="showTitle" class="row items-center q-mb-xl">
-      <h1 class="text-h4 text-dark80 text-bold q-ma-none">{{ title }}</h1>
+      <h1 class="text-h4 text-secondary text-bold q-ma-none">{{ title }}</h1>
     </div>
 
     <slot name="content"></slot>
@@ -29,7 +29,7 @@
           :disable="isButtonDisabled(button)"
           tabindex="0"
         >
-          <q-tooltip v-if="isButtonDisabled(button) && button.disabledTooltip" class="bg-dark90">
+          <q-tooltip v-if="isButtonDisabled(button) && button.disabledTooltip" class="bg-secondary">
             {{ button.disabledTooltip }}
           </q-tooltip>
 
@@ -43,7 +43,7 @@
           <q-btn
             rounded
             outline
-            class="text-dark80 q-pa-sm col-5"
+            class="text-secondary q-pa-sm col-5"
             :label="actionType === 'login' ? 's\'inscrire' : 'se connecter'"
             type="submit"
             :aria-label="
@@ -58,8 +58,9 @@
           <!-- main Btn -->
           <q-btn
             rounded
-            color="dark80"
-            class="text-light20 q-pa-sm col-5"
+            color="secondary"
+            text-color="primary"
+            class="q-pa-sm col-5"
             :label="actionType === 'login' ? 'se connecter' : 's\'inscrire'"
             type="submit"
             :aria-label="
@@ -71,7 +72,7 @@
             :disable="isButtonDisabled({ action: actionType })"
             tabindex="0"
           >
-            <q-tooltip v-if="isButtonDisabled({ action: actionType })" class="bg-dark90">
+            <q-tooltip v-if="isButtonDisabled({ action: actionType })" class="bg-secondary">
               {{ disabledSubmitMessage }}
             </q-tooltip>
           </q-btn>

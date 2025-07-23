@@ -17,8 +17,8 @@
               label="Nom d'utilisateur"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :rules="[
                 (val) => !!val || 'Le nom d\'utilisateur est requis',
                 (val) =>
@@ -31,8 +31,8 @@
               label="Email"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :rules="[
                 (val) => !!val || 'L\'email est requis',
                 (val) => isValidEmail(val) || 'Veuillez entrer une adresse email valide',
@@ -44,8 +44,8 @@
               label="Mot de passe"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :type="isFirstPwd ? 'password' : 'text'"
               :rules="[
                 (val) => !!val || 'Le mot de passe est requis',
@@ -68,8 +68,8 @@
               label="Confirmer le mot de passe"
               class="custom-border"
               bg-color="white"
-              label-color="dark80"
-              color="dark70"
+              label-color="secondary"
+              color="secondary"
               :type="isSecondPwd ? 'password' : 'text'"
               :rules="[
                 (val) => !!val || 'La confirmation du mot de passe est requise',

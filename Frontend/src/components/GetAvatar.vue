@@ -1,7 +1,7 @@
 <template>
   <div class="q-mb-md">
     <div
-      class="bg-normal50 rounded-borders overflow-hidden"
+      class="bg-transparent rounded-borders overflow-hidden"
       :style="{
         width: sizeMap[size] || '96px',
         height: sizeMap[size] || '96px',

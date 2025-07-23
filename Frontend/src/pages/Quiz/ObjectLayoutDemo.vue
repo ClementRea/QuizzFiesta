@@ -102,7 +102,7 @@
             @edit="handleEdit"
           >
             <template #quick-actions>
-              <q-btn flat dense round icon="share" color="primary" @click.stop="shareQuiz(quiz)">
+              <q-btn flat dense round icon="share" color="primary" text-color="secondary" @click.stop="shareQuiz(quiz)">
                 <q-tooltip>Partager</q-tooltip>
               </q-btn>
               <q-btn
@@ -141,14 +141,14 @@
             @edit="handleEdit"
           >
             <template #metadata>
-              <q-chip dense color="blue" text-color="white" size="md">
+              <q-chip dense color="secondary" text-color="white" size="md">
                 <q-icon name="mdi-fire" class="q-mr-xs" />
                 Populaire
               </q-chip>
             </template>
 
             <template #actions="{ object }">
-              <q-btn flat color="primary" @click.stop="playQuiz(object)">
+              <q-btn flat color="primary" text-color="secondary" @click.stop="playQuiz(object)">
                 <q-icon name="play_arrow" class="q-mr-xs" />
                 Jouer maintenant
               </q-btn>
@@ -206,12 +206,12 @@
           </template>
 
           <template #actions="{ object }">
-            <q-btn unelevated color="primary" @click.stop="playQuiz(object)">
+            <q-btn unelevated color="primary" text-color="secondary" @click.stop="playQuiz(object)">
               <q-icon name="play_arrow" class="q-mr-sm" />
               Commencer le quiz
             </q-btn>
 
-            <q-btn flat color="secondary" @click.stop="viewStats(object)">
+            <q-btn flat color="secondary" text-color="primary" @click.stop="viewStats(object)">
               <q-icon name="mdi-chart-line" class="q-mr-sm" />
               Voir les statistiques
             </q-btn>

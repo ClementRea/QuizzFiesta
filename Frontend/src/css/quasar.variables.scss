@@ -1,38 +1,62 @@
 // Quasar SCSS (& Sass) Variables
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Palette QuizzFiesta - Optimisée pour l'engagement utilisateur
+// Blanc & beiges avec pastels énergisants pour un quiz captivant
 
-// Check documentation for full list of Quasar variables
+// === COULEURS PRINCIPALES ===
+$primary : #ECE8D2; // Aths Special - fond principal, cartes de questions
+$secondary : #2A2C64; // Jacarta - zones de contenu secondaire, texte principal
+$accent : #FFB3BA; // Corail doux - éléments interactifs, boutons CTA
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+// === GAMME DE BEIGES + PASTELS (light/normal/dark) ===
+// Basée sur Aths Special (#ECE8D2) avec variations harmonieuses
+$light10 : #F5F2E8; // Plus clair que Aths Special
+$light20 : #ECE8D2; // Aths Special (couleur principale)
+$light30 : #E3DFC7; // Légèrement plus foncé
+$normal40 : #D6D0B5; // Beige sable harmonieux
+$normal50 : #C9C1A3; // Beige moyen
+$normal60 : #BCB291; // Beige chaud
+$dark70 : #2A2C64; // Jacarta (couleur principale foncée)
+$dark80 : #25276B; // Jacarta plus intense
+$dark90 : #1F2158; // Jacarta profond
+$dark100 : #191B45; // Jacarta très foncé
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+// === PASTELS ÉNERGISANTS ===
+// Choisis pour créer l'envie de jouer tout en restant harmonieux
+$pastel-coral : #FFB3BA; // Corail doux - pour les bonnes réponses, boutons CTA
+$pastel-mint : #B8E6B8; // Vert menthe - pour la validation, progression
 
-$primary   : #665600;
-$secondary : #4C4000;
-$accent    : #FFF7CC;
+// === COULEURS FONCTIONNELLES ===
+$success : #6BCF7F; // Vert succès (plus vif que le mint)
+$error : #FF8A80; // Rouge doux pour les erreurs
+$warning : #FFCC80; // Orange doux pour les alertes
+$info : #81C7F5; // Bleu ciel pour les informations
 
-$light10 : #FFFBE5;
-$light20 : #FFF7CC;
-$light30 : #FFEF99;
-$normal40 : #FFE766;
-$normal50 : #FFD700;
-$normal60 : #CCAC00;
-$dark70 : #998100;
-$dark80 : #665600;
-$dark90 : #4C4000;
-$dark100: #191500;
+// === COULEURS SYSTÈME QUASAR ===
+$positive : #6BCF7F; // Vert succès
+$negative : #FF8A80; // Rouge erreur
+$blue : #2196F3; // Bleu système
+$green : #4CAF50; // Vert système
+$red : #F44336; // Rouge système
+$yellow : #FF9800; // Jaune système
 
-$blue: #015055;
+// === THÈME SOMBRE ===
+$dark : #2A2C64; // Jacarta comme couleur sombre principale
+$dark-page : #191B45; // Jacarta très foncé pour les fonds sombres
 
-$dark      : #1D1D1D;
-$dark-page : #121212;
+// === VARIABLES PERSONNALISÉES POUR LE QUIZ ===
+// Utilisez ces variables dans vos composants Vue (si besoin plus tard)
+$quiz-bg : $primary; // Aths Special - fond principal
+$quiz-card : $light10; // Fond des cartes plus clair
+$quiz-border : $normal40; // Bordures subtiles
+$quiz-text : $secondary; // Jacarta pour le texte principal
+$quiz-accent : $pastel-coral; // Boutons principaux, highlights
+$quiz-success : $pastel-mint; // Bonnes réponses, progression
+$quiz-hover : $light30; // États de survol
 
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+// === GRADIENTS SUGGÉRÉS ===
+// Pour des effets subtils et modernes (optionnel)
+$gradient-warm : linear-gradient(135deg, #{$light10} 0%, #{$light20} 100%);
+$gradient-coral : linear-gradient(135deg, #{$pastel-coral} 0%, #FFD1DC 100%);
+$gradient-mint : linear-gradient(135deg, #{$pastel-mint} 0%, #E0F2E0 100%);
+$gradient-main : linear-gradient(135deg, #{$primary} 0%, #{$secondary} 100%); // Gradient principal Aths->Jacarta

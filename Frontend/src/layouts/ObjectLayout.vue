@@ -106,6 +106,7 @@
           v-if="!object.joinCode && detectedObjectType === 'quiz'"
           unelevated
           color="primary"
+          text-color="secondary"
           icon="qr_code"
           label="Générer code"
           size="md"
@@ -119,6 +120,7 @@
           v-if="detectedObjectType === 'organisation'"
           unelevated
           color="primary"
+          text-color="secondary"
           icon="mdi-account-plus"
           label="Rejoindre"
           size="md"
@@ -136,6 +138,7 @@
             v-if="showViewButton"
             outline
             color="primary"
+            text-color="secondary"
             icon="visibility"
             label="Voir"
             size="md"
@@ -155,7 +158,8 @@
           <q-btn
             v-if="showShareButton"
             outline
-            color="blue"
+            color="secondary"
+            text-color="primary"
             icon="share"
             label="Partager"
             size="md"

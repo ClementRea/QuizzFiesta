@@ -3,7 +3,8 @@
     flat
     round
     icon="arrow_back"
-    color="dark80"
+    color="secondary"
+    text-color="secondary"
     class="q-mr-md"
     size="lg"
     aria-label="Retourner à la page précédente"

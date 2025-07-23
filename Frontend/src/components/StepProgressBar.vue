@@ -56,7 +56,8 @@
         v-if="currentStep > 0"
         outline
         rounded
-        color="dark80"
+        color="secondary"
+        text-color="primary"
         label="Précédent"
         @click="goToPreviousStep"
         class="col-auto q-px-lg"
@@ -68,7 +69,8 @@
       <q-btn
         v-if="currentStep < steps.length - 1"
         rounded
-        color="dark80"
+        color="secondary"
+        text-color="primary"
         label="Suivant"
         @click="goToNextStep"
         :disable="!isCurrentStepValid"
@@ -78,7 +80,7 @@
         aria-label="Aller à l'étape suivante"
         :aria-describedby="!isCurrentStepValid ? 'step-validation-message' : null"
       >
-        <q-tooltip v-if="!isCurrentStepValid" class="bg-dark90" id="step-validation-message">
+        <q-tooltip v-if="!isCurrentStepValid" class="bg-secondary" id="step-validation-message">
           {{ validationMessage }}
         </q-tooltip>
       </q-btn>
@@ -145,7 +147,7 @@ const getNumberClass = (index) => {
 
   return {
     'text-white': isCurrent || isCompleted,
-    'text-normal60': !isCurrent && !isCompleted,
+    'text-secondary': !isCurrent && !isCompleted,
   }
 }
 
@@ -154,9 +156,9 @@ const getLabelClass = (index) => {
   const isCurrent = index === props.currentStep
 
   return {
-    'text-dark80 text-weight-bold': isCurrent,
-    'text-dark70': isCompleted,
-    'text-normal60': !isCurrent && !isCompleted,
+    'text-secondary text-weight-bold': isCurrent,
+    'text-secondary': isCompleted,
+    // 'text-secondary': !isCurrent && !isCompleted,
   }
 }
 

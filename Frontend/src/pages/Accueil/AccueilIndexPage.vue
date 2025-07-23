@@ -2,8 +2,8 @@
   <main class="full-width" aria-label="Accueil QuizFiesta">
     <header class="row justify-between q-pa-md">
       <div class="col column no-wrap">
-        <h1 class="text-h6 text-dark90 text-bold q-mb-none">Bonjour {{ userData.userName }} !</h1>
-        <h2 class="text-body1 text-dark90 q-mt-none q-mb-xs">Trouvez des quiz ici</h2>
+        <h1 class="text-h6 text-secondary text-bold q-mb-none">Bonjour {{ userData.userName }} !</h1>
+        <h2 class="text-body1 text-secondary q-mt-none q-mb-xs">Trouvez des quiz ici</h2>
       </div>
     </header>
 
@@ -14,7 +14,7 @@
           placeholder="Rechercher (Management, Jeux...)"
           outlined
           rounded
-          bg-color="light20"
+          bg-color="primary"
           class="q-pa-md custom-input-shadow"
           tabindex="0"
         >
@@ -30,6 +30,7 @@
         <q-btn
           label="Rejoindre un quiz"
           color="primary"
+          text-color="secondary"
           rounded
           class="col"
           size="md"
@@ -41,7 +42,8 @@
         />
         <q-btn
           label="Créer un quiz"
-          color="dark80"
+          color="secondary"
+          text-color="primary"
           rounded
           class="col"
           size="md"
@@ -58,6 +60,7 @@
       <q-btn
         label="Gérer mes Quiz"
         color="secondary"
+        text-color="primary"
         rounded
         class="full-width"
         size="md"

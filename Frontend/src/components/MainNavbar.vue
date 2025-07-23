@@ -33,8 +33,11 @@
         <q-btn
           flat
           no-caps
-          :class="{ 'text-primary': isActive('/accueil'), 'text-dark': !isActive('/accueil') }"
-          class="text-weight-medium"
+          :class="[
+            'text-weight-medium',
+            isActive('/accueil') ? 'bg-secondary text-primary q-btn-active' : 'text-dark',
+          ]"
+          style="transition: background 0.2s; border-radius: 8px"
           @click="router.push('/accueil')"
           tabindex="0"
           :aria-current="isActive('/accueil') ? 'page' : false"
@@ -45,8 +48,11 @@
         <q-btn
           flat
           no-caps
-          :class="{ 'text-primary': isActive('/scores'), 'text-dark': !isActive('/scores') }"
-          class="text-weight-medium"
+          :class="[
+            'text-weight-medium',
+            isActive('/scores') ? 'bg-secondary text-primary q-btn-active' : 'text-dark',
+          ]"
+          style="transition: background 0.2s; border-radius: 8px"
           @click="router.push('/scores')"
           tabindex="0"
           :aria-current="isActive('/scores') ? 'page' : false"
@@ -141,9 +147,9 @@
                 aria-label="Aller à mon profil"
               >
                 <q-item-section avatar>
-                  <q-icon name="mdi-account" class="text-dark90" />
+                  <q-icon name="mdi-account" class="text-secondary" />
                 </q-item-section>
-                <q-item-section class="text-dark90">Mon profil</q-item-section>
+                <q-item-section class="text-secondary">Mon profil</q-item-section>
               </q-item>
               <q-item
                 clickable
@@ -153,9 +159,9 @@
                 aria-label="Aller aux paramètres"
               >
                 <q-item-section avatar>
-                  <q-icon name="mdi-cog" class="text-dark90" />
+                  <q-icon name="mdi-cog" class="text-secondary" />
                 </q-item-section>
-                <q-item-section class="text-dark90">Paramètres</q-item-section>
+                <q-item-section class="text-secondary">Paramètres</q-item-section>
               </q-item>
               <q-separator role="separator" />
 
@@ -210,11 +216,11 @@
             aria-label="Aller à l'accueil"
           >
             <q-item-section avatar>
-              <q-icon name="mdi-home" color="dark80" />
+              <q-icon name="mdi-home" color="secondary" />
             </q-item-section>
 
             <q-item-section>
-              <q-item-label class="text-dark80">Accueil</q-item-label>
+              <q-item-label class="text-secondary">Accueil</q-item-label>
             </q-item-section>
           </q-item>
 
@@ -226,11 +232,11 @@
             aria-label="Aller aux quiz"
           >
             <q-item-section avatar>
-              <q-icon name="mdi-help-circle" color="dark80" />
+              <q-icon name="mdi-help-circle" color="secondary" />
             </q-item-section>
 
             <q-item-section>
-              <q-item-label class="text-dark80">Quiz</q-item-label>
+              <q-item-label class="text-secondary">Quiz</q-item-label>
             </q-item-section>
           </q-item>
 
@@ -242,11 +248,11 @@
             aria-label="Aller au classement"
           >
             <q-item-section avatar>
-              <q-icon name="mdi-trophy" color="dark80" />
+              <q-icon name="mdi-trophy" color="secondary" />
             </q-item-section>
 
             <q-item-section>
-              <q-item-label class="text-dark80">Classement</q-item-label>
+              <q-item-label class="text-secondary">Classement</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>

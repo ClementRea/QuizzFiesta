@@ -9,7 +9,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
-  background-color: #FFE766;
+  background-color: $primary;
   position: relative;
 }
 
@@ -49,6 +49,16 @@ body {
   background-color: $blue !important;
 }
 
+.bg-secondary {
+  background-color: $secondary !important;
+}
+.bg-primary {
+  background-color: $primary !important;
+}
+.bg-accent {
+  background-color: $accent !important;
+}
+
 //Setup des text-colors
 .text-light10 {
   color: $light10 !important;
@@ -83,6 +93,18 @@ body {
 
 .text-blue{
   color: $blue !important;
+}
+
+.text-secondary {
+  color: $secondary !important;
+}
+
+.text-primary {
+  color: $primary !important;
+}
+
+.text-accent {
+  color: $accent !important;
 }
 
 //Setup des input outlined
