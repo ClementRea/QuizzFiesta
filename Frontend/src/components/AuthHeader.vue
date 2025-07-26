@@ -1,5 +1,5 @@
 <template>
-  <div class="container bg-primary flex column justify-center items-center rounded-borders-bottom">
+  <div class="container bg-light30 flex column justify-center items-center rounded-borders-bottom">
     <q-img class="logo" :src="logo" alt="logo" />
     <div class="span_container flex justify-end column items-start q-pl-lg q-mb-xl">
       <span class="text-secondary text-bold text-subtitle1">L'application de quiz ludique</span>

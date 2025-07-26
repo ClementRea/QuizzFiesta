@@ -35,7 +35,7 @@
           no-caps
           :class="[
             'text-weight-medium',
-            isActive('/accueil') ? 'bg-secondary text-primary q-btn-active' : 'text-dark',
+            isActive('/accueil') ? 'bg-secondary q-btn-active' : 'text-dark',
           ]"
           style="transition: background 0.2s; border-radius: 8px"
           @click="router.push('/accueil')"
@@ -50,7 +50,7 @@
           no-caps
           :class="[
             'text-weight-medium',
-            isActive('/scores') ? 'bg-secondary text-primary q-btn-active' : 'text-dark',
+            isActive('/scores') ? 'bg-secondary q-btn-active' : 'text-dark',
           ]"
           style="transition: background 0.2s; border-radius: 8px"
           @click="router.push('/scores')"

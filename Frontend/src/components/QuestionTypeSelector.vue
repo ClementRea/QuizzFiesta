@@ -1,6 +1,5 @@
 <template>
   <div class="question-type-selector" role="form" aria-label="Configuration de la question">
-    <!-- Question type selector -->
     <q-select
       v-model="localQuestion.type"
       :options="questionTypeOptions"
@@ -10,6 +9,9 @@
       map-options
       label="Type de question"
       outlined
+      color="secondary"
+      bg-color="white"
+      label-color="secondary"
       class="custom-border q-mb-md"
       @update:model-value="onTypeChange"
       aria-label="Choisir le type de question"
@@ -22,6 +24,9 @@
       label="Texte de la question *"
       outlined
       class="custom-border q-mb-md"
+      color="secondary"
+      bg-color="white"
+      label-color="secondary"
       aria-label="Texte de la question"
       aria-required="true"
     />
@@ -47,6 +52,9 @@
           label="Réponse *"
           outlined
           class="custom-border"
+          color="secondary"
+          bg-color="white"
+          label-color="secondary"
           aria-label="Réponse à la question"
           aria-required="true"
           aria-describedby="classic-help"
@@ -86,6 +94,9 @@
             v-model="answer.text"
             :label="`Choix ${index + 1} *`"
             outlined
+            color="secondary"
+            bg-color="white"
+            label-color="secondary"
             class="custom-border col"
             :aria-label="`Texte du choix ${index + 1}`"
             aria-required="true"
@@ -151,6 +162,9 @@
             :label="`Position ${index + 1} *`"
             outlined
             class="custom-border col"
+            color="secondary"
+            bg-color="white"
+            label-color="secondary"
           />
           <q-btn
             v-if="localQuestion.answer.length > 2"
@@ -209,13 +223,29 @@
           </div>
           <div class="row q-col-gutter-sm items-center">
             <div class="col-5">
-              <q-input v-model="pair.left" :label="`Élément A *`" outlined class="custom-border" />
+              <q-input
+                v-model="pair.left"
+                :label="`Élément A *`"
+                outlined
+                class="custom-border"
+                color="secondary"
+                bg-color="white"
+                label-color="secondary"
+              />
             </div>
             <div class="col-2 flex flex-center">
               <q-icon name="link" size="24px" color="secondary" />
             </div>
             <div class="col-5">
-              <q-input v-model="pair.right" :label="`Élément B *`" outlined class="custom-border" />
+              <q-input
+                v-model="pair.right"
+                :label="`Élément B *`"
+                outlined
+                class="custom-border"
+                color="secondary"
+                bg-color="white"
+                label-color="secondary"
+              />
             </div>
           </div>
         </div>
@@ -245,6 +275,9 @@
           v-model="localQuestion.answer[0].text"
           label="Réponse *"
           outlined
+          color="secondary"
+          bg-color="white"
+          label-color="secondary"
           class="custom-border q-mb-md"
           hint="Ex: 'Beethoven - 9ème Symphonie' ou 'Kangourou'"
         />
@@ -299,6 +332,9 @@
               '--q-color-negative': answer.isCorrect ? 'var(--q-color-negative)' : 'initial',
               border: answer.isCorrect ? '1px solid var(--q-color-negative)' : 'initial',
             }"
+            color="secondary"
+            bg-color="white"
+            label-color="secondary"
           />
           <q-btn
             v-if="localQuestion.answer.length > 3"
@@ -326,6 +362,9 @@
           <q-input
             v-model.number="localQuestion.points"
             label="Points"
+            color="secondary"
+            bg-color="white"
+            label-color="secondary"
             type="number"
             outlined
             class="custom-border"
@@ -336,6 +375,9 @@
           <q-input
             v-model.number="localQuestion.timeGiven"
             label="Temps (secondes)"
+            color="secondary"
+            bg-color="white"
+            label-color="secondary"
             type="number"
             outlined
             class="custom-border"
