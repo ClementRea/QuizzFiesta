@@ -19,6 +19,7 @@
           v-for="(button, index) in actionButtons"
           :key="index"
           rounded
+          :outline="button.outline || false"
           :color="button.color"
           :class="button.class"
           :label="button.label"
@@ -38,8 +39,7 @@
       </template>
 
       <template v-else>
-        <!-- secondary Btn -->
-        <div class="">
+        <div class="flex row justify-center q-gutter-md col-12">
           <q-btn
             rounded
             outline
@@ -55,7 +55,7 @@
             :disable="isButtonDisabled({ action: actionType === 'login' ? 'register' : 'login' })"
             tabindex="0"
           />
-          <!-- main Btn -->
+
           <q-btn
             rounded
             color="secondary"

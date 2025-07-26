@@ -1,5 +1,168 @@
 <template>
+  <!-- XL Size - Grande carte pour édition/update -->
   <q-card
+    v-if="size === 'xl'"
+    class="shadow-8 rounded-borders"
+    style="max-width: 900px; border-radius: 20px; overflow: hidden"
+    bordered
+  >
+    <!-- Image Header Large -->
+    <div v-if="showImage" class="relative-position" style="height: 300px">
+      <q-img
+        :src="getImageUrl(object)"
+        :alt="object.title || object.name"
+        spinner-color="primary"
+        class="fit"
+        style="border-radius: 20px 20px 0 0"
+      >
+        <div
+          class="absolute-bottom full-width"
+          style="background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 100%)"
+        >
+          <div
+            class="text-white text-h4 q-pa-xl"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-weight: 700"
+          >
+            {{ object.title || object.name }}
+          </div>
+        </div>
+      </q-img>
+    </div>
+
+    <!-- Content XL -->
+    <q-card-section class="q-pa-xl">
+      <div v-if="!showImage" class="text-h4 text-weight-bold q-mb-lg text-primary">
+        {{ object.title || object.name }}
+      </div>
+
+      <div v-if="object.description" class="text-h6 text-grey-8 q-mb-xl" style="line-height: 1.8">
+        {{ object.description }}
+      </div>
+
+      <!-- Metadata Expanded -->
+      <div v-if="detectedObjectType === 'quiz'" class="q-mb-xl">
+        <div class="row q-gutter-lg">
+          <q-card flat bordered class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1">
+            <div class="text-center">
+              <q-icon name="quiz" size="2rem" color="blue-6" class="q-mb-md" />
+              <div class="text-h5 text-weight-bold text-blue-8">
+                {{ object.questions?.length || 0 }}
+              </div>
+              <div class="text-body1 text-grey-7">Questions</div>
+            </div>
+          </q-card>
+
+          <q-card
+            flat
+            bordered
+            class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1"
+            v-if="object.joinCode"
+          >
+            <div class="text-center">
+              <q-icon name="key" size="2rem" color="green-6" class="q-mb-md" />
+              <div class="text-h5 text-weight-bold text-green-8">
+                {{ object.joinCode }}
+              </div>
+              <div class="text-body1 text-grey-7">Code d'accès</div>
+            </div>
+          </q-card>
+
+          <q-card flat bordered class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1">
+            <div class="text-center">
+              <q-icon
+                :name="object.isPublic ? 'public' : 'lock'"
+                size="2rem"
+                :color="object.isPublic ? 'orange-6' : 'grey-6'"
+                class="q-mb-md"
+              />
+              <div
+                class="text-h5 text-weight-bold"
+                :class="object.isPublic ? 'text-orange-8' : 'text-grey-8'"
+              >
+                {{ object.isPublic ? 'Public' : 'Privé' }}
+              </div>
+              <div class="text-body1 text-grey-7">Visibilité</div>
+            </div>
+          </q-card>
+        </div>
+      </div>
+
+      <!-- Full Action Buttons -->
+      <div class="row q-gutter-lg q-mt-xl">
+        <q-btn
+          v-if="object.joinCode && detectedObjectType === 'quiz'"
+          unelevated
+          color="secondary"
+          text-color="primary"
+          icon="play_arrow"
+          label="Jouer au Quiz"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handlePlay"
+        />
+
+        <q-btn
+          v-if="!object.joinCode && detectedObjectType === 'quiz'"
+          unelevated
+          color="primary"
+          text-color="secondary"
+          icon="qr_code"
+          label="Générer un Code"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handleGenerateCode"
+        />
+
+        <q-btn
+          v-if="showViewButton"
+          outline
+          color="secondary"
+          icon="visibility"
+          label="Voir"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handleView"
+        />
+
+        <q-btn
+          v-if="showEditButton"
+          outline
+          color="secondary"
+          icon="edit"
+          label="Modifier"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handleEdit"
+        />
+
+        <q-btn
+          v-if="showShareButton"
+          outline
+          color="secondary"
+          icon="share"
+          label="Partager"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handleShare"
+        />
+
+        <q-btn
+          v-if="showDeleteButton"
+          outline
+          color="negative"
+          icon="delete"
+          label="Supprimer"
+          size="lg"
+          class="col-12 col-sm-6 col-md-3"
+          @click.stop="handleDelete"
+        />
+      </div>
+    </q-card-section>
+  </q-card>
+
+  <!-- LG Size - Carte actuelle avec boutons d'action -->
+  <q-card
+    v-else-if="size === 'lg'"
     class="shadow-8 rounded-borders cursor-pointer"
     style="max-width: 450px; border-radius: 16px; overflow: hidden"
     bordered
@@ -24,12 +187,7 @@
         >
           <div
             class="text-white text-h6 q-pa-md"
-            style="
-              text-shadow:
-                2px 2px 4px rgba(0, 0, 0, 0.8),
-                0 0 8px rgba(0, 0, 0, 0.6);
-              font-weight: 600;
-            "
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-weight: 600"
           >
             {{ object.title || object.name }}
           </div>
@@ -37,7 +195,7 @@
       </q-img>
     </div>
 
-    <!-- Content -->
+    <!-- Content LG -->
     <q-card-section class="q-pa-lg">
       <div v-if="!showImage" class="text-h5 text-weight-bold q-mb-md text-primary">
         {{ object.title || object.name }}
@@ -68,6 +226,9 @@
           text-color="green-8"
           icon="key"
           class="text-weight-medium"
+          clickable
+          :ripple="true"
+          @click="copyCode"
         >
           Code: {{ object.joinCode }}
         </q-chip>
@@ -83,22 +244,17 @@
       </div>
 
       <!-- Action Buttons -->
-      <div
-        class="row q-gutter-md q-mt-md items-center"
-        role="group"
-        aria-label="Actions disponibles"
-      >
+      <div class="row q-gutter-md q-mt-md items-center">
         <!-- Primary Actions -->
         <q-btn
           v-if="object.joinCode && detectedObjectType === 'quiz'"
           unelevated
-          color="positive"
+          color="secondary"
+          text-color="primary"
           icon="play_arrow"
           label="Jouer"
           size="md"
           class="col-auto"
-          tabindex="0"
-          aria-label="Jouer au quiz"
           @click.stop="handlePlay"
         />
 
@@ -111,71 +267,236 @@
           label="Générer code"
           size="md"
           class="col-auto"
-          tabindex="0"
-          aria-label="Générer un code pour ce quiz"
           @click.stop="handleGenerateCode"
-        />
-
-        <q-btn
-          v-if="detectedObjectType === 'organisation'"
-          unelevated
-          color="primary"
-          text-color="secondary"
-          icon="mdi-account-plus"
-          label="Rejoindre"
-          size="md"
-          class="col-auto"
-          tabindex="0"
-          aria-label="Rejoindre cette organisation"
-          @click.stop="handleJoin"
         />
 
         <q-space />
 
         <!-- Secondary Actions -->
-        <div class="row q-gutter-sm">
-          <q-btn
-            v-if="showViewButton"
-            outline
-            color="primary"
-            text-color="secondary"
-            icon="visibility"
-            label="Voir"
-            size="md"
-            @click.stop="handleView"
-          />
+        <q-btn-dropdown
+          outline
+          color="secondary"
+          icon="more_vert"
+          label="Actions"
+          size="md"
+          class="col-auto"
+        >
+          <q-list>
+            <q-item v-if="showViewButton" clickable @click.stop="handleView">
+              <q-item-section avatar><q-icon name="visibility" color="secondary" /></q-item-section>
+              <q-item-section>Voir</q-item-section>
+            </q-item>
+            <q-item v-if="showEditButton" clickable @click.stop="handleEdit">
+              <q-item-section avatar><q-icon name="edit" color="secondary" /></q-item-section>
+              <q-item-section>Modifier</q-item-section>
+            </q-item>
+            <q-item v-if="showShareButton" clickable @click.stop="handleShare">
+              <q-item-section avatar><q-icon name="share" color="secondary" /></q-item-section>
+              <q-item-section>Partager</q-item-section>
+            </q-item>
+            <q-item v-if="showDeleteButton" clickable @click.stop="handleDelete">
+              <q-item-section avatar><q-icon name="delete" color="red" /></q-item-section>
+              <q-item-section>Supprimer</q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+      </div>
+    </q-card-section>
+  </q-card>
 
-          <q-btn
-            v-if="showEditButton"
-            outline
-            color="grey-7"
-            icon="edit"
-            label="Modifier"
-            size="md"
-            @click.stop="handleEdit"
-          />
-
-          <q-btn
-            v-if="showShareButton"
-            outline
-            color="secondary"
-            text-color="primary"
-            icon="share"
-            label="Partager"
-            size="md"
-            @click.stop="handleShare"
-          />
-
-          <q-btn
-            v-if="showDeleteButton"
-            outline
-            color="negative"
-            icon="delete"
-            label="Supprimer"
-            size="md"
-            @click.stop="handleDelete"
-          />
+  <!-- MD Size - Carte moyenne, infos principales -->
+  <q-card
+    v-else-if="size === 'md'"
+    class="shadow-4 rounded-borders"
+    style="max-width: 380px; border-radius: 12px; overflow: hidden"
+    bordered
+  >
+    <!-- Image Header Medium -->
+    <div v-if="showImage" class="relative-position" style="height: 160px">
+      <q-img
+        :src="getImageUrl(object)"
+        :alt="object.title || object.name"
+        spinner-color="primary"
+        class="fit"
+        style="border-radius: 12px 12px 0 0"
+      >
+        <div
+          class="absolute-bottom full-width"
+          style="background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%)"
+        >
+          <div
+            class="text-white text-subtitle1 q-pa-md"
+            style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); font-weight: 600"
+          >
+            {{ object.title || object.name }}
+          </div>
         </div>
+      </q-img>
+    </div>
+
+    <!-- Content MD -->
+    <q-card-section class="q-pa-md">
+      <div v-if="!showImage" class="text-h6 text-weight-bold q-mb-sm text-primary">
+        {{ object.title || object.name }}
+      </div>
+
+      <div
+        v-if="object.description"
+        class="text-body2 text-grey-7 q-mb-md"
+        style="
+          line-height: 1.5;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        "
+      >
+        {{ object.description }}
+      </div>
+
+      <!-- Compact Metadata -->
+      <div v-if="detectedObjectType === 'quiz'" class="q-gutter-xs">
+        <q-chip
+          v-if="object.questions"
+          dense
+          color="blue-1"
+          text-color="blue-8"
+          icon="quiz"
+          size="sm"
+        >
+          {{ object.questions.length || 0 }} Q
+        </q-chip>
+        <q-chip
+          v-if="object.joinCode"
+          dense
+          color="green-1"
+          text-color="green-8"
+          icon="key"
+          size="sm"
+        >
+          {{ object.joinCode }}
+        </q-chip>
+        <q-chip
+          v-if="object.isPublic"
+          dense
+          color="orange-1"
+          text-color="orange-8"
+          icon="public"
+          size="sm"
+        >
+          Public
+        </q-chip>
+      </div>
+    </q-card-section>
+  </q-card>
+
+  <!-- SM Size - Carte compacte -->
+  <q-card
+    v-else-if="size === 'sm'"
+    class="shadow-2 rounded-borders"
+    style="max-width: 300px; border-radius: 8px; overflow: hidden"
+    bordered
+  >
+    <!-- Image Header Small -->
+    <div v-if="showImage" class="relative-position" style="height: 120px">
+      <q-img
+        :src="getImageUrl(object)"
+        :alt="object.title || object.name"
+        spinner-color="primary"
+        class="fit"
+        style="border-radius: 8px 8px 0 0"
+      >
+        <div
+          class="absolute-bottom full-width"
+          style="background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 100%)"
+        >
+          <div
+            class="text-white text-body2 q-pa-sm"
+            style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); font-weight: 600"
+          >
+            {{ object.title || object.name }}
+          </div>
+        </div>
+      </q-img>
+    </div>
+
+    <!-- Content SM -->
+    <q-card-section class="q-pa-sm">
+      <div v-if="!showImage" class="text-subtitle1 text-weight-bold q-mb-xs text-primary">
+        {{ object.title || object.name }}
+      </div>
+
+      <div
+        v-if="object.description"
+        class="text-caption text-grey-6 q-mb-sm"
+        style="
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        "
+      >
+        {{ object.description }}
+      </div>
+
+      <!-- Mini Metadata -->
+      <div v-if="detectedObjectType === 'quiz'" class="row q-gutter-xs items-center">
+        <q-badge v-if="object.questions" color="blue-6" class="text-weight-medium">
+          {{ object.questions.length || 0 }} Q
+        </q-badge>
+        <q-badge v-if="object.joinCode" color="green-6" class="text-weight-medium">
+          {{ object.joinCode }}
+        </q-badge>
+        <q-badge v-if="object.isPublic" color="orange-6" class="text-weight-medium">
+          Public
+        </q-badge>
+      </div>
+    </q-card-section>
+  </q-card>
+
+  <!-- XS Size - Carte minimale -->
+  <q-card
+    v-else-if="size === 'xs'"
+    class="shadow-1 rounded-borders"
+    style="max-width: 220px; border-radius: 6px; overflow: hidden"
+    flat
+    bordered
+  >
+    <!-- Image Header Extra Small -->
+    <div v-if="showImage" class="relative-position" style="height: 80px">
+      <q-img
+        :src="getImageUrl(object)"
+        :alt="object.title || object.name"
+        spinner-color="primary"
+        class="fit"
+        style="border-radius: 6px 6px 0 0"
+      >
+        <div
+          class="absolute-bottom full-width"
+          style="background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%)"
+        >
+          <div
+            class="text-white text-caption q-pa-xs"
+            style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); font-weight: 600"
+          >
+            {{ object.title || object.name }}
+          </div>
+        </div>
+      </q-img>
+    </div>
+
+    <!-- Content XS -->
+    <q-card-section class="q-pa-xs">
+      <div v-if="!showImage" class="text-body2 text-weight-bold text-primary q-mb-xs">
+        {{ object.title || object.name }}
+      </div>
+
+      <!-- Minimal Metadata -->
+      <div v-if="detectedObjectType === 'quiz'" class="row q-gutter-xs items-center">
+        <q-icon name="quiz" size="xs" color="blue-6" />
+        <span class="text-caption text-grey-7">{{ object.questions?.length || 0 }}</span>
+        <q-icon v-if="object.joinCode" name="key" size="xs" color="green-6" />
+        <q-icon v-if="object.isPublic" name="public" size="xs" color="orange-6" />
       </div>
     </q-card-section>
   </q-card>
@@ -183,15 +504,23 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useQuasar } from 'quasar'
 
 const props = defineProps({
   object: { type: Object, required: true },
   objectType: { type: String, default: null },
+  size: {
+    type: String,
+    default: 'lg',
+    validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value),
+  },
   showViewButton: { type: Boolean, default: true },
   showEditButton: { type: Boolean, default: true },
   showDeleteButton: { type: Boolean, default: true },
   showShareButton: { type: Boolean, default: true },
 })
+
+const $q = useQuasar()
 
 const emit = defineEmits(['view', 'edit', 'delete', 'share', 'play', 'join', 'generateCode'])
 
@@ -203,7 +532,10 @@ const detectedObjectType = computed(() => {
   return 'generic'
 })
 
-const showImage = computed(() => !!getImageUrl(props.object))
+const showImage = computed(() => {
+  // Montrer l'image pour toutes les tailles si elle existe
+  return !!getImageUrl(props.object)
+})
 
 const getImageUrl = (obj) => {
   if (!obj) return null
@@ -225,6 +557,28 @@ const getImageUrl = (obj) => {
   return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
 }
 
+const copyCode = () => {
+  const code = props.object.joinCode
+  if (code) {
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        $q.notify({
+          type: 'positive',
+          message: 'Code copié dans le presse-papiers !',
+          position: 'top',
+        })
+      })
+      .catch(() => {
+        $q.notify({
+          type: 'negative',
+          message: 'Échec de la copie du code.',
+          position: 'top',
+        })
+      })
+  }
+}
+
 const handleView = () => emit('view', props.object)
 const handleEdit = () => emit('edit', props.object)
 const handleDelete = () => emit('delete', props.object)
@@ -235,8 +589,10 @@ const handleGenerateCode = () => emit('generateCode', props.object)
 </script>
 
 <style scoped>
+/* Responsive adjustments */
 @media (max-width: 600px) {
-  .row.q-gutter-md {
+  .row.q-gutter-md,
+  .row.q-gutter-lg {
     flex-direction: column !important;
     gap: 8px !important;
   }
@@ -244,5 +600,37 @@ const handleGenerateCode = () => emit('generateCode', props.object)
   .row.q-gutter-sm {
     justify-content: center !important;
   }
+
+  /* XL size responsive */
+  .q-card[style*='max-width: 900px'] {
+    max-width: 100% !important;
+  }
+
+  /* LG size responsive */
+  .q-card[style*='max-width: 450px'] {
+    max-width: 100% !important;
+  }
+
+  /* MD size responsive */
+  .q-card[style*='max-width: 380px'] {
+    max-width: 100% !important;
+  }
+
+  /* SM size responsive */
+  .q-card[style*='max-width: 300px'] {
+    max-width: 95% !important;
+  }
+
+  /* XS size responsive */
+  .q-card[style*='max-width: 220px'] {
+    max-width: 90% !important;
+  }
+}
+
+/* Text overflow handling */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

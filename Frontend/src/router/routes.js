@@ -68,11 +68,11 @@ const routes = [
     component: () => import('pages/Quiz/QuizLobbyPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
-  // {
-  //   path: '/quiz/play/:id',
-  //   component: () => import('pages/Quiz/QuizPlayPage.vue'),
-  //   meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
-  // },
+  {
+    path: '/quiz/play/:id',
+    component: () => import('pages/Quiz/QuizPlayPage.vue'),
+    meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
+  },
   // {
   //   path: '/quiz/results/:id',
   //   component: () => import('pages/Quiz/QuizResultsPage.vue'),

@@ -16,7 +16,14 @@
         <div v-else-if="error" class="column items-center q-pa-md">
           <q-icon name="error" color="negative" size="3em" />
           <div class="q-mt-md">Une erreur est survenue lors du chargement des données.</div>
-          <q-btn flat color="primary" text-color="secondary" label="Réessayer" @click="getUser" class="q-mt-md" />
+          <q-btn
+            flat
+            color="primary"
+            text-color="secondary"
+            label="Réessayer"
+            @click="getUser"
+            class="q-mt-md"
+          />
         </div>
 
         <div v-else class="q-gutter-y-lg">
@@ -193,10 +200,10 @@ const actionButtons = [
   {
     action: 'cancel',
     label: 'Annuler',
-    color: 'white',
     class: 'text-secondary q-pa-sm border-secondary col-5',
     ariaLabel: 'Annuler les modifications',
     title: 'Revenir sans sauvegarder les modifications',
+    outline: true,
   },
   {
     action: 'save',
