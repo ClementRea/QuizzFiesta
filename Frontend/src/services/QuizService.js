@@ -20,7 +20,7 @@ class QuizService {
 
   async joinQuizByCode(joinCode) {
     try {
-      const response = await this.api.get(`/join/${joinCode}`)
+      const response = await this.api.get(`/quiz/join/${joinCode}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -29,7 +29,7 @@ class QuizService {
 
   async getQuizById(quizId) {
     try {
-      const response = await this.api.get(`/${quizId}`)
+      const response = await this.api.get(`/quiz/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -47,7 +47,7 @@ class QuizService {
         params.append('active', filters.active)
       }
 
-      const response = await this.api.get(`/?${params.toString()}`)
+      const response = await this.api.get(`/quiz/?${params.toString()}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -56,7 +56,7 @@ class QuizService {
 
   async getMyQuizes() {
     try {
-      const response = await this.api.get('/myQuizes')
+      const response = await this.api.get('/quiz/myQuizes')
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -78,7 +78,7 @@ class QuizService {
         formData.append('startDate', quizData.startDate)
         formData.append('questions', JSON.stringify(quizData.questions))
 
-        const response = await this.api.post('/create', formData, {
+        const response = await this.api.post('/quiz/create', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -86,7 +86,7 @@ class QuizService {
         return response.data
       } else {
         // Otherwise, send as classic JSON
-        const response = await this.api.post('/create', quizData)
+        const response = await this.api.post('/quiz/create', quizData)
         return response.data
       }
     } catch (error) {
@@ -96,7 +96,7 @@ class QuizService {
 
   async updateQuiz(quizId, quizData) {
     try {
-      const response = await this.api.put(`/update/${quizId}`, quizData)
+      const response = await this.api.put(`/quiz/update/${quizId}`, quizData)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -105,7 +105,7 @@ class QuizService {
 
   async deleteQuiz(quizId) {
     try {
-      const response = await this.api.delete(`/${quizId}`)
+      const response = await this.api.delete(`/quiz/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -114,7 +114,7 @@ class QuizService {
 
   async generateJoinCode(quizId) {
     try {
-      const response = await this.api.post(`/generateCode/${quizId}`)
+      const response = await this.api.post(`/quiz/generateCode/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -123,7 +123,7 @@ class QuizService {
 
   async addQuestionsToQuiz(quizId, questions) {
     try {
-      const response = await this.api.put(`/addQuestions/${quizId}`, { questions })
+      const response = await this.api.put(`/quiz/addQuestions/${quizId}`, { questions })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -133,7 +133,7 @@ class QuizService {
   // Methods for waiting room (lobby)
   async joinLobby(quizId) {
     try {
-      const response = await this.api.post(`/${quizId}/lobby/join`)
+      const response = await this.api.post(`/quiz/${quizId}/lobby/join`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -142,7 +142,7 @@ class QuizService {
 
   async leaveLobby(quizId) {
     try {
-      const response = await this.api.post(`/${quizId}/lobby/leave`)
+      const response = await this.api.post(`/quiz/${quizId}/lobby/leave`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -151,7 +151,7 @@ class QuizService {
 
   async getLobbyParticipants(quizId) {
     try {
-      const response = await this.api.get(`/${quizId}/lobby/participants`)
+      const response = await this.api.get(`/quiz/${quizId}/lobby/participants`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -160,7 +160,7 @@ class QuizService {
 
   async setLobbyReady(quizId, isReady) {
     try {
-      const response = await this.api.put(`/${quizId}/lobby/ready`, { isReady })
+      const response = await this.api.put(`/quiz/${quizId}/lobby/ready`, { isReady })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -169,7 +169,7 @@ class QuizService {
 
   async startQuizFromLobby(quizId) {
     try {
-      const response = await this.api.post(`/${quizId}/lobby/start`)
+      const response = await this.api.post(`/quiz/${quizId}/lobby/start`)
       return response.data
     } catch (error) {
       throw error.response?.data || error

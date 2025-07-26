@@ -6,11 +6,11 @@
         <q-card class="shadow-3 q-mb-lg">
           <q-card-section class="bg-primary text-white text-center">
             <div class="text-h5 q-mb-sm">
-              <q-icon name="mdi-account-group" size="md" class="q-mr-sm" />
-              Salle d'attente
+              <q-icon name="mdi-account-group text-secondary" size="md" class="q-mr-sm" />
+              <span class="text-secondary">Salle d'attente</span>
             </div>
-            <div class="text-subtitle1">{{ quiz?.title || 'Chargement...' }}</div>
-            <div v-if="quiz?.description" class="text-caption q-mt-xs">
+            <div class="text-subtitle1 text-secondary">{{ quiz?.title || 'Chargement...' }}</div>
+            <div v-if="quiz?.description" class="text-caption text-secondary q-mt-xs">
               {{ quiz.description }}
             </div>
           </q-card-section>
@@ -24,9 +24,9 @@
                 <div class="text-h6">{{ quiz.questions?.length || 0 }}</div>
               </div>
               <div class="col">
-                <q-icon name="mdi-account-multiple" size="sm" color="primary" />
+                <q-icon name="mdi-account-multiple" size="sm" color="grey-6" />
                 <div class="text-caption text-grey-7">Participants</div>
-                <div class="text-h6 text-primary">{{ participants.length }}</div>
+                <div class="text-h6">{{ participants.length }}</div>
               </div>
               <div class="col">
                 <q-icon name="mdi-clock" size="sm" color="grey-6" />
@@ -150,8 +150,7 @@
               <div
                 v-for="message in messages"
                 :key="message.id"
-                class="q-pa-sm rounded-borders"
-                :class="message.type === 'system' ? 'bg-secondary' : 'bg-grey-2'"
+                class="q-pa-sm rounded-borders bg-grey-2"
               >
                 <div class="text-caption text-grey-7">{{ formatTime(message.timestamp) }}</div>
                 <div class="text-body2">{{ message.content }}</div>
@@ -163,6 +162,8 @@
         <!-- Actions -->
         <q-card class="shadow-2">
           <q-card-section>
+            <!-- DEBUG: Affichage temporaire de isOrganizer -->
+            <div class="q-mb-sm text-caption text-grey-6">isOrganizer: {{ isOrganizer }}</div>
             <div class="row q-gutter-md">
               <!-- Bouton Quitter -->
               <q-btn
@@ -237,10 +238,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
+import UserService from 'src/services/UserService'
 import AuthService from 'src/services/AuthService'
 
 const router = useRouter()
@@ -268,19 +270,31 @@ const maxReconnectAttempts = 5
 // Computed
 const quizId = computed(() => route.params.id)
 const isOrganizer = computed(() => {
-  return currentUser.value && quiz.value && currentUser.value.id === quiz.value.createdBy?._id
+  return currentUser.value && quiz.value && currentUser.value._id === quiz.value.createdBy?._id
 })
 
 const canStart = computed(() => {
+  console.log('isOrga', isOrganizer.value)
   if (!isOrganizer.value) return false
   if (participants.value.length < 1) return false
-  return participants.value.every((p) => p.isReady)
+
+  const nonOrganizerParticipants = participants.value.filter((p) => !p.isOrganizer)
+  if (nonOrganizerParticipants.length === 0) {
+    return true
+  }
+
+  return nonOrganizerParticipants.every((p) => p.isReady)
 })
 
 const startDisabledReason = computed(() => {
   if (!isOrganizer.value) return "Seul l'organisateur peut démarrer"
   if (participants.value.length < 1) return 'Il faut au moins 1 participant'
-  if (!participants.value.every((p) => p.isReady)) return 'Tous les participants doivent être prêts'
+
+  const nonOrganizerParticipants = participants.value.filter((p) => !p.isOrganizer)
+  if (nonOrganizerParticipants.length > 0 && !nonOrganizerParticipants.every((p) => p.isReady)) {
+    return 'Tous les participants doivent être prêts'
+  }
+
   return ''
 })
 
@@ -360,18 +374,14 @@ const initializeLobby = async () => {
   try {
     loading.value = true
 
-    // User infos
-    const userResponse = await AuthService.getMe()
+    const userResponse = await UserService.getMe()
     currentUser.value = userResponse.data.user
 
-    // Join lobby
     await joinLobby()
 
-    // Get quiz info
     const quizResponse = await QuizService.getQuizById(quizId.value)
     quiz.value = quizResponse.data.quiz
 
-    // real time connection
     setupRealtimeConnection()
   } catch (error) {
     console.error('Erreur initialisation lobby:', error)
@@ -390,16 +400,12 @@ const initializeLobby = async () => {
  * Setup SSE real time play
  */
 const setupRealtimeConnection = () => {
-  // Get auth token for SSE connection
   const token = AuthService.getAccessToken()
 
-  // SSE endpoint URL
   const url = `${getApiBaseUrl()}/quiz/${quizId.value}/lobby/events?token=${token}`
 
-  // EventSource connection
   eventSource.value = new EventSource(url)
 
-  // Success connection
   eventSource.value.onopen = () => {
     connectionStatus.value = 'connected'
     reconnectAttempts.value = 0
@@ -424,7 +430,7 @@ const setupRealtimeConnection = () => {
 }
 
 /**
- * Message SSE
+ * Notif SSE
  */
 const handleRealtimeMessage = (data) => {
   switch (data.type) {
@@ -438,7 +444,6 @@ const handleRealtimeMessage = (data) => {
       })
       break
 
-    // player leaves the lobby
     case 'participant_left':
       participants.value = participants.value.filter((p) => p.id !== data.participantId)
       addMessage({
@@ -448,7 +453,6 @@ const handleRealtimeMessage = (data) => {
       })
       break
 
-    // When a player changes ready status
     case 'participant_ready_changed': {
       const participant = participants.value.find((p) => p.id === data.participantId)
       if (participant) {
@@ -462,33 +466,28 @@ const handleRealtimeMessage = (data) => {
       break
     }
 
-    // When the organizer starts the quiz
     case 'quiz_starting':
       addMessage({
         type: 'system',
         content: 'Le quiz va commencer...',
         timestamp: new Date(),
       })
-      // Redirect all participants to the quiz play page after 2 seconds
       setTimeout(() => {
         router.push(`/quiz/play/${quizId.value}`)
       }, 2000)
       break
 
-    // When the organizer cancels the quiz
     case 'quiz_cancelled':
       addMessage({
         type: 'system',
         content: "Le quiz a été annulé par l'organisateur",
         timestamp: new Date(),
       })
-      // Redirect participants back to join page after 3 seconds
       setTimeout(() => {
         router.push('/quiz/join')
       }, 3000)
       break
 
-    // Ignore ping messages to keep the connection
     case 'ping':
       break
 

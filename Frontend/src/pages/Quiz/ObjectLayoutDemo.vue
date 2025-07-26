@@ -29,14 +29,13 @@
 
     <!-- Démonstration par taille -->
     <div class="column q-gutter-xl">
-      <!-- Taille XS -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-size-xs" class="q-mr-sm" />
-          Taille XS - Liste compacte mobile
+      <!-- XS -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-size-xs" class="q-mr-sm" /> XS - Compact (mobile)
         </div>
         <div class="text-body2 text-grey-7 q-mb-md">
-          Parfait pour les listes mobiles, affichage minimal avec titre et actions essentielles
+          Affichage minimal, titre et actions essentielles.
         </div>
         <div class="row q-gutter-sm">
           <ObjectLayout
@@ -52,17 +51,15 @@
             @edit="handleEdit"
           />
         </div>
-      </div>
+      </q-card>
+      <q-separator />
 
-      <!-- Taille SM -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-size-s" class="q-mr-sm" />
-          Taille SM - Cards de grille
+      <!-- SM -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-size-s" class="q-mr-sm" /> SM - Grille
         </div>
-        <div class="text-body2 text-grey-7 q-mb-md">
-          Idéal pour les grilles de quiz, avec image, titre et métadonnées de base
-        </div>
+        <div class="text-body2 text-grey-7 q-mb-md">Image, titre, métadonnées de base.</div>
         <div class="row q-gutter-md">
           <ObjectLayout
             v-for="quiz in sampleQuizzes.slice(0, 2)"
@@ -77,16 +74,16 @@
             @edit="handleEdit"
           />
         </div>
-      </div>
+      </q-card>
+      <q-separator />
 
-      <!-- Taille MD -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-size-m" class="q-mr-sm" />
-          Taille MD - Liste standard (recommandée)
+      <!-- MD -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-size-m" class="q-mr-sm" /> MD - Liste standard
         </div>
         <div class="text-body2 text-grey-7 q-mb-md">
-          Taille parfaite pour les listes de quiz avec toutes les informations importantes
+          Toutes les infos importantes, actions rapides.
         </div>
         <div class="column q-gutter-md">
           <ObjectLayout
@@ -102,7 +99,15 @@
             @edit="handleEdit"
           >
             <template #quick-actions>
-              <q-btn flat dense round icon="share" color="primary" text-color="secondary" @click.stop="shareQuiz(quiz)">
+              <q-btn
+                flat
+                dense
+                round
+                icon="share"
+                color="primary"
+                text-color="secondary"
+                @click.stop="shareQuiz(quiz)"
+              >
                 <q-tooltip>Partager</q-tooltip>
               </q-btn>
               <q-btn
@@ -118,17 +123,15 @@
             </template>
           </ObjectLayout>
         </div>
-      </div>
+      </q-card>
+      <q-separator />
 
-      <!-- Taille LG -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-size-l" class="q-mr-sm" />
-          Taille LG - Vue détaillée
+      <!-- LG -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-size-l" class="q-mr-sm" /> LG - Vue détaillée
         </div>
-        <div class="text-body2 text-grey-7 q-mb-md">
-          Pour afficher plus de détails, avec code de partage visible
-        </div>
+        <div class="text-body2 text-grey-7 q-mb-md">Plus de détails, code de partage visible.</div>
         <div class="column q-gutter-md">
           <ObjectLayout
             :object="sampleQuizzes[0]"
@@ -142,39 +145,32 @@
           >
             <template #metadata>
               <q-chip dense color="secondary" text-color="white" size="md">
-                <q-icon name="mdi-fire" class="q-mr-xs" />
-                Populaire
+                <q-icon name="mdi-fire" class="q-mr-xs" /> Populaire
               </q-chip>
             </template>
-
             <template #actions="{ object }">
               <q-btn flat color="primary" text-color="secondary" @click.stop="playQuiz(object)">
-                <q-icon name="play_arrow" class="q-mr-xs" />
-                Jouer maintenant
+                <q-icon name="play_arrow" class="q-mr-xs" /> Jouer maintenant
               </q-btn>
               <q-space />
               <q-btn flat color="grey-7" @click.stop="shareQuiz(object)">
-                <q-icon name="share" class="q-mr-xs" />
-                Partager
+                <q-icon name="share" class="q-mr-xs" /> Partager
               </q-btn>
               <q-btn flat color="grey-7" @click.stop="handleEdit(object)">
-                <q-icon name="edit" class="q-mr-xs" />
-                Modifier
+                <q-icon name="edit" class="q-mr-xs" /> Modifier
               </q-btn>
             </template>
           </ObjectLayout>
         </div>
-      </div>
+      </q-card>
+      <q-separator />
 
-      <!-- Taille XL -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-size-xl" class="q-mr-sm" />
-          Taille XL - Vue complète
+      <!-- XL -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-size-xl" class="q-mr-sm" /> XL - Vue complète
         </div>
-        <div class="text-body2 text-grey-7 q-mb-md">
-          Vue la plus complète avec toutes les informations et métadonnées étendues
-        </div>
+        <div class="text-body2 text-grey-7 q-mb-md">Toutes les infos et métadonnées étendues.</div>
         <ObjectLayout
           :object="sampleQuizzes[1]"
           size="xl"
@@ -204,20 +200,14 @@
               </div>
             </div>
           </template>
-
           <template #actions="{ object }">
             <q-btn unelevated color="primary" text-color="secondary" @click.stop="playQuiz(object)">
-              <q-icon name="play_arrow" class="q-mr-sm" />
-              Commencer le quiz
+              <q-icon name="play_arrow" class="q-mr-sm" /> Commencer le quiz
             </q-btn>
-
             <q-btn flat color="secondary" text-color="primary" @click.stop="viewStats(object)">
-              <q-icon name="mdi-chart-line" class="q-mr-sm" />
-              Voir les statistiques
+              <q-icon name="mdi-chart-line" class="q-mr-sm" /> Voir les statistiques
             </q-btn>
-
             <q-space />
-
             <q-btn-dropdown flat color="grey-7" icon="more_vert" auto-close>
               <q-list>
                 <q-item clickable @click="handleEdit(object)">
@@ -226,23 +216,19 @@
                   </q-item-section>
                   <q-item-section>Modifier</q-item-section>
                 </q-item>
-
                 <q-item clickable @click="shareQuiz(object)">
                   <q-item-section avatar>
                     <q-icon name="share" />
                   </q-item-section>
                   <q-item-section>Partager</q-item-section>
                 </q-item>
-
                 <q-item clickable @click="duplicateQuiz(object)">
                   <q-item-section avatar>
                     <q-icon name="content_copy" />
                   </q-item-section>
                   <q-item-section>Dupliquer</q-item-section>
                 </q-item>
-
                 <q-separator />
-
                 <q-item clickable @click="deleteQuiz(object)" class="text-negative">
                   <q-item-section avatar>
                     <q-icon name="delete" color="negative" />
@@ -253,16 +239,17 @@
             </q-btn-dropdown>
           </template>
         </ObjectLayout>
-      </div>
+      </q-card>
+      <q-separator />
 
-      <!-- Taille sélectionnée -->
-      <div>
-        <div class="text-h6 q-mb-md flex items-center">
-          <q-icon name="mdi-eye" class="q-mr-sm" />
-          Aperçu - Taille {{ selectedSize.toUpperCase() }}
+      <!-- Taille sélectionnée dynamique -->
+      <q-card flat bordered class="q-pa-md q-mb-lg">
+        <div class="text-h6 flex items-center q-mb-sm">
+          <q-icon name="mdi-eye" class="q-mr-sm" /> Aperçu dynamique - Taille
+          {{ selectedSize.toUpperCase() }}
         </div>
         <div class="text-body2 text-grey-7 q-mb-md">
-          Testez les différentes options avec les contrôles ci-dessus
+          Testez les options avec les contrôles ci-dessus.
         </div>
         <ObjectLayout
           :object="sampleQuizzes[2]"
@@ -275,7 +262,7 @@
           @edit="handleEdit"
           @copy-code="handleCopyCode"
         />
-      </div>
+      </q-card>
     </div>
   </div>
 </template>

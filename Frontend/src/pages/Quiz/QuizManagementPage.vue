@@ -1,19 +1,21 @@
 <template>
-  <div class="quiz-management-page q-pa-lg">
+  <div class="quiz-management-page q-pa-lg bg-primary">
     <div class="row justify-center">
       <div class="col-12 col-lg-10">
         <div class="text-center q-mb-xl">
           <div class="text-h4 text-primary q-mb-sm">
-            <q-icon name="mdi-format-list-bulleted" class="q-mr-sm" />
-            Mes Quiz
+            <q-icon name="mdi-format-list-bulleted" class="q-mr-sm text-secondary" />
+            <span class="text-secondary">Mes Quiz</span>
           </div>
-          <div class="text-subtitle1 text-grey-7">
+          <div class="text-subtitle1 text-secondary">
             Gérez vos quiz et générez des codes de partage
           </div>
           <q-btn
             v-if="!loading && quizzes.length > 0"
             unelevated
-            color="primary"
+            rounded
+            color="secondary"
+            text-color="primary"
             class="q-mt-lg"
             @click="$router.push('/quiz/create')"
           >
@@ -33,9 +35,15 @@
           <div class="text-body2 text-grey-5 q-mt-sm">
             Créez votre premier quiz pour commencer !
           </div>
-          <q-btn unelevated color="primary" class="q-mt-lg" @click="$router.push('/quiz/create')">
+          <q-btn
+            unelevated
+            color="secondary"
+            text-color="primary"
+            class="q-mt-lg"
+            @click="$router.push('/quiz/create')"
+          >
             <q-icon name="add" class="q-mr-sm" />
-            Créer un quiz
+            <span>Créer un quiz</span>
           </q-btn>
         </div>
 
@@ -55,12 +63,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
 import QuizObject from 'src/components/QuizObject.vue'
 
-const router = useRouter()
 const $q = useQuasar()
 
 const loading = ref(false)
@@ -103,6 +109,5 @@ const handleQuizDeleted = (deletedQuiz) => {
 <style scoped>
 .quiz-management-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 </style>

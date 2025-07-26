@@ -1,191 +1,187 @@
 <template>
-  <div
-    class="full-height flex flex-center q-pa-lg"
-    :style="{
-      background: $q.screen.lt.sm ? 'white' : 'linear-gradient(135deg, #FFF7CC 0%, #FFEF99 100%)',
-      minHeight: '100vh',
-    }"
-  >
-    <div class="row justify-center full-width">
-      <div class="col-12 col-md-6 col-lg-4">
-        <q-card
-          class="shadow-3"
-          :style="{ borderRadius: $q.screen.lt.sm ? '12px' : '16px', overflow: 'hidden' }"
-        >
-          <q-card-section class="text-center bg-primary text-white">
-            <div class="text-h5 q-mb-sm">
-              <q-icon name="mdi-gamepad-variant" size="md" class="q-mr-sm" />
-              Rejoindre un Quiz
-            </div>
-            <div class="text-subtitle2">Entrez le code du quiz pour commencer à jouer</div>
-          </q-card-section>
+  <main class="full-width bg-gradient-primary" aria-label="Rejoindre un quiz">
+    <section class="q-pa-lg rounded-borders-bottom">
+      <div class="row justify-center">
+        <div class="col-12 col-md-8 text-center">
+          <div class="q-mb-lg">
+            <h1 class="text-h3 text-secondary text-weight-bold q-mb-md">🎮 Rejoindre un Quiz</h1>
+            <p class="text-h6 text-secondary q-mt-none q-mb-xl">
+              Entrez le code du quiz pour commencer à jouer
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-          <q-card-section class="q-pa-lg">
-            <!-- Formulaire de saisie du code -->
-            <div v-if="!foundQuiz" class="q-gutter-md">
-              <div class="text-center q-mb-lg">
-                <q-icon name="mdi-key-variant" size="xl" color="grey-6" />
-              </div>
-
-              <q-input
-                v-model="joinCode"
-                label="Code du quiz"
-                outlined
-                fill-mask
-                hint="Code à 6 caractères (ex: ABC123)"
-                class="text-center"
-                :loading="loading"
-                :error="!!error"
-                :error-message="error"
-                @input="onCodeInput"
-                @keyup.enter="searchQuiz"
-                autofocus
-              >
-                <template #prepend>
-                  <q-icon name="mdi-pound" />
-                </template>
-                <template #append>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="search"
-                    :loading="loading"
-                    :disable="!isValidCode"
-                    @click="searchQuiz"
-                    color="primary"
-                    text-color="secondary"
-                  />
-                </template>
-              </q-input>
-
-              <div class="text-center q-mt-lg">
-                <q-btn
-                  unelevated
-                  color="primary"
-                  text-color="secondary"
-                  size="lg"
-                  :loading="loading"
-                  :disable="!isValidCode"
-                  @click="searchQuiz"
-                  class="full-width"
-                >
-                  <q-icon name="search" class="q-mr-sm" />
-                  Rechercher le quiz
-                </q-btn>
-              </div>
+    <!-- Formulaire de saisie du code -->
+    <section v-if="!foundQuiz" class="q-pa-lg">
+      <div class="row justify-center">
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="bg-white rounded-borders q-pa-xl text-center shadow-8">
+            <div class="q-mb-xl">
+              <q-icon name="mdi-key-variant" size="5rem" color="secondary" />
             </div>
 
-            <!-- Quiz trouvé -->
-            <div
-              v-else
-              class="animated fadeIn"
-              :style="{
-                animation: 'slideIn 0.3s ease-out',
-              }"
+            <q-input
+              v-model="joinCode"
+              label="Code du quiz"
+              outlined
+              rounded
+              bg-color="white"
+              label-color="secondary"
+              color="secondary"
+              fill-mask
+              hint="Code à 6 caractères (ex: ABC123)"
+              class="text-center q-mb-xl quiz-code-input"
+              :loading="loading"
+              :error="!!error"
+              :error-message="error"
+              @input="onCodeInput"
+              @keyup.enter="searchQuiz"
+              autofocus
+              aria-label="Saisir le code du quiz à 6 caractères"
             >
-              <div class="text-center q-mb-lg">
-                <q-icon name="mdi-check-circle" size="xl" color="positive" />
-                <div class="text-h6 q-mt-sm text-positive">Quiz trouvé !</div>
+              <template v-slot:prepend>
+                <q-icon name="mdi-pound" color="secondary" />
+              </template>
+            </q-input>
+
+            <q-btn
+              label="🔍 Rechercher le quiz"
+              color="secondary"
+              text-color="primary"
+              rounded
+              size="lg"
+              :loading="loading"
+              :disable="!isValidCode"
+              @click="searchQuiz"
+              class="full-width shadow-4 text-weight-medium"
+              no-caps
+              unelevated
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz trouvé -->
+    <section
+      v-else
+      class="q-pa-lg"
+      :style="{
+        animation: 'slideIn 0.3s ease-out',
+      }"
+    >
+      <div class="row justify-center">
+        <div class="col-12 col-md-8">
+          <!-- Header Success -->
+          <div class="text-center q-mb-xl">
+            <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">✅ Quiz trouvé !</h2>
+            <q-separator class="q-mt-md" size="2px" />
+          </div>
+
+          <!-- Quiz Info Card -->
+          <div class="row justify-center">
+            <div class="col-12 col-md-10">
+              <div class="rounded-borders q-pa-lg shadow-8">
+                <QuizObject
+                  :quiz="foundQuiz"
+                  size="md"
+                  :show-edit-button="false"
+                  :show-delete-button="false"
+                  :show-view-button="false"
+                  :show-share-button="false"
+                />
+
+                <!-- Status du quiz -->
+                <div class="q-mt-lg">
+                  <q-banner
+                    v-if="quizStatus.status === 'not_started'"
+                    dense
+                    class="bg-orange-1 text-orange-8 rounded-borders"
+                    role="alert"
+                  >
+                    <template v-slot:avatar>
+                      <q-icon name="schedule" color="orange" />
+                    </template>
+                    <div class="text-weight-medium">⏰ {{ quizStatus.message }}</div>
+                    <div class="text-caption q-mt-xs">
+                      Début : {{ formatDate(foundQuiz.startDate) }}
+                    </div>
+                  </q-banner>
+
+                  <q-banner
+                    v-else-if="quizStatus.status === 'ended'"
+                    dense
+                    class="bg-red-1 text-red-8 rounded-borders"
+                    role="alert"
+                  >
+                    <template v-slot:avatar>
+                      <q-icon name="event_busy" color="red" />
+                    </template>
+                    <div class="text-weight-medium">❌ {{ quizStatus.message }}</div>
+                  </q-banner>
+
+                  <q-banner
+                    v-else
+                    dense
+                    class="bg-green-1 text-green-8 rounded-borders"
+                    role="status"
+                  >
+                    <template v-slot:avatar>
+                      <q-icon name="play_circle" color="green" />
+                    </template>
+                    <div class="text-weight-medium">🎯 {{ quizStatus.message }}</div>
+                    <div v-if="quizStatus.timeRemaining" class="text-caption q-mt-xs">
+                      Temps restant : {{ formatTimeRemaining(quizStatus.timeRemaining) }}
+                    </div>
+                  </q-banner>
+                </div>
               </div>
-
-              <q-card flat bordered class="q-mb-lg">
-                <q-card-section>
-                  <div class="text-h6 text-dark q-mb-sm">{{ foundQuiz.title }}</div>
-                  <div v-if="foundQuiz.description" class="text-body2 text-grey-7 q-mb-md">
-                    {{ foundQuiz.description }}
-                  </div>
-
-                  <div class="row q-gutter-sm text-caption">
-                    <q-chip dense color="grey-3" text-color="dark">
-                      <q-icon name="mdi-help-circle" class="q-mr-xs" />
-                      {{ foundQuiz.questions?.length || 0 }} questions
-                    </q-chip>
-                    <q-chip dense color="grey-3" text-color="dark">
-                      <q-icon name="mdi-account" class="q-mr-xs" />
-                      Par {{ foundQuiz.createdBy?.userName || 'Anonyme' }}
-                    </q-chip>
-                  </div>
-
-                  <!-- Status du quiz -->
-                  <div class="q-mt-md">
-                    <q-banner
-                      v-if="quizStatus.status === 'not_started'"
-                      dense
-                      class="bg-orange-1 text-orange-8"
-                    >
-                      <template #avatar>
-                        <q-icon name="schedule" />
-                      </template>
-                      {{ quizStatus.message }}
-                      <div class="text-caption">Début : {{ formatDate(foundQuiz.startDate) }}</div>
-                    </q-banner>
-
-                    <q-banner
-                      v-else-if="quizStatus.status === 'ended'"
-                      dense
-                      class="bg-red-1 text-red-8"
-                    >
-                      <template #avatar>
-                        <q-icon name="event_busy" />
-                      </template>
-                      {{ quizStatus.message }}
-                    </q-banner>
-
-                    <q-banner v-else dense class="bg-green-1 text-green-8">
-                      <template #avatar>
-                        <q-icon name="play_circle" />
-                      </template>
-                      {{ quizStatus.message }}
-                      <div v-if="quizStatus.timeRemaining" class="text-caption">
-                        Temps restant : {{ formatTimeRemaining(quizStatus.timeRemaining) }}
-                      </div>
-                    </q-banner>
-                  </div>
-                </q-card-section>
-              </q-card>
-
-              <!-- Actions -->
-              <div class="row q-gutter-sm">
-                <q-btn flat color="grey-7" @click="resetSearch" class="col">
-                  <q-icon name="arrow_back" class="q-mr-sm" />
-                  Modifier le code
-                </q-btn>
-                <q-btn
-                  unelevated
-                  color="primary"
-                  text-color="secondary"
-                  :disable="quizStatus.status !== 'active'"
-                  @click="joinQuiz"
-                  class="col"
-                  :loading="joiningQuiz"
-                >
-                  <q-icon name="login" class="q-mr-sm" />
-                  Rejoindre
-                </q-btn>
-              </div>
             </div>
-          </q-card-section>
-        </q-card>
+          </div>
 
-        <!-- Aide -->
-        <q-card flat class="q-mt-lg bg-grey-1">
-          <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">
-              <q-icon name="help" class="q-mr-xs" />
-              Comment ça marche ?
-            </div>
-            <div class="text-body2 text-grey-7">
-              1. Demandez le code du quiz à l'organisateur<br />
-              2. Entrez le code à 6 caractères<br />
-              3. Vérifiez les informations du quiz<br />
-              4. Cliquez sur "Rejoindre" pour commencer !
-            </div>
-          </q-card-section>
-        </q-card>
+          <!-- Actions -->
+          <div class="row q-gutter-md justify-center q-mt-xl">
+            <q-btn
+              label="⬅️ Modifier le code"
+              color="secondary"
+              outline
+              rounded
+              size="lg"
+              @click="resetSearch"
+              class="col-12 col-sm-5 shadow-2"
+              no-caps
+            />
+            <q-btn
+              label="🚀 Rejoindre le quiz"
+              color="secondary"
+              rounded
+              size="lg"
+              :disable="quizStatus.status !== 'active'"
+              @click="joinQuiz"
+              class="col-12 col-sm-5 shadow-4 text-weight-medium"
+              :loading="joiningQuiz"
+              no-caps
+              unelevated
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div v-if="loading && !foundQuiz" class="q-pa-xl">
+      <div class="row justify-center">
+        <div class="col-12 col-md-6">
+          <div class="bg-white rounded-borders q-pa-xl text-center shadow-4">
+            <q-spinner-dots size="3rem" color="secondary" class="q-mb-md" />
+            <p class="text-body1 text-secondary">Recherche du quiz en cours...</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -193,6 +189,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
+import QuizObject from 'src/components/QuizObject.vue'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -320,7 +317,15 @@ const formatTimeRemaining = (milliseconds) => {
 }
 </script>
 
-<style>
+<style scoped>
+.rounded-borders-bottom {
+  border-radius: 0 0 2rem 2rem;
+}
+
+.rounded-borders {
+  border-radius: 1rem;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
