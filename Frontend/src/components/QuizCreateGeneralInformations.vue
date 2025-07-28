@@ -1,7 +1,7 @@
 <template>
   <div class="general-info-step">
     <div class="row items-center q-mb-lg">
-      <q-icon name="info" size="28px" class="text-primary q-mr-sm" />
+      <q-icon name="info" size="28px" class="text-secondary q-mr-sm" />
       <h2 class="text-h5 text-weight-medium q-ma-none text-grey-8">Informations générales</h2>
     </div>
 
@@ -13,7 +13,7 @@
           Logo du quiz (optionnel)
         </div>
 
-        <div v-if="logoPreviewUrl" class="flex flex-center q-mb-md">
+        <div v-if="logoPreviewUrl" class="flex flex-start q-mb-md">
           <div class="logo-preview-enhanced relative-position">
             <q-img
               :src="logoPreviewUrl"
@@ -43,7 +43,7 @@
           </div>
         </div>
 
-        <div class="flex flex-center">
+        <div class="flex flex-start">
           <q-btn
             outline
             :unelevated="logoFile"

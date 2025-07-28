@@ -162,10 +162,7 @@
         <!-- Actions -->
         <q-card class="shadow-2">
           <q-card-section>
-            <!-- DEBUG: Affichage temporaire de isOrganizer -->
-            <div class="q-mb-sm text-caption text-grey-6">isOrganizer: {{ isOrganizer }}</div>
             <div class="row q-gutter-md">
-              <!-- Bouton Quitter -->
               <q-btn
                 outline
                 color="negative"
@@ -176,7 +173,6 @@
                 :disable="starting"
               />
 
-              <!-- Bouton Prêt/Pas prêt -->
               <q-btn
                 :color="isReady ? 'orange' : 'green'"
                 :icon="isReady ? 'mdi-clock-outline' : 'mdi-check'"
@@ -187,7 +183,6 @@
                 :disable="starting"
               />
 
-              <!-- Bouton Démarrer (organisateur seulement) -->
               <q-btn
                 v-if="isOrganizer"
                 unelevated
@@ -220,7 +215,7 @@
       </div>
     </div>
 
-    <!-- Dialog de confirmation pour quitter -->
+    <!-- dialog quiz confirm -->
     <q-dialog v-model="showLeaveDialog" persistent>
       <q-card>
         <q-card-section class="row items-center">

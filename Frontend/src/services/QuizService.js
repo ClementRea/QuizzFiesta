@@ -176,6 +176,46 @@ class QuizService {
     }
   }
 
+  // Methods for quiz gameplay
+  async getQuizQuestions(quizId) {
+    try {
+      const response = await this.api.get(`/quiz/${quizId}/questions`)
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
+
+  async submitAnswer(quizId, questionId, answer) {
+    try {
+      const response = await this.api.post(`/quiz/${quizId}/answer`, {
+        questionId,
+        answer
+      })
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
+
+  async getGameState(quizId) {
+    try {
+      const response = await this.api.get(`/quiz/${quizId}/game/state`)
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
+
+  async getGameEvents(quizId) {
+    try {
+      const response = await this.api.get(`/quiz/${quizId}/game/events`)
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
+
   static validateJoinCode(code) {
     const hexPattern = /^[A-Fa-f0-9]{6}$/
     return hexPattern.test(code)

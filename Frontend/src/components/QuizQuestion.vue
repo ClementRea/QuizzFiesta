@@ -1,5 +1,5 @@
 <template>
-  <div class="quiz-question bg-white rounded-borders q-pa-xl shadow-8">
+  <div class="quiz-question bg-white rounded-borders q-pa-xl shadow-8" :class="{ 'disabled-question': disabled }">
     <!-- En-tête de la question -->
     <div class="question-header text-center q-mb-xl">
       <div class="question-number text-h6 text-secondary q-mb-sm">
@@ -54,11 +54,13 @@
             <q-card 
               flat 
               bordered 
-              class="cursor-pointer answer-card transition-all"
+              class="answer-card transition-all"
               :class="{
                 'selected': selectedAnswers.includes(index),
                 'bg-secondary text-primary': selectedAnswers.includes(index),
-                'bg-grey-1 hover-shadow': !selectedAnswers.includes(index)
+                'bg-grey-1 hover-shadow': !selectedAnswers.includes(index) && !disabled,
+                'cursor-pointer': !disabled,
+                'cursor-not-allowed opacity-60': disabled
               }"
             >
               <q-card-section class="q-pa-lg">
@@ -112,11 +114,13 @@
             <q-card 
               flat 
               bordered 
-              class="cursor-pointer answer-card transition-all text-center"
+              class="answer-card transition-all text-center"
               :class="{
                 'selected': selectedTrueFalse === true,
                 'bg-positive text-white': selectedTrueFalse === true,
-                'bg-grey-1 hover-shadow': selectedTrueFalse !== true
+                'bg-grey-1 hover-shadow': selectedTrueFalse !== true && !disabled,
+                'cursor-pointer': !disabled,
+                'cursor-not-allowed opacity-60': disabled
               }"
               @click="selectTrueFalse(true)"
             >
@@ -131,11 +135,13 @@
             <q-card 
               flat 
               bordered 
-              class="cursor-pointer answer-card transition-all text-center"
+              class="answer-card transition-all text-center"
               :class="{
                 'selected': selectedTrueFalse === false,
                 'bg-negative text-white': selectedTrueFalse === false,
-                'bg-grey-1 hover-shadow': selectedTrueFalse !== false
+                'bg-grey-1 hover-shadow': selectedTrueFalse !== false && !disabled,
+                'cursor-pointer': !disabled,
+                'cursor-not-allowed opacity-60': disabled
               }"
               @click="selectTrueFalse(false)"
             >
@@ -148,30 +154,65 @@
         </div>
       </div>
 
-      <!-- Questions de remise en ordre (placeholder) -->
+      <!-- Questions de remise en ordre -->
       <div v-else-if="question.type === 'order'" class="order-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Glissez les éléments pour les remettre dans le bon ordre :
         </div>
         
-        <!-- Le composant draggable sera ajouté plus tard -->
-        <div class="order-container q-gutter-sm">
-          <div 
-            v-for="(item, index) in orderItems" 
-            :key="index"
-            class="order-item"
+        <!-- Composant draggable pour réorganiser les éléments -->
+        <draggable 
+          v-model="orderItems" 
+          :disabled="disabled"
+          item-key="id"
+          class="order-container q-gutter-sm"
+          ghost-class="ghost"
+          drag-class="drag"
+          @start="onDragStart"
+          @end="onDragEnd"
+        >
+          <template #item="{ element, index }">
+            <div class="order-item q-mb-sm">
+              <q-card 
+                flat 
+                bordered 
+                class="order-card q-pa-md transition-all"
+                :class="{
+                  'cursor-move bg-grey-1': !disabled,
+                  'cursor-not-allowed bg-grey-3 opacity-60': disabled
+                }"
+              >
+                <div class="row items-center q-gutter-md no-wrap">
+                  <q-icon 
+                    name="drag_indicator" 
+                    :color="disabled ? 'grey-4' : 'grey-6'" 
+                    size="md" 
+                  />
+                  <div class="text-body1 text-weight-medium">{{ element.text }}</div>
+                  <q-space />
+                  <q-badge 
+                    :color="disabled ? 'grey-4' : 'secondary'" 
+                    :text-color="disabled ? 'grey-6' : 'primary'"
+                  >
+                    {{ index + 1 }}
+                  </q-badge>
+                </div>
+              </q-card>
+            </div>
+          </template>
+        </draggable>
+        
+        <!-- Instructions -->
+        <div class="text-center q-mt-md">
+          <q-chip 
+            dense 
+            color="info" 
+            text-color="white" 
+            icon="info"
+            class="text-body2"
           >
-            <q-card flat bordered class="cursor-move order-card q-pa-md bg-grey-1">
-              <div class="row items-center q-gutter-md no-wrap">
-                <q-icon name="drag_indicator" color="grey-6" size="md" />
-                <div class="text-body1 text-weight-medium">{{ item.text }}</div>
-                <q-space />
-                <q-badge color="secondary" text-color="primary">
-                  {{ index + 1 }}
-                </q-badge>
-              </div>
-            </q-card>
-          </div>
+            {{ disabled ? 'Ordre soumis' : 'Glissez pour réorganiser' }}
+          </q-chip>
         </div>
       </div>
 
@@ -190,6 +231,7 @@
           bg-color="grey-1"
           class="text-answer-input"
           :maxlength="question.maxLength || 500"
+          :disable="disabled"
           counter
         />
       </div>
@@ -210,6 +252,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import draggable from 'vuedraggable'
 
 const props = defineProps({
   question: {
@@ -309,7 +352,7 @@ const emitAnswer = () => {
       answer = selectedTrueFalse.value
       break
     case 'order':
-      answer = orderItems.value.map(item => item.id || item.text)
+      answer = orderItems.value.map(item => item.text)
       break
     case 'text':
       answer = textAnswer.value.trim()
@@ -323,11 +366,26 @@ const emitAnswer = () => {
   })
 }
 
+// Drag and drop handlers
+const onDragStart = () => {
+  console.log('Drag started')
+}
+
+const onDragEnd = () => {
+  console.log('Drag ended')
+  emitAnswer()
+}
+
 // Initialiser les éléments d'ordre si nécessaire
 const initializeOrderItems = () => {
   if (props.question.type === 'order' && props.question.items) {
-    // Mélanger les éléments
-    orderItems.value = [...props.question.items].sort(() => Math.random() - 0.5)
+    // Mélanger les éléments et ajouter des IDs uniques
+    orderItems.value = [...props.question.items]
+      .map((item, index) => ({
+        ...item,
+        id: item.id || `item-${index}-${Date.now()}`
+      }))
+      .sort(() => Math.random() - 0.5)
   }
 }
 
@@ -359,7 +417,7 @@ defineExpose({
       case 'true_false':
         return selectedTrueFalse.value
       case 'order':
-        return orderItems.value
+        return orderItems.value.map(item => item.text)
       case 'text':
         return textAnswer.value.trim()
       default:
@@ -414,6 +472,41 @@ defineExpose({
 
 .transition-all {
   transition: all 0.3s ease;
+}
+
+/* État désactivé */
+.disabled-question {
+  pointer-events: none;
+}
+
+.disabled-question .answer-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Drag and drop styles */
+.ghost {
+  opacity: 0.5;
+  background: var(--q-secondary);
+  border: 2px dashed var(--q-primary);
+}
+
+.drag {
+  transform: rotate(5deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.order-container {
+  min-height: 200px;
+  padding: 1rem;
+  border: 2px dashed transparent;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.order-container:hover {
+  border-color: var(--q-primary);
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 /* Responsive */
