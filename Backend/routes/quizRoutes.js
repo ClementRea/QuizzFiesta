@@ -56,6 +56,12 @@ router.get('/join/:joinCode', quizController.getQuizByJoinCode);
 router.get('/:id/lobby/participants', protect, quizController.getLobbyParticipants);
 router.get('/:id/lobby/events', protect, quizController.getLobbyEvents);
 
+// Routes pour le jeu
+router.get('/:id/questions', protect, quizController.getQuizQuestions);
+router.post('/:id/answer', protect, quizController.submitAnswer);
+router.get('/:id/game/state', protect, quizController.getGameState);
+router.get('/:id/game/events', protect, quizController.getGameEvents);
+
 //DELETE
 router.delete('/:id', protect, quizController.deleteQuiz);
 

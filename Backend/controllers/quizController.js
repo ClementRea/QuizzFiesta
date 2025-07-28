@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const LobbyParticipant = require('../models/LobbyParticipant');
+const GameParticipant = require('../models/GameParticipant');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
@@ -752,6 +753,332 @@ exports.getLobbyEvents = async (req, res, next) => {
 
   } catch (error) {
     console.error('Error in getLobbyEvents:', error);
+    res.end();
+  }
+};
+
+// ============== GAME METHODS ==============
+
+// Map pour stocker les connexions SSE des participants du jeu
+const gameConnections = new Map();
+
+// Diffuser un message à tous les participants du jeu
+function broadcastToGame(quizId, message, excludeUserId = null) {
+  for (const [key, connection] of gameConnections.entries()) {
+    if (key.startsWith(`${quizId}-`)) {
+      const userId = key.split('-')[1];
+      
+      if (excludeUserId && userId === excludeUserId) {
+        continue;
+      }
+      
+      try {
+        connection.write(`data: ${JSON.stringify(message)}\n\n`);
+      } catch (error) {
+        console.error('Error broadcasting to game participant:', error);
+        gameConnections.delete(key);
+      }
+    }
+  }
+}
+
+// Récupérer les questions du quiz (sans les bonnes réponses)
+exports.getQuizQuestions = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id).populate('questions');
+    
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    // Vérifier que l'utilisateur peut accéder au quiz
+    const isCreator = quiz.createdBy.toString() === req.user.id;
+    const isInLobby = await LobbyParticipant.findOne({
+      quizId: quiz._id,
+      userId: req.user.id
+    });
+
+    if (!isCreator && !isInLobby && !quiz.isPublic) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Accès non autorisé à ce quiz'
+      });
+    }
+
+    // Créer ou récupérer le participant de jeu
+    let gameParticipant = await GameParticipant.findOne({
+      quizId: quiz._id,
+      userId: req.user.id
+    });
+
+    if (!gameParticipant) {
+      gameParticipant = new GameParticipant({
+        quizId: quiz._id,
+        userId: req.user.id,
+        userName: req.user.userName,
+        avatar: req.user.avatar
+      });
+      await gameParticipant.save();
+    }
+
+    // Préparer les questions sans les bonnes réponses
+    const sanitizedQuestions = quiz.questions.map(question => ({
+      _id: question._id,
+      title: question.content,
+      type: question.type,
+      points: question.points,
+      timeLimit: question.timeGiven || 30,
+      answers: question.answer ? question.answer.map(ans => ({
+        text: ans.text,
+        // On ne renvoie PAS ans.correct
+      })) : [],
+      items: question.orderItems || []
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        quiz: {
+          _id: quiz._id,
+          title: quiz.title,
+          description: quiz.description
+        },
+        questions: sanitizedQuestions,
+        participant: {
+          currentQuestionIndex: gameParticipant.currentQuestionIndex,
+          totalScore: gameParticipant.totalScore
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in getQuizQuestions:', error);
+    next(error);
+  }
+};
+
+// Soumettre une réponse
+exports.submitAnswer = async (req, res, next) => {
+  try {
+    const { questionId, answer } = req.body;
+    const quizId = req.params.id;
+
+    // Vérifier que le quiz existe
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    // Récupérer la question avec la bonne réponse
+    const question = await Question.findById(questionId);
+    if (!question) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Question non trouvée'
+      });
+    }
+
+    // Récupérer le participant
+    let gameParticipant = await GameParticipant.findOne({
+      quizId,
+      userId: req.user.id
+    });
+
+    if (!gameParticipant) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Participant non trouvé dans le jeu'
+      });
+    }
+
+    // Vérifier que le participant n'a pas déjà répondu à cette question
+    const existingAnswer = gameParticipant.answers.find(
+      ans => ans.questionId.toString() === questionId
+    );
+
+    if (existingAnswer) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Vous avez déjà répondu à cette question'
+      });
+    }
+
+    // Calculer si la réponse est correcte
+    let isCorrect = false;
+    let points = 0;
+
+    if (question.type === 'multiple_choice') {
+      const correctAnswerIndex = question.answer.findIndex(ans => ans.correct);
+      isCorrect = answer === correctAnswerIndex;
+    } else if (question.type === 'true_false') {
+      isCorrect = answer === question.correctAnswer;
+    } else if (question.type === 'order') {
+      // Pour les questions d'ordre, comparer l'ordre donné avec le bon ordre
+      const correctOrder = question.orderItems.sort((a, b) => a.order - b.order).map(item => item.text);
+      isCorrect = JSON.stringify(answer) === JSON.stringify(correctOrder);
+    }
+
+    if (isCorrect) {
+      points = question.points || 100;
+    }
+
+    // Ajouter la réponse
+    gameParticipant.answers.push({
+      questionId,
+      answer,
+      isCorrect,
+      points,
+      submittedAt: new Date()
+    });
+
+    gameParticipant.totalScore += points;
+    gameParticipant.lastActivity = new Date();
+    await gameParticipant.save();
+
+    // Préparer la bonne réponse pour le frontend
+    let correctAnswer = null;
+    if (question.type === 'multiple_choice') {
+      correctAnswer = question.answer.findIndex(ans => ans.correct);
+    } else if (question.type === 'true_false') {
+      correctAnswer = question.correctAnswer;
+    } else if (question.type === 'order') {
+      correctAnswer = question.orderItems.sort((a, b) => a.order - b.order).map(item => item.text);
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        isCorrect,
+        points,
+        totalScore: gameParticipant.totalScore,
+        correctAnswer
+      }
+    });
+
+    // Vérifier si tous les participants ont répondu
+    const totalParticipants = await GameParticipant.countDocuments({ quizId });
+    const participantsWhoAnswered = await GameParticipant.countDocuments({
+      quizId,
+      [`answers.${gameParticipant.answers.length - 1}`]: { $exists: true }
+    });
+
+    if (participantsWhoAnswered === totalParticipants) {
+      // Tous les participants ont répondu, on peut passer à la question suivante
+      broadcastToGame(quizId, {
+        type: 'all_answered',
+        message: 'Tous les participants ont répondu'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in submitAnswer:', error);
+    next(error);
+  }
+};
+
+// Récupérer l'état du jeu
+exports.getGameState = async (req, res, next) => {
+  try {
+    const quizId = req.params.id;
+
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    const participants = await GameParticipant.find({ quizId })
+      .sort({ totalScore: -1 });
+
+    const currentParticipant = participants.find(p => p.userId.toString() === req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        quiz: {
+          _id: quiz._id,
+          title: quiz.title
+        },
+        participants: participants.map(p => ({
+          userId: p.userId,
+          userName: p.userName,
+          avatar: p.avatar,
+          totalScore: p.totalScore,
+          currentQuestionIndex: p.currentQuestionIndex,
+          gameStatus: p.gameStatus
+        })),
+        currentParticipant: currentParticipant ? {
+          currentQuestionIndex: currentParticipant.currentQuestionIndex,
+          totalScore: currentParticipant.totalScore,
+          answeredQuestions: currentParticipant.answers.length
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error('Error in getGameState:', error);
+    next(error);
+  }
+};
+
+// Stream des événements du jeu (SSE)
+exports.getGameEvents = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    res.write('data: {"type":"connected","message":"Connexion au jeu établie"}\n\n');
+
+    // Stocker la connexion
+    const connectionKey = `${req.params.id}-${req.user.id}`;
+    gameConnections.set(connectionKey, res);
+
+    // Mettre à jour l'activité du participant
+    await GameParticipant.findOneAndUpdate(
+      { quizId: req.params.id, userId: req.user.id },
+      { lastActivity: new Date() }
+    );
+
+    req.on('close', async () => {
+      gameConnections.delete(connectionKey);
+      
+      await GameParticipant.findOneAndUpdate(
+        { quizId: req.params.id, userId: req.user.id },
+        { lastActivity: new Date() }
+      );
+    });
+
+    // Ping périodique
+    const pingInterval = setInterval(() => {
+      if (gameConnections.has(connectionKey)) {
+        res.write('data: {"type":"ping"}\n\n');
+      } else {
+        clearInterval(pingInterval);
+      }
+    }, 30000);
+
+  } catch (error) {
+    console.error('Error in getGameEvents:', error);
     res.end();
   }
 };
