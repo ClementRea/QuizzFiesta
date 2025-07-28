@@ -207,6 +207,15 @@ class QuizService {
     }
   }
 
+  async nextQuestion(quizId) {
+    try {
+      const response = await this.api.post(`/quiz/${quizId}/game/next-question`)
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
+
   async getGameEvents(quizId) {
     try {
       const response = await this.api.get(`/quiz/${quizId}/game/events`)

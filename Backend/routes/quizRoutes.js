@@ -60,6 +60,7 @@ router.get('/:id/lobby/events', protect, quizController.getLobbyEvents);
 router.get('/:id/questions', protect, quizController.getQuizQuestions);
 router.post('/:id/answer', protect, quizController.submitAnswer);
 router.get('/:id/game/state', protect, quizController.getGameState);
+router.post('/:id/game/next-question', protect, quizController.nextQuestion);
 router.get('/:id/game/events', protect, quizController.getGameEvents);
 
 //DELETE
