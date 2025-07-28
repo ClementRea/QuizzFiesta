@@ -61,96 +61,21 @@
       </div>
     </section>
 
-    <!-- Quiz du Jour Section -->
-    <section v-if="dailyQuiz" class="q-pa-lg">
+    <!-- Quiz Section -->
+    <section class="q-pa-lg">
       <div class="row justify-center">
         <div class="col-12 col-md-10">
-          <div class="text-center q-mb-lg">
-            <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">⭐ Quiz du Jour</h2>
-            <p class="text-body1 text-secondary">Le quiz le plus populaire aujourd'hui</p>
-            <q-separator class="q-mt-md" color="accent" size="2px" />
-          </div>
-
-          <div class="row justify-center">
-            <div class="col-12 col-md-8">
-              <div class="bg-accent rounded-borders q-pa-md shadow-8">
-                <QuizObject
-                  :quiz="dailyQuiz"
-                  :show-edit-button="false"
-                  :show-delete-button="false"
-                  :show-view-button="true"
-                  :show-share-button="true"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Quiz Publics Populaires -->
-    <section v-if="publicQuizzes.length > 0" class="q-pa-lg">
-      <div class="row justify-center">
-        <div class="col-12 col-md-10">
-          <div class="text-center q-mb-lg">
-            <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">🔥 Quiz Populaires</h2>
-            <p class="text-body1 text-secondary">Découvrez les quiz les plus appréciés</p>
-            <q-separator class="q-mt-md" color="secondary" size="2px" />
-          </div>
-
-          <div class="row q-gutter-lg">
-            <div v-for="quiz in displayedQuizzes" :key="quiz._id" class="col-12 col-sm-6 col-md-4">
-              <div class="bg-white rounded-borders q-pa-md shadow-4 full-height">
-                <QuizObject
-                  :quiz="quiz"
-                  :show-edit-button="false"
-                  :show-delete-button="false"
-                  :show-view-button="true"
-                  :show-share-button="true"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Load More Button -->
-          <div v-if="publicQuizzes.length > displayLimit" class="text-center q-mt-xl">
-            <q-btn
-              :label="showingAll ? 'Voir Moins' : 'Voir Plus'"
-              color="secondary"
-              outline
-              rounded
-              size="md"
-              @click="toggleShowAll"
-              no-caps
-              class="shadow-2"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Empty State -->
-    <section v-if="!loading && publicQuizzes.length === 0" class="q-pa-xl">
-      <div class="row justify-center">
-        <div class="col-12 col-md-6">
-          <div class="bg-white rounded-borders q-pa-xl text-center shadow-4">
-            <q-icon name="quiz" size="4rem" color="secondary" class="q-mb-lg" />
-            <h3 class="text-h5 text-secondary text-weight-bold q-mb-md">
-              Aucun quiz public disponible
-            </h3>
-            <p class="text-body1 text-secondary q-mb-xl">
-              Soyez le premier à créer un quiz public !
-            </p>
-            <q-btn
-              label="Créer mon premier Quiz"
-              color="secondary"
-              rounded
-              size="lg"
-              @click="router.push('/quiz/create')"
-              no-caps
-              class="shadow-2"
-            />
-          </div>
+          <DayliQuiz
+            :daily-quiz="dailyQuiz"
+            :public-quizzes="publicQuizzes"
+            :display-limit="displayLimit"
+            :showing-all="showingAll"
+            :loading="loading"
+            @play-quiz="handlePlayQuiz"
+            @view-quiz="handleViewQuiz"
+            @share-quiz="handleShareQuiz"
+            @toggle-show-all="toggleShowAll"
+          />
         </div>
       </div>
     </section>
@@ -188,28 +113,16 @@
         </div>
       </div>
     </section>
-
-    <!-- Loading State -->
-    <div v-if="loading" class="q-pa-xl">
-      <div class="row justify-center">
-        <div class="col-12 col-md-6">
-          <div class="bg-white rounded-borders q-pa-xl text-center shadow-4">
-            <q-spinner-dots size="3rem" color="secondary" class="q-mb-md" />
-            <p class="text-body1 text-secondary">Chargement des quiz...</p>
-          </div>
-        </div>
-      </div>
-    </div>
   </main>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import UserService from 'src/services/UserService'
 import QuizService from 'src/services/QuizService'
-import QuizObject from 'src/components/QuizObject.vue'
+import DayliQuiz from 'src/components/DayliQuiz.vue'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -230,10 +143,6 @@ const publicQuizzes = ref([])
 const dailyQuiz = ref(null)
 
 // Computed properties
-const displayedQuizzes = computed(() => {
-  const limit = showingAll.value ? publicQuizzes.value.length : displayLimit.value
-  return publicQuizzes.value.slice(0, limit)
-})
 
 // Methods
 const getUser = async () => {
@@ -260,19 +169,17 @@ const getPublicQuizzes = async () => {
   try {
     const response = await QuizService.getAllQuizzes({
       isPublic: true,
-      active: true,
     })
 
-    if (response.data && response.data.quizzes) {
-      // Trier par popularité (nombre de participants ou date de création)
-      publicQuizzes.value = response.data.quizzes.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    if (response && response.data && response.data.quizes) {
+      // Trier par date de création (utiliser startDate ou createdAt)
+      publicQuizzes.value = response.data.quizes.sort(
+        (a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt),
       )
 
-      // Sélectionner le quiz du jour (le plus récent ou populaire)
+      // Sélectionner le quiz du jour
       if (publicQuizzes.value.length > 0) {
         dailyQuiz.value = publicQuizzes.value[0]
-        // Retirer le quiz du jour de la liste des quiz populaires
         publicQuizzes.value = publicQuizzes.value.slice(1)
       }
     }
@@ -293,6 +200,35 @@ const handleSearch = () => {
 
 const toggleShowAll = () => {
   showingAll.value = !showingAll.value
+}
+
+const handlePlayQuiz = (quiz) => {
+  // TODO: Implémenter la logique pour démarrer un quiz
+  router.push(`/quiz/play/${quiz._id}`)
+}
+
+const handleViewQuiz = (quiz) => {
+  // TODO: Implémenter la logique pour voir les détails d'un quiz
+  router.push(`/quiz/view/${quiz._id}`)
+}
+
+const handleShareQuiz = (quiz) => {
+  // TODO: Implémenter la logique de partage
+  if (navigator.share) {
+    navigator.share({
+      title: quiz.title,
+      text: quiz.description,
+      url: `${window.location.origin}/quiz/play/${quiz._id}`,
+    })
+  } else {
+    // Fallback pour les navigateurs qui ne supportent pas l'API de partage
+    navigator.clipboard.writeText(`${window.location.origin}/quiz/play/${quiz._id}`)
+    $q.notify({
+      color: 'positive',
+      message: 'Lien du quiz copié dans le presse-papier',
+      position: 'top',
+    })
+  }
 }
 
 const initializePage = async () => {

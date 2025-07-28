@@ -1,12 +1,10 @@
 <template>
   <q-dialog v-model="showDialog" persistent>
-    <q-card class="leaderboard-card" style="min-width: 400px; max-width: 600px;">
+    <q-card class="leaderboard-card" style="min-width: 400px; max-width: 600px">
       <!-- En-tête -->
       <q-card-section class="bg-gradient-primary text-center q-pa-xl">
         <q-icon name="leaderboard" size="3rem" color="secondary" class="q-mb-md" />
-        <h2 class="text-h5 text-secondary text-weight-bold q-mb-sm">
-          🏆 Classement Final
-        </h2>
+        <h2 class="text-h5 text-secondary text-weight-bold q-mb-sm">🏆 Classement Final</h2>
         <div class="text-body1 text-grey-7">
           {{ participants.length }} participant{{ participants.length > 1 ? 's' : '' }}
         </div>
@@ -23,7 +21,7 @@
               'bg-yellow-1': index === 0,
               'bg-grey-2': index === 1,
               'bg-orange-1': index === 2,
-              'bg-blue-1': participant.userId === currentUserId
+              'bg-blue-1': participant.userId === currentUserId,
             }"
           >
             <q-item-section avatar>
@@ -35,12 +33,7 @@
                 size="lg"
                 :icon="getPodiumIcon(index)"
               />
-              <q-avatar
-                v-else
-                color="grey-5"
-                text-color="white"
-                size="lg"
-              >
+              <q-avatar v-else color="grey-5" text-color="white" size="lg">
                 {{ index + 1 }}
               </q-avatar>
             </q-item-section>
@@ -48,10 +41,10 @@
             <q-item-section>
               <q-item-label class="text-h6 text-weight-bold">
                 {{ participant.userName }}
-                <q-chip 
+                <q-chip
                   v-if="participant.userId === currentUserId"
                   dense
-                  color="primary"
+                  color="secondary"
                   text-color="white"
                   class="q-ml-sm"
                 >
@@ -67,9 +60,7 @@
             </q-item-section>
 
             <q-item-section side>
-              <div class="text-h6 text-weight-bold text-primary">
-                #{{ index + 1 }}
-              </div>
+              <div class="text-h6 text-weight-bold text-secondary">#{{ index + 1 }}</div>
             </q-item-section>
           </q-item>
         </q-list>
@@ -98,14 +89,7 @@
       </q-card-actions>
 
       <!-- Bouton de fermeture -->
-      <q-btn
-        icon="close"
-        flat
-        round
-        dense
-        v-close-popup
-        class="absolute-top-right q-ma-md"
-      />
+      <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md" />
     </q-card>
   </q-dialog>
 </template>
@@ -116,20 +100,20 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   participants: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   currentUserId: {
     type: String,
-    default: ''
+    default: '',
   },
   totalQuestions: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'play-again', 'go-home'])
@@ -163,9 +147,12 @@ const getPodiumIcon = (index) => {
 }
 
 // Watchers
-watch(() => props.modelValue, (newVal) => {
-  showDialog.value = newVal
-})
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    showDialog.value = newVal
+  },
+)
 
 watch(showDialog, (newVal) => {
   emit('update:modelValue', newVal)
@@ -173,24 +160,6 @@ watch(showDialog, (newVal) => {
 </script>
 
 <style scoped>
-.leaderboard-card {
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #f5f2e8 0%, #ece8d2 100%);
-}
-
-.participant-item {
-  transition: all 0.3s ease;
-}
-
-.participant-item:hover {
-  transform: translateX(4px);
-}
-
-/* Styles pour les positions du podium */
 .participant-item.bg-yellow-1 {
   border-left: 4px solid #f9a825;
 }
@@ -206,26 +175,5 @@ watch(showDialog, (newVal) => {
 .participant-item.bg-blue-1 {
   border-left: 4px solid var(--q-primary);
   font-weight: bold;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .leaderboard-card {
-    margin: 1rem;
-    max-width: calc(100vw - 2rem);
-  }
-  
-  .participant-item {
-    padding: 1rem;
-  }
-  
-  .q-card-actions {
-    flex-direction: column;
-  }
-  
-  .q-card-actions .q-btn {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
 }
 </style>

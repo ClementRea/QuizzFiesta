@@ -12,9 +12,8 @@
       <div class="text-h6">Quiz prêt à être créé !</div>
     </q-banner>
 
-    <!-- Enhanced Summary Cards -->
     <div class="column q-gutter-md q-mb-lg">
-      <!-- General Information Card -->
+      <!-- General Information -->
       <div class="col-12">
         <q-card class="summary-info-card" flat bordered>
           <q-card-section class="bg-primary text-secondary q-pa-sm">
@@ -46,7 +45,7 @@
         </q-card>
       </div>
 
-      <!-- Questions Summary Card -->
+      <!-- Questions Summary  -->
       <div class="col-12">
         <q-card class="summary-questions-card" flat bordered>
           <q-card-section class="bg-secondary text-white q-pa-sm">

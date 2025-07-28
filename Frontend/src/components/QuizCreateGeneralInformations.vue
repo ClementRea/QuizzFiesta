@@ -84,7 +84,7 @@
         aria-required="true"
         counter
         maxlength="100"
-        hint="Donnez un titre accrocheur à votre quiz"
+        hint="Donnez un titre à votre quiz"
         tabindex="0"
       />
 

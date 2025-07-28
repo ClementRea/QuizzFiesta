@@ -275,16 +275,6 @@ const getQuestionTypeLabel = (type) => {
     }
   }
 
-  .question-card {
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.95);
-
-    &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-    }
-  }
-
   .question-actions {
     opacity: 0;
     transition: opacity 0.3s ease;

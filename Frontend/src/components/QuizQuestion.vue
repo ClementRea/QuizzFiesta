@@ -37,7 +37,7 @@
     <!-- Réponses selon le type de question -->
     <div class="question-content">
       <!-- Questions à choix multiples -->
-      <div v-if="question.type === 'multiple_choice'" class="multiple-choice-answers">
+      <div v-if="question.type === 'MULTIPLE_CHOICE'" class="multiple-choice-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           {{
             allowMultipleAnswers
@@ -115,7 +115,7 @@
       </div>
 
       <!-- Questions de type vrai/faux -->
-      <div v-else-if="question.type === 'true_false'" class="true-false-answers">
+      <div v-else-if="question.type === 'TRUE_FALSE'" class="true-false-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Cette affirmation est-elle vraie ou fausse ?
         </div>
@@ -166,37 +166,44 @@
       </div>
 
       <!-- Questions de remise en ordre -->
-      <div v-else-if="question.type === 'order'" class="order-answers">
+      <div v-else-if="question.type === 'ORDER'" class="order-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Glissez les éléments pour les remettre dans le bon ordre :
         </div>
 
         <!-- Composant draggable pour réorganiser les éléments -->
-        <draggable
+        <VueDraggable
           v-model="orderItems"
           :disabled="disabled"
           item-key="id"
-          class="order-container q-gutter-sm"
-          ghost-class="ghost"
-          drag-class="drag"
-          @start="onDragStart"
+          handle=".drag-handle"
+          animation="300"
+          ghost-class="ghost-item"
           @end="onDragEnd"
         >
-          <template v-slot:item="{ element, index }">
+          <template v-for="(element, index) in orderItems" :key="element.id">
             <div class="order-item q-mb-sm">
               <q-card
                 flat
                 bordered
                 class="order-card q-pa-md transition-all"
                 :class="{
-                  'cursor-move bg-grey-1': !disabled,
-                  'cursor-not-allowed bg-grey-3 opacity-60': disabled,
+                  'bg-grey-1': !disabled,
+                  'bg-grey-3 opacity-60': disabled,
                 }"
               >
                 <div class="row items-center q-gutter-md no-wrap">
-                  <q-icon name="drag_indicator" :color="disabled ? 'grey-4' : 'grey-6'" size="md" />
-                  <div class="text-body1 text-weight-medium">{{ element.text }}</div>
-                  <q-space />
+                  <div
+                    class="drag-handle flex flex-center bg-secondary text-white rounded-borders"
+                    style="min-width: 32px; height: 32px"
+                    :class="{
+                      'cursor-grab': !disabled,
+                      'cursor-not-allowed': disabled,
+                    }"
+                  >
+                    <q-icon name="mdi-drag" size="20px" :color="disabled ? 'grey-4' : 'white'" />
+                  </div>
+                  <div class="text-body1 text-weight-medium col">{{ element.text }}</div>
                   <q-badge
                     :color="disabled ? 'grey-4' : 'secondary'"
                     :text-color="disabled ? 'grey-6' : 'primary'"
@@ -207,7 +214,7 @@
               </q-card>
             </div>
           </template>
-        </draggable>
+        </VueDraggable>
 
         <!-- Instructions -->
         <div class="text-center q-mt-md">
@@ -217,8 +224,153 @@
         </div>
       </div>
 
-      <!-- Questions de texte libre -->
-      <div v-else-if="question.type === 'text'" class="text-answer">
+      <!-- Questions d'association -->
+      <div v-else-if="question.type === 'ASSOCIATION'" class="association-answers">
+        <div class="text-body1 text-grey-7 text-center q-mb-lg">
+          Associez les éléments de gauche avec ceux de droite :
+        </div>
+
+        <div class="row q-col-gutter-lg">
+          <!-- Colonne gauche -->
+          <div class="col-5">
+            <h6 class="text-secondary text-center q-mb-md">Éléments A</h6>
+            <div class="q-gutter-sm">
+              <div
+                v-for="(leftItem, index) in leftItems"
+                :key="`left-${index}`"
+                class="association-item"
+              >
+                <q-card
+                  flat
+                  bordered
+                  class="answer-card transition-all text-center q-pa-md"
+                  :class="{
+                    'cursor-pointer': !disabled,
+                    'cursor-not-allowed opacity-60': disabled,
+                    'bg-secondary text-primary': selectedLeftIndex === index,
+                    'bg-grey-1 hover-shadow': selectedLeftIndex !== index && !disabled,
+                  }"
+                  @click="selectLeftItem(index)"
+                >
+                  <div class="text-body1 text-weight-medium">
+                    {{ leftItem }}
+                  </div>
+                </q-card>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne du milieu avec les connexions -->
+          <div class="col-2 flex flex-center">
+            <div class="association-connections">
+              <div
+                v-for="(pair, index) in associationPairs"
+                :key="`connection-${index}`"
+                class="connection-line q-mb-md text-center"
+              >
+                <q-icon
+                  name="link"
+                  size="24px"
+                  :color="pair.leftIndex !== null && pair.rightIndex !== null ? 'positive' : 'grey-4'"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne droite -->
+          <div class="col-5">
+            <h6 class="text-secondary text-center q-mb-md">Éléments B</h6>
+            <div class="q-gutter-sm">
+              <div
+                v-for="(rightItem, index) in rightItems"
+                :key="`right-${index}`"
+                class="association-item"
+              >
+                <q-card
+                  flat
+                  bordered
+                  class="answer-card transition-all text-center q-pa-md"
+                  :class="{
+                    'cursor-pointer': !disabled,
+                    'cursor-not-allowed opacity-60': disabled,
+                    'bg-secondary text-primary': selectedRightIndex === index,
+                    'bg-grey-1 hover-shadow': selectedRightIndex !== index && !disabled,
+                  }"
+                  @click="selectRightItem(index)"
+                >
+                  <div class="text-body1 text-weight-medium">
+                    {{ rightItem }}
+                  </div>
+                </q-card>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="text-center q-mt-lg">
+          <q-chip dense color="info" text-color="white" icon="info" class="text-body2">
+            {{ disabled ? 'Associations soumises' : 'Cliquez pour associer les éléments' }}
+          </q-chip>
+        </div>
+      </div>
+
+      <!-- Questions pour trouver l'intrus -->
+      <div v-else-if="question.type === 'FIND_INTRUDER'" class="find-intruder-answers">
+        <div class="text-body1 text-grey-7 text-center q-mb-lg">
+          Cliquez sur l'élément qui ne fait pas partie du groupe :
+        </div>
+
+        <div class="q-gutter-md">
+          <div
+            v-for="(answer, index) in question.answers"
+            :key="index"
+            class="answer-option"
+            @click="selectIntruder(index)"
+          >
+            <q-card
+              flat
+              bordered
+              class="answer-card transition-all"
+              :class="{
+                selected: selectedIntruder === index,
+                'bg-negative text-white': selectedIntruder === index,
+                'bg-grey-1 hover-shadow': selectedIntruder !== index && !disabled,
+                'cursor-pointer': !disabled,
+                'cursor-not-allowed opacity-60': disabled,
+              }"
+            >
+              <q-card-section class="q-pa-lg">
+                <div class="row items-center q-gutter-md no-wrap">
+                  <!-- Indicateur de sélection -->
+                  <div class="col-auto">
+                    <q-icon
+                      :name="selectedIntruder === index ? 'radio_button_checked' : 'radio_button_unchecked'"
+                      :color="selectedIntruder === index ? 'white' : 'grey-6'"
+                      size="lg"
+                    />
+                  </div>
+
+                  <!-- Icône d'intrus si sélectionné -->
+                  <div class="col-auto" v-if="selectedIntruder === index">
+                    <q-icon name="search" color="white" size="lg" />
+                  </div>
+
+                  <!-- Texte de la réponse -->
+                  <div class="col">
+                    <div class="answer-text text-h6 text-weight-medium">
+                      {{ answer.text }}
+                    </div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions de texte libre / Classique -->
+      <div v-else-if="question.type === 'CLASSIC'" class="text-answer">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">Saisissez votre réponse :</div>
 
         <q-input
@@ -235,23 +387,12 @@
         />
       </div>
     </div>
-
-    <!-- Informations supplémentaires -->
-    <div v-if="showHint || question.hint" class="question-hint q-mt-xl">
-      <q-banner class="bg-info text-white rounded-borders">
-        <template v-slot:avatar>
-          <q-icon name="lightbulb" />
-        </template>
-        <div class="text-weight-medium">Indice :</div>
-        <div>{{ question.hint }}</div>
-      </q-banner>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 
 const props = defineProps({
   question: {
@@ -276,10 +417,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  showHint: {
-    type: Boolean,
-    default: false,
-  },
   disabled: {
     type: Boolean,
     default: false,
@@ -288,38 +425,58 @@ const props = defineProps({
 
 const emit = defineEmits(['answer-selected', 'answer-changed'])
 
-// État des réponses
 const selectedAnswers = ref([])
 const selectedTrueFalse = ref(null)
 const orderItems = ref([])
 const textAnswer = ref('')
+const associationPairs = ref([])
+const selectedIntruder = ref(null)
+const selectedLeftIndex = ref(null)
+const selectedRightIndex = ref(null)
 
-// Computed
+// Computed properties pour ASSOCIATION
+const leftItems = computed(() => {
+  if (props.question.type === 'ASSOCIATION' && props.question.answers) {
+    return props.question.answers.map(answer => answer.text.split('|')[0])
+  }
+  return []
+})
+
+const rightItems = computed(() => {
+  if (props.question.type === 'ASSOCIATION' && props.question.answers) {
+    return props.question.answers.map(answer => answer.text.split('|')[1])
+  }
+  return []
+})
+
 const hasAnswered = computed(() => {
   switch (props.question.type) {
-    case 'multiple_choice':
+    case 'MULTIPLE_CHOICE':
       return selectedAnswers.value.length > 0
-    case 'true_false':
+    case 'TRUE_FALSE':
       return selectedTrueFalse.value !== null
-    case 'order':
+    case 'ORDER':
       return orderItems.value.length > 0
-    case 'text':
+    case 'CLASSIC':
       return textAnswer.value.trim().length > 0
+    case 'ASSOCIATION':
+      return associationPairs.value.length > 0 && 
+             associationPairs.value.every(pair => pair.leftIndex !== null && pair.rightIndex !== null)
+    case 'FIND_INTRUDER':
+      return selectedIntruder.value !== null
     default:
       return false
   }
 })
 
-// Méthodes
 const getAnswerLetter = (index) => {
-  return String.fromCharCode(65 + index) // A, B, C, D...
+  return String.fromCharCode(65 + index)
 }
 
 const selectMultipleChoiceAnswer = (index) => {
   if (props.disabled) return
 
   if (props.allowMultipleAnswers) {
-    // Permettre plusieurs réponses
     const currentIndex = selectedAnswers.value.indexOf(index)
     if (currentIndex > -1) {
       selectedAnswers.value.splice(currentIndex, 1)
@@ -327,7 +484,6 @@ const selectMultipleChoiceAnswer = (index) => {
       selectedAnswers.value.push(index)
     }
   } else {
-    // Une seule réponse
     selectedAnswers.value = [index]
   }
 
@@ -340,21 +496,81 @@ const selectTrueFalse = (value) => {
   emitAnswer()
 }
 
+// Méthodes pour ASSOCIATION
+const selectLeftItem = (index) => {
+  if (props.disabled) return
+  selectedLeftIndex.value = index
+  tryCreateAssociation()
+}
+
+const selectRightItem = (index) => {
+  if (props.disabled) return  
+  selectedRightIndex.value = index
+  tryCreateAssociation()
+}
+
+const tryCreateAssociation = () => {
+  if (selectedLeftIndex.value !== null && selectedRightIndex.value !== null) {
+    // Créer une nouvelle association
+    const newPair = {
+      leftIndex: selectedLeftIndex.value,
+      rightIndex: selectedRightIndex.value
+    }
+    
+    // Vérifier si cette association existe déjà
+    const existingPairIndex = associationPairs.value.findIndex(
+      pair => pair.leftIndex === newPair.leftIndex && pair.rightIndex === newPair.rightIndex
+    )
+    
+    if (existingPairIndex === -1) {
+      // Supprimer les anciennes associations impliquant ces éléments
+      associationPairs.value = associationPairs.value.filter(
+        pair => pair.leftIndex !== newPair.leftIndex && pair.rightIndex !== newPair.rightIndex
+      )
+      
+      // Ajouter la nouvelle association
+      associationPairs.value.push(newPair)
+    }
+    
+    // Réinitialiser les sélections
+    selectedLeftIndex.value = null
+    selectedRightIndex.value = null
+    
+    emitAnswer()
+  }
+}
+
+// Méthode pour FIND_INTRUDER
+const selectIntruder = (index) => {
+  if (props.disabled) return
+  selectedIntruder.value = index
+  emitAnswer()
+}
+
 const emitAnswer = () => {
   let answer = null
 
   switch (props.question.type) {
-    case 'multiple_choice':
+    case 'MULTIPLE_CHOICE':
       answer = props.allowMultipleAnswers ? selectedAnswers.value : selectedAnswers.value[0]
       break
-    case 'true_false':
+    case 'TRUE_FALSE':
       answer = selectedTrueFalse.value
       break
-    case 'order':
+    case 'ORDER':
       answer = orderItems.value.map((item) => item.text)
       break
-    case 'text':
+    case 'CLASSIC':
       answer = textAnswer.value.trim()
+      break
+    case 'ASSOCIATION':
+      answer = associationPairs.value.map(pair => ({
+        leftIndex: pair.leftIndex,
+        rightIndex: pair.rightIndex
+      }))
+      break
+    case 'FIND_INTRUDER':
+      answer = selectedIntruder.value
       break
   }
 
@@ -366,19 +582,12 @@ const emitAnswer = () => {
 }
 
 // Drag and drop handlers
-const onDragStart = () => {
-  console.log('Drag started')
-}
-
 const onDragEnd = () => {
-  console.log('Drag ended')
   emitAnswer()
 }
 
-// Initialiser les éléments d'ordre si nécessaire
 const initializeOrderItems = () => {
-  if (props.question.type === 'order' && props.question.items) {
-    // Mélanger les éléments et ajouter des IDs uniques
+  if (props.question.type === 'ORDER' && props.question.items) {
     orderItems.value = [...props.question.items]
       .map((item, index) => ({
         ...item,
@@ -388,15 +597,17 @@ const initializeOrderItems = () => {
   }
 }
 
-// Réinitialiser les réponses quand la question change
 const resetAnswers = () => {
   selectedAnswers.value = []
   selectedTrueFalse.value = null
   textAnswer.value = ''
+  associationPairs.value = []
+  selectedIntruder.value = null
+  selectedLeftIndex.value = null
+  selectedRightIndex.value = null
   initializeOrderItems()
 }
 
-// Watchers
 watch(
   () => props.question,
   () => {
@@ -406,27 +617,37 @@ watch(
 )
 
 watch(
-  [selectedAnswers, selectedTrueFalse, textAnswer],
+  [selectedAnswers, selectedTrueFalse, textAnswer, associationPairs, selectedIntruder],
   () => {
     emit('answer-changed', hasAnswered.value)
+    // Émettre l'événement answer-selected pour les questions textuelles
+    if (props.question.type === 'CLASSIC' && textAnswer.value.trim().length > 0) {
+      emitAnswer()
+    }
   },
   { deep: true },
 )
 
-// Exposer les méthodes et états
 defineExpose({
   resetAnswers,
   hasAnswered,
   getSelectedAnswer: () => {
     switch (props.question.type) {
-      case 'multiple_choice':
+      case 'MULTIPLE_CHOICE':
         return props.allowMultipleAnswers ? selectedAnswers.value : selectedAnswers.value[0]
-      case 'true_false':
+      case 'TRUE_FALSE':
         return selectedTrueFalse.value
-      case 'order':
+      case 'ORDER':
         return orderItems.value.map((item) => item.text)
-      case 'text':
+      case 'CLASSIC':
         return textAnswer.value.trim()
+      case 'ASSOCIATION':
+        return associationPairs.value.map(pair => ({
+          leftIndex: pair.leftIndex,
+          rightIndex: pair.rightIndex
+        }))
+      case 'FIND_INTRUDER':
+        return selectedIntruder.value
       default:
         return null
     }
@@ -492,15 +713,18 @@ defineExpose({
 }
 
 /* Drag and drop styles */
-.ghost {
-  opacity: 0.5;
-  background: var(--q-secondary);
-  border: 2px dashed var(--q-primary);
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
-.drag {
-  transform: rotate(5deg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+.ghost-item {
+  opacity: 0.5;
+  transform: rotate(2deg);
 }
 
 .order-container {

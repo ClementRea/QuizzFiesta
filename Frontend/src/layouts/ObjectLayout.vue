@@ -1,12 +1,11 @@
 <template>
-  <!-- XL Size - Grande carte pour édition/update -->
+  <!-- XL Size -->
   <q-card
     v-if="size === 'xl'"
     class="shadow-8 rounded-borders"
     style="max-width: 900px; border-radius: 20px; overflow: hidden"
     bordered
   >
-    <!-- Image Header Large -->
     <div v-if="showImage" class="relative-position" style="height: 300px">
       <q-img
         :src="getImageUrl(object)"
@@ -29,7 +28,6 @@
       </q-img>
     </div>
 
-    <!-- Content XL -->
     <q-card-section class="q-pa-xl">
       <div v-if="!showImage" class="text-h4 text-weight-bold q-mb-lg text-primary">
         {{ object.title || object.name }}
@@ -39,7 +37,6 @@
         {{ object.description }}
       </div>
 
-      <!-- Metadata Expanded -->
       <div v-if="detectedObjectType === 'quiz'" class="q-mb-xl">
         <div class="row q-gutter-lg">
           <q-card flat bordered class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1">
@@ -87,7 +84,7 @@
         </div>
       </div>
 
-      <!-- Full Action Buttons -->
+      <!-- Full actions -->
       <div class="row q-gutter-lg q-mt-xl">
         <q-btn
           v-if="object.joinCode && detectedObjectType === 'quiz'"
@@ -160,7 +157,7 @@
     </q-card-section>
   </q-card>
 
-  <!-- LG Size - Carte actuelle avec boutons d'action -->
+  <!-- LG Size  -->
   <q-card
     v-else-if="size === 'lg'"
     class="shadow-8 rounded-borders cursor-pointer"
@@ -172,7 +169,6 @@
     @keydown.enter="handlePlay"
     @keydown.space.prevent="handlePlay"
   >
-    <!-- Image Header -->
     <div v-if="showImage" class="relative-position" style="height: 200px">
       <q-img
         :src="getImageUrl(object)"
@@ -209,7 +205,6 @@
         {{ object.description }}
       </div>
 
-      <!-- Metadata chips -->
       <div v-if="detectedObjectType === 'quiz'" class="q-mb-lg q-gutter-xs">
         <q-chip
           v-if="object.questions"
@@ -245,7 +240,6 @@
 
       <!-- Action Buttons -->
       <div class="row q-gutter-md q-mt-md items-center">
-        <!-- Primary Actions -->
         <q-btn
           v-if="object.joinCode && detectedObjectType === 'quiz'"
           unelevated
@@ -272,7 +266,6 @@
 
         <q-space />
 
-        <!-- Secondary Actions -->
         <q-btn-dropdown
           outline
           color="secondary"
@@ -304,14 +297,13 @@
     </q-card-section>
   </q-card>
 
-  <!-- MD Size - Carte moyenne, infos principales -->
+  <!-- MD Size -->
   <q-card
     v-else-if="size === 'md'"
     class="shadow-4 rounded-borders"
     style="max-width: 380px; border-radius: 12px; overflow: hidden"
     bordered
   >
-    <!-- Image Header Medium -->
     <div v-if="showImage" class="relative-position" style="height: 160px">
       <q-img
         :src="getImageUrl(object)"
@@ -334,7 +326,6 @@
       </q-img>
     </div>
 
-    <!-- Content MD -->
     <q-card-section class="q-pa-md">
       <div v-if="!showImage" class="text-h6 text-weight-bold q-mb-sm text-primary">
         {{ object.title || object.name }}
@@ -354,35 +345,34 @@
         {{ object.description }}
       </div>
 
-      <!-- Compact Metadata -->
       <div v-if="detectedObjectType === 'quiz'" class="q-gutter-xs">
         <q-chip
           v-if="object.questions"
-          dense
           color="blue-1"
           text-color="blue-8"
           icon="quiz"
           size="sm"
+          class="text-weight-medium"
         >
-          {{ object.questions.length || 0 }} Q
+          {{ object.questions.length || 0 }} Question{{ object.questions.length > 1 ? 's' : '' }}
         </q-chip>
         <q-chip
           v-if="object.joinCode"
-          dense
           color="green-1"
           text-color="green-8"
           icon="key"
           size="sm"
+          class="text-weight-medium"
         >
           {{ object.joinCode }}
         </q-chip>
         <q-chip
           v-if="object.isPublic"
-          dense
           color="orange-1"
           text-color="orange-8"
           icon="public"
           size="sm"
+          class="text-weight-medium"
         >
           Public
         </q-chip>
@@ -390,14 +380,13 @@
     </q-card-section>
   </q-card>
 
-  <!-- SM Size - Carte compacte -->
+  <!-- SM Size -->
   <q-card
     v-else-if="size === 'sm'"
     class="shadow-2 rounded-borders"
     style="max-width: 300px; border-radius: 8px; overflow: hidden"
     bordered
   >
-    <!-- Image Header Small -->
     <div v-if="showImage" class="relative-position" style="height: 120px">
       <q-img
         :src="getImageUrl(object)"
@@ -454,7 +443,7 @@
     </q-card-section>
   </q-card>
 
-  <!-- XS Size - Carte minimale -->
+  <!-- XS Size  -->
   <q-card
     v-else-if="size === 'xs'"
     class="shadow-1 rounded-borders"
@@ -462,7 +451,6 @@
     flat
     bordered
   >
-    <!-- Image Header Extra Small -->
     <div v-if="showImage" class="relative-position" style="height: 80px">
       <q-img
         :src="getImageUrl(object)"
@@ -485,13 +473,11 @@
       </q-img>
     </div>
 
-    <!-- Content XS -->
     <q-card-section class="q-pa-xs">
       <div v-if="!showImage" class="text-body2 text-weight-bold text-primary q-mb-xs">
         {{ object.title || object.name }}
       </div>
 
-      <!-- Minimal Metadata -->
       <div v-if="detectedObjectType === 'quiz'" class="row q-gutter-xs items-center">
         <q-icon name="quiz" size="xs" color="blue-6" />
         <span class="text-caption text-grey-7">{{ object.questions?.length || 0 }}</span>
@@ -584,50 +570,11 @@ const handleEdit = () => emit('edit', props.object)
 const handleDelete = () => emit('delete', props.object)
 const handleShare = () => emit('share', props.object)
 const handlePlay = () => emit('play', props.object)
-const handleJoin = () => emit('join', props.object)
+// const handleJoin = () => emit('join', props.object)
 const handleGenerateCode = () => emit('generateCode', props.object)
 </script>
 
 <style scoped>
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .row.q-gutter-md,
-  .row.q-gutter-lg {
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
-
-  .row.q-gutter-sm {
-    justify-content: center !important;
-  }
-
-  /* XL size responsive */
-  .q-card[style*='max-width: 900px'] {
-    max-width: 100% !important;
-  }
-
-  /* LG size responsive */
-  .q-card[style*='max-width: 450px'] {
-    max-width: 100% !important;
-  }
-
-  /* MD size responsive */
-  .q-card[style*='max-width: 380px'] {
-    max-width: 100% !important;
-  }
-
-  /* SM size responsive */
-  .q-card[style*='max-width: 300px'] {
-    max-width: 95% !important;
-  }
-
-  /* XS size responsive */
-  .q-card[style*='max-width: 220px'] {
-    max-width: 90% !important;
-  }
-}
-
-/* Text overflow handling */
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;

@@ -19,12 +19,6 @@
                 </q-chip>
               </div>
             </div>
-
-            <!-- Score actuel -->
-            <div class="col-auto text-right">
-              <div class="text-h5 text-secondary text-weight-bold">{{ currentScore }} pts</div>
-              <div class="text-caption text-grey-7">Votre score</div>
-            </div>
           </div>
         </div>
       </div>
@@ -49,12 +43,8 @@
           <div v-else-if="gameState === 'loading'" class="text-center">
             <div class="bg-white rounded-borders q-pa-xl shadow-8">
               <q-spinner-hourglass size="3rem" color="secondary" class="q-mb-lg" />
-              <h2 class="text-h5 text-secondary text-weight-bold q-mb-md">
-                Chargement du quiz...
-              </h2>
-              <p class="text-body1 text-grey-7">
-                Récupération des questions en cours
-              </p>
+              <h2 class="text-h5 text-secondary text-weight-bold q-mb-md">Chargement du quiz...</h2>
+              <p class="text-body1 text-grey-7">Récupération des questions en cours</p>
             </div>
           </div>
 
@@ -62,22 +52,10 @@
           <div v-else-if="gameState === 'waiting_others'" class="text-center">
             <div class="bg-white rounded-borders q-pa-xl shadow-8">
               <q-icon name="hourglass_empty" size="3rem" color="orange" class="q-mb-lg" />
-              <h2 class="text-h5 text-secondary text-weight-bold q-mb-md">
-                Réponse envoyée !
-              </h2>
+              <h2 class="text-h5 text-secondary text-weight-bold q-mb-md">Réponse envoyée !</h2>
               <p class="text-body1 text-grey-7 q-mb-md">
                 En attente que tous les participants répondent...
               </p>
-              <div v-if="lastAnswerCorrect !== null" class="q-mb-lg">
-                <q-icon 
-                  :name="lastAnswerCorrect ? 'check_circle' : 'cancel'"
-                  :color="lastAnswerCorrect ? 'positive' : 'negative'"
-                  size="2rem"
-                />
-                <div class="text-body1 q-mt-sm" :class="lastAnswerCorrect ? 'text-positive' : 'text-negative'">
-                  {{ lastAnswerCorrect ? `Bonne réponse ! +${lastQuestionPoints} points` : 'Réponse incorrecte' }}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -89,8 +67,6 @@
               :time-left="timeLeft"
               title="Temps restant"
               @time-up="onTimeUp"
-              @warning="onTimeWarning"
-              @urgent="onTimeUrgent"
             />
 
             <!-- Question Component -->
@@ -101,7 +77,6 @@
               :total-questions="totalQuestions"
               :disabled="hasSubmittedAnswer"
               @answer-selected="onAnswerSelected"
-              @answer-changed="onAnswerChanged"
               ref="questionComponent"
             />
 
@@ -183,6 +158,7 @@ import QuizQuestion from 'src/components/QuizQuestion.vue'
 import QuizScoreRecap from 'src/components/QuizScoreRecap.vue'
 import QuizLeaderboard from 'src/components/QuizLeaderboard.vue'
 import QuizService from 'src/services/QuizService.js'
+import UserService from 'src/services/UserService.js'
 import AuthService from 'src/services/AuthService.js'
 
 const route = useRoute()
@@ -193,7 +169,7 @@ const $q = useQuasar()
 const quizId = route.params.id
 
 // État du jeu
-const gameState = ref('loading') // 'loading', 'waiting', 'playing', 'question_results', 'finished'
+const gameState = ref('loading')
 const quizData = ref(null)
 const questionsData = ref([])
 const currentQuestionIndex = ref(0)
@@ -209,8 +185,6 @@ const hasSubmittedAnswer = ref(false)
 // Score et réponses
 const currentScore = ref(0)
 const finalScore = ref(0)
-const selectedAnswers = ref([])
-const shuffledOrderItems = ref([])
 const lastAnswerCorrect = ref(false)
 const lastQuestionPoints = ref(0)
 const currentAnswer = ref(null)
@@ -236,81 +210,74 @@ const hasAnswered = computed(() => {
 })
 
 // Methods - Timer events
-const onTimeUp = () => {
-  console.log('Temps écoulé !')
-  if (gameState.value === 'playing') {
-    submitAnswer()
+const onTimeUp = async () => {
+  if (gameState.value === 'playing' && !hasSubmittedAnswer.value) {
+    // Soumettre automatiquement la réponse (même vide)
+    await submitAnswer()
+
+    // Attendre un peu pour montrer le résultat puis passer à la question suivante
+    setTimeout(async () => {
+      try {
+        const result = await QuizService.nextQuestion(quizId)
+        if (result.data.gameStatus === 'finished') {
+          // Quiz terminé
+          gameState.value = 'finished'
+          finalScore.value = currentScore.value
+          loadLeaderboard()
+        } else {
+          // Passer à la question suivante
+          currentQuestionIndex.value = result.data.currentQuestionIndex
+          await loadQuestion()
+          gameState.value = 'playing'
+        }
+      } catch (error) {
+        console.error('Erreur passage question suivante:', error)
+      }
+    }, 2000)
   }
-}
-
-const onTimeWarning = (timeRemaining) => {
-  console.log('Attention, plus que', timeRemaining, 'secondes !')
-  $q.notify({
-    type: 'warning',
-    message: `Plus que ${timeRemaining} secondes !`,
-    position: 'top',
-    timeout: 2000,
-  })
-}
-
-const onTimeUrgent = (timeRemaining) => {
-  console.log('Urgent ! Plus que', timeRemaining, 'secondes !')
-  $q.notify({
-    type: 'negative',
-    message: `Urgent ! Plus que ${timeRemaining} secondes !`,
-    position: 'top',
-    timeout: 1500,
-  })
 }
 
 // Methods - Question events
 const onAnswerSelected = (answerData) => {
-  console.log('Réponse sélectionnée:', answerData)
   currentAnswer.value = answerData.answer
-}
-
-const onAnswerChanged = (hasAnswer) => {
-  console.log('État de réponse changé:', hasAnswer)
 }
 
 const submitAnswer = async () => {
   if (hasSubmittedAnswer.value) return
-  
+
   try {
     // Arrêter le timer
     if (timerInterval) {
       clearInterval(timerInterval)
       timerInterval = null
     }
-    
+
     // Récupérer la réponse du composant
     let answer = currentAnswer.value
     if (!answer && questionComponent.value) {
       answer = questionComponent.value.getSelectedAnswer()
     }
-    
+
     if (answer === null || answer === undefined) {
       $q.notify({
         type: 'warning',
         message: 'Veuillez sélectionner une réponse',
-        position: 'top'
+        position: 'top',
       })
       return
     }
-    
-    console.log('Réponse soumise:', answer)
-    
+
     // Marquer comme soumis pour éviter les doublons
     hasSubmittedAnswer.value = true
-    
+
     // Envoyer la réponse au backend
     const result = await QuizService.submitAnswer(quizId, currentQuestion.value._id, answer)
-    
+
     // Mettre à jour le score
     lastAnswerCorrect.value = result.data.isCorrect
     lastQuestionPoints.value = result.data.points
     currentScore.value = result.data.totalScore
-    
+
     // Enregistrer le résultat pour le récapitulatif
     questionsResults.value.push({
       title: currentQuestion.value.title,
@@ -318,27 +285,25 @@ const submitAnswer = async () => {
       userAnswer: answer,
       isCorrect: result.data.isCorrect,
       points: result.data.points,
-      correctAnswer: result.data.correctAnswer // Sera fourni par le backend
+      correctAnswer: result.data.correctAnswer, // Sera fourni par le backend
     })
-    
+
     $q.notify({
-      type: lastAnswerCorrect.value ? 'positive' : 'negative',
-      message: lastAnswerCorrect.value ? `Bonne réponse ! +${lastQuestionPoints.value} points` : 'Réponse incorrecte',
+      type: 'positive',
+      message: 'Réponse validée !',
       position: 'top',
-      timeout: 2000
+      timeout: 2000,
     })
-    
-    // Passer à l'état d'attente
+
     gameState.value = 'waiting_others'
-    
   } catch (error) {
     console.error('Erreur soumission réponse:', error)
     $q.notify({
       type: 'negative',
       message: 'Erreur lors de la soumission de la réponse',
-      position: 'top'
+      position: 'top',
     })
-    hasSubmittedAnswer.value = false // Permettre de réessayer
+    hasSubmittedAnswer.value = false
   }
 }
 
@@ -360,12 +325,12 @@ const nextQuestion = async () => {
   currentAnswer.value = null
 }
 
-const loadQuestion = () => {
+const loadQuestion = async () => {
   if (!questionsData.value || questionsData.value.length === 0) {
     console.error('Aucune question disponible')
     return
   }
-  
+
   if (currentQuestionIndex.value >= questionsData.value.length) {
     // Quiz terminé
     gameState.value = 'finished'
@@ -373,17 +338,33 @@ const loadQuestion = () => {
     loadLeaderboard()
     return
   }
-  
+
   // Charger la question actuelle
   currentQuestion.value = questionsData.value[currentQuestionIndex.value]
-  
+
   // Réinitialiser les états
   hasSubmittedAnswer.value = false
   allParticipantsAnswered.value = false
   currentAnswer.value = null
-  
-  // Démarrer le timer
-  timeLeft.value = currentQuestion.value.timeLimit || 30
+
+  // Récupérer l'état du jeu depuis le serveur pour synchroniser le timer
+  try {
+    const gameStateResponse = await QuizService.getGameState(quizId)
+    if (
+      gameStateResponse.data &&
+      gameStateResponse.data.currentParticipant &&
+      gameStateResponse.data.currentParticipant.timeLeft !== undefined &&
+      gameStateResponse.data.currentParticipant.timeLeft > 0
+    ) {
+      timeLeft.value = gameStateResponse.data.currentParticipant.timeLeft
+    } else {
+      timeLeft.value = currentQuestion.value.timeLimit || 30
+    }
+  } catch (error) {
+    console.error('Erreur récupération état du jeu:', error)
+    timeLeft.value = currentQuestion.value.timeLimit || 30
+  }
+
   startTimer()
 }
 
@@ -407,48 +388,41 @@ const startTimer = () => {
 const initializeGame = async () => {
   try {
     gameState.value = 'loading'
-    
+
     // Récupérer les questions du quiz depuis le backend
     const result = await QuizService.getQuizQuestions(quizId)
-    
+
     quizData.value = result.data.quiz
     questionsData.value = result.data.questions
     totalQuestions.value = questionsData.value.length
-    
+
     if (result.data.participant) {
       currentScore.value = result.data.participant.totalScore
       currentQuestionIndex.value = result.data.participant.currentQuestionIndex
     }
-    
-    console.log('Questions chargées:', questionsData.value)
-    
-    // Démarrer le jeu
+
     gameState.value = 'playing'
-    loadQuestion()
-    
-    // Se connecter aux événements SSE pour la synchronisation
+    await loadQuestion()
+
     connectToGameEvents()
-    
   } catch (error) {
     console.error('Erreur initialisation jeu:', error)
     $q.notify({
       type: 'negative',
       message: 'Erreur lors du chargement du quiz',
-      position: 'top'
+      position: 'top',
     })
-    
-    // Rediriger vers l'accueil en cas d'erreur
+
     router.push('/accueil')
   }
 }
 
-// Se connecter aux événements du jeu via SSE
 const connectToGameEvents = () => {
   try {
-    const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin
-    gameEventSource = new EventSource(`${baseUrl}/api/quiz/${quizId}/game/events`, {
-      withCredentials: true
-    })
+    const token = AuthService.getAccessToken()
+    const baseUrl =
+      window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin
+    gameEventSource = new EventSource(`${baseUrl}/api/quiz/${quizId}/game/events?token=${token}`)
 
     gameEventSource.onmessage = (event) => {
       try {
@@ -462,48 +436,32 @@ const connectToGameEvents = () => {
     gameEventSource.onerror = (error) => {
       console.error('Erreur connexion SSE:', error)
     }
-
   } catch (error) {
     console.error('Erreur initialisation SSE:', error)
   }
 }
 
-// Gérer les événements du jeu
 const handleGameEvent = (event) => {
-  console.log('Événement reçu:', event)
-  
   switch (event.type) {
     case 'all_answered':
-      // Tous les participants ont répondu, passer à la question suivante
       allParticipantsAnswered.value = true
-      
-      $q.notify({
-        type: 'info',
-        message: 'Tous les participants ont répondu !',
-        position: 'top',
-        timeout: 2000
-      })
-      
-      // Passer à la question suivante après 3 secondes
+
       setTimeout(() => {
         nextQuestion()
       }, 3000)
       break
-      
+
     case 'participant_answered':
-      // Un participant a répondu (optionnel pour afficher le décompte)
       participantsCount.value = event.participantsCount || participantsCount.value
       break
-      
+
     case 'quiz_finished':
-      // Quiz terminé
       gameState.value = 'finished'
       finalScore.value = currentScore.value
       loadLeaderboard()
       break
-      
+
     default:
-      console.log('Événement non géré:', event.type)
   }
 }
 
@@ -513,7 +471,6 @@ const goToHome = () => {
 }
 
 const playAgain = () => {
-  // Redémarrer le quiz ou rediriger vers le lobby
   window.location.reload()
 }
 
@@ -521,38 +478,33 @@ const loadLeaderboard = async () => {
   try {
     const result = await QuizService.getGameState(quizId)
     leaderboardParticipants.value = result.data.participants
-    
-    // Trouver le rang du joueur actuel
-    const userIndex = leaderboardParticipants.value.findIndex(p => p.userId === currentUserId.value)
+
+    const userIndex = leaderboardParticipants.value.findIndex(
+      (p) => p.userId === currentUserId.value,
+    )
     currentRank.value = userIndex !== -1 ? userIndex + 1 : 1
   } catch (error) {
     console.error('Erreur chargement leaderboard:', error)
   }
 }
 
-// Lifecycle
 onMounted(async () => {
-  console.log('Initialisation du quiz:', quizId)
-  
-  // Charger l'utilisateur actuel
   try {
-    const currentUser = await AuthService.getCurrentUser()
+    const currentUser = await UserService.getMe()
     currentUserId.value = currentUser.data.user._id
   } catch (error) {
     console.error('Erreur chargement utilisateur:', error)
   }
-  
+
   initializeGame()
 })
 
 onUnmounted(() => {
-  // Nettoyer les timers
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
   }
-  
-  // Fermer la connexion SSE
+
   if (gameEventSource) {
     gameEventSource.close()
     gameEventSource = null

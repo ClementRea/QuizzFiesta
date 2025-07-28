@@ -7,7 +7,16 @@
           <q-card-section class="bg-primary text-white text-center">
             <div class="text-h5 q-mb-sm">
               <q-icon name="mdi-account-group text-secondary" size="md" class="q-mr-sm" />
-              <span class="text-secondary">Salle d'attente</span>
+              <span class="text-secondary q-mr-md">Salle d'attente</span>
+              <span class="text-secondary"
+                >Code :
+                <q-btn
+                  color="secondary"
+                  :label="quiz?.joinCode || '...'"
+                  @click="copyCode"
+                  :disable="!quiz || !quiz.joinCode"
+                ></q-btn>
+              </span>
             </div>
             <div class="text-subtitle1 text-secondary">{{ quiz?.title || 'Chargement...' }}</div>
             <div v-if="quiz?.description" class="text-caption text-secondary q-mt-xs">
@@ -186,8 +195,7 @@
               <q-btn
                 v-if="isOrganizer"
                 unelevated
-                color="primary"
-                text-color="secondary"
+                color="secondary"
                 icon="mdi-play"
                 label="Démarrer le quiz"
                 @click="startQuiz"
@@ -239,6 +247,7 @@ import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
 import UserService from 'src/services/UserService'
 import AuthService from 'src/services/AuthService'
+import { copyJoinCode } from 'src/services/Utils'
 
 const router = useRouter()
 const route = useRoute()
@@ -264,12 +273,12 @@ const maxReconnectAttempts = 5
 
 // Computed
 const quizId = computed(() => route.params.id)
+
 const isOrganizer = computed(() => {
   return currentUser.value && quiz.value && currentUser.value._id === quiz.value.createdBy?._id
 })
 
 const canStart = computed(() => {
-  console.log('isOrga', isOrganizer.value)
   if (!isOrganizer.value) return false
   if (participants.value.length < 1) return false
 
@@ -513,6 +522,8 @@ const getApiBaseUrl = () => {
 
   return `${protocol}//${hostname}${backendPort}/api`
 }
+
+const copyCode = () => copyJoinCode($q, quiz.value?.joinCode)
 
 const refreshParticipants = async () => {
   try {
