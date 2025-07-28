@@ -8,7 +8,7 @@
       <BackArrow v-if="$route.meta && $route.meta.showBackArrow" />
       <div class="row items-center q-gutter-md text-dark">
         <q-img
-          class="q-mr-md"
+          class="q-mr-md cursor-pointer"
           :style="
             $q.screen.xs ? { width: '40px', height: '40px' } : { width: '116px', height: '116px' }
           "
