@@ -7,8 +7,8 @@
       <q-chip
         v-if="questions.length > 0"
         :label="`${questions.length} question${questions.length > 1 ? 's' : ''}`"
-        color="primary"
-        text-color="white"
+        color="secondary"
+        text-color="primary"
         icon="quiz"
         class="text-weight-medium"
       />
@@ -41,7 +41,7 @@
     </div>
 
     <div v-else class="questions-list" role="list" aria-label="Liste des questions du quiz">
-      <q-timeline color="primary" class="q-mb-lg">
+      <q-timeline color="secondary" class="q-mb-lg">
         <q-timeline-entry
           v-for="(question, index) in questions"
           :key="index"
@@ -52,11 +52,12 @@
           :ref="(el) => setQuestionRef(el, index)"
         >
           <template v-slot:subtitle>
-            <div class="text-grey-6 text-caption">
+            <div class="text-secondary text-bold text-caption">
               {{ getQuestionTypeLabel(question.type) }}
             </div>
           </template>
 
+          <!-- Card question create  -->
           <q-card class="question-card" flat bordered>
             <q-expansion-item
               v-model="expandedQuestions[index]"
@@ -70,7 +71,7 @@
               :default-opened="index === questions.length - 1"
               header-class="text-weight-medium"
             >
-              <template #header>
+              <template v-slot:header>
                 <div class="row items-center full-width">
                   <div class="col">
                     <div class="text-weight-medium text-grey-8">Question {{ index + 1 }}</div>

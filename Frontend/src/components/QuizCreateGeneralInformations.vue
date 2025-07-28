@@ -59,8 +59,18 @@
 
     <UploadFiles v-model="uploadFilesDialog" title="Logo du quiz" @selected="onLogoSelected" />
 
-    <!-- Enhanced Form Fields -->
     <div class="form-fields-section">
+      <q-toggle
+        v-model="isPublic"
+        color="secondary"
+        keep-color
+        :label="isPublic ? 'Quiz public' : 'Quiz privé'"
+        :icon="isPublic ? 'lock_open' : 'lock'"
+        class="q-mb-lg"
+        left-label
+        aria-label="Rendre le quiz public ou privé"
+      />
+
       <q-input
         v-model="title"
         label="Titre du quiz"
@@ -153,6 +163,13 @@ const description = computed({
   get: () => props.quizData.description,
   set: (value) => {
     emit('update:quizData', { ...props.quizData, description: value })
+  },
+})
+
+const isPublic = computed({
+  get: () => props.quizData.isPublic ?? false,
+  set: (value) => {
+    emit('update:quizData', { ...props.quizData, isPublic: value })
   },
 })
 </script>

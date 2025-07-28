@@ -7,7 +7,6 @@
       @action="handleAction"
     >
       <template v-slot:content>
-        <!-- Enhanced Step Progress with better visual hierarchy -->
         <div class="q-mb-lg">
           <StepProgressBar
             :steps="quizSteps"
@@ -18,7 +17,6 @@
           />
         </div>
 
-        <!-- Enhanced step content with improved spacing and visual appeal -->
         <q-card
           class="step-content-card q-pa-lg"
           flat
@@ -86,7 +84,7 @@ const logoPreviewUrl = ref(null)
 
 const onLogoSelected = (file) => {
   logoFile.value = file
-  
+
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -104,6 +102,7 @@ const removeLogo = () => {
 const quizData = ref({
   title: '',
   description: '',
+  isPublic: true,
   questions: [],
 })
 
@@ -193,6 +192,7 @@ const handleAction = async (action) => {
         description: quizData.value.description,
         startDate: new Date(),
         logo: logoFile.value,
+        isPublic: quizData.value.isPublic,
         questions: quizData.value.questions.map((question) => ({
           content: question.content,
           type: question.type,
@@ -206,14 +206,14 @@ const handleAction = async (action) => {
 
       $q.notify({
         type: 'positive',
-        message: 'Quiz created successfully!',
+        message: 'Quiz crée avec succès !',
         position: 'top',
       })
       router.push('/accueil')
     } catch (error) {
       $q.notify({
         type: 'negative',
-        message: 'Error while creating the quiz',
+        message: 'Erreur lors de la création du quiz',
         position: 'top',
       })
       console.error(error)
@@ -229,7 +229,6 @@ const handleAction = async (action) => {
   transition: all 0.3s ease;
 }
 
-// Responsive improvements
 @media (max-width: 768px) {
   .step-content-card {
     margin: 0 -16px;
@@ -237,18 +236,10 @@ const handleAction = async (action) => {
   }
 }
 
-// Accessibility improvements
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
     animation: none !important;
-  }
-}
-
-// Dark mode support
-.body--dark {
-  .step-content-card {
-    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
   }
 }
 </style>

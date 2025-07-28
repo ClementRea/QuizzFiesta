@@ -1,26 +1,24 @@
 <template>
-  <div class="quiz-question bg-white rounded-borders q-pa-xl shadow-8" :class="{ 'disabled-question': disabled }">
+  <div
+    class="quiz-question bg-white rounded-borders q-pa-xl shadow-8"
+    :class="{ 'disabled-question': disabled }"
+  >
     <!-- En-tête de la question -->
     <div class="question-header text-center q-mb-xl">
       <div class="question-number text-h6 text-secondary q-mb-sm">
         Question {{ questionNumber }} / {{ totalQuestions }}
       </div>
-      
+
       <h2 class="question-title text-h4 text-secondary text-weight-bold q-mb-md">
         {{ question.title }}
       </h2>
-      
+
       <div v-if="question.description" class="question-description text-body1 text-grey-7 q-mb-lg">
         {{ question.description }}
       </div>
 
       <!-- Points de la question -->
-      <q-chip 
-        color="accent" 
-        text-color="secondary" 
-        icon="star"
-        class="text-weight-medium"
-      >
+      <q-chip color="accent" text-color="secondary" icon="star" class="text-weight-medium">
         {{ question.points || 100 }} points
       </q-chip>
     </div>
@@ -41,44 +39,54 @@
       <!-- Questions à choix multiples -->
       <div v-if="question.type === 'multiple_choice'" class="multiple-choice-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
-          {{ allowMultipleAnswers ? 'Sélectionnez une ou plusieurs réponses :' : 'Sélectionnez une réponse :' }}
+          {{
+            allowMultipleAnswers
+              ? 'Sélectionnez une ou plusieurs réponses :'
+              : 'Sélectionnez une réponse :'
+          }}
         </div>
-        
+
         <div class="q-gutter-md">
-          <div 
-            v-for="(answer, index) in question.answers" 
+          <div
+            v-for="(answer, index) in question.answers"
             :key="index"
             class="answer-option"
             @click="selectMultipleChoiceAnswer(index)"
           >
-            <q-card 
-              flat 
-              bordered 
+            <q-card
+              flat
+              bordered
               class="answer-card transition-all"
               :class="{
-                'selected': selectedAnswers.includes(index),
+                selected: selectedAnswers.includes(index),
                 'bg-secondary text-primary': selectedAnswers.includes(index),
                 'bg-grey-1 hover-shadow': !selectedAnswers.includes(index) && !disabled,
                 'cursor-pointer': !disabled,
-                'cursor-not-allowed opacity-60': disabled
+                'cursor-not-allowed opacity-60': disabled,
               }"
             >
               <q-card-section class="q-pa-lg">
                 <div class="row items-center q-gutter-md no-wrap">
                   <!-- Indicateur de sélection -->
                   <div class="col-auto">
-                    <q-icon 
-                      :name="allowMultipleAnswers ? 
-                        (selectedAnswers.includes(index) ? 'check_box' : 'check_box_outline_blank') :
-                        (selectedAnswers.includes(index) ? 'radio_button_checked' : 'radio_button_unchecked')"
+                    <q-icon
+                      :name="
+                        allowMultipleAnswers
+                          ? selectedAnswers.includes(index)
+                            ? 'check_box'
+                            : 'check_box_outline_blank'
+                          : selectedAnswers.includes(index)
+                            ? 'radio_button_checked'
+                            : 'radio_button_unchecked'
+                      "
                       :color="selectedAnswers.includes(index) ? 'primary' : 'grey-6'"
                       size="lg"
                     />
                   </div>
-                  
+
                   <!-- Lettre de la réponse -->
                   <div class="col-auto">
-                    <q-badge 
+                    <q-badge
                       :color="selectedAnswers.includes(index) ? 'primary' : 'secondary'"
                       :text-color="selectedAnswers.includes(index) ? 'secondary' : 'primary'"
                       class="answer-letter text-weight-bold"
@@ -86,13 +94,16 @@
                       {{ getAnswerLetter(index) }}
                     </q-badge>
                   </div>
-                  
+
                   <!-- Texte de la réponse -->
                   <div class="col">
                     <div class="answer-text text-h6 text-weight-medium">
                       {{ answer.text }}
                     </div>
-                    <div v-if="answer.description" class="answer-description text-body2 text-grey-6 q-mt-xs">
+                    <div
+                      v-if="answer.description"
+                      class="answer-description text-body2 text-grey-6 q-mt-xs"
+                    >
                       {{ answer.description }}
                     </div>
                   </div>
@@ -108,19 +119,19 @@
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Cette affirmation est-elle vraie ou fausse ?
         </div>
-        
+
         <div class="row q-gutter-lg justify-center">
           <div class="col-12 col-sm-5">
-            <q-card 
-              flat 
-              bordered 
+            <q-card
+              flat
+              bordered
               class="answer-card transition-all text-center"
               :class="{
-                'selected': selectedTrueFalse === true,
+                selected: selectedTrueFalse === true,
                 'bg-positive text-white': selectedTrueFalse === true,
                 'bg-grey-1 hover-shadow': selectedTrueFalse !== true && !disabled,
                 'cursor-pointer': !disabled,
-                'cursor-not-allowed opacity-60': disabled
+                'cursor-not-allowed opacity-60': disabled,
               }"
               @click="selectTrueFalse(true)"
             >
@@ -130,18 +141,18 @@
               </q-card-section>
             </q-card>
           </div>
-          
+
           <div class="col-12 col-sm-5">
-            <q-card 
-              flat 
-              bordered 
+            <q-card
+              flat
+              bordered
               class="answer-card transition-all text-center"
               :class="{
-                'selected': selectedTrueFalse === false,
+                selected: selectedTrueFalse === false,
                 'bg-negative text-white': selectedTrueFalse === false,
                 'bg-grey-1 hover-shadow': selectedTrueFalse !== false && !disabled,
                 'cursor-pointer': !disabled,
-                'cursor-not-allowed opacity-60': disabled
+                'cursor-not-allowed opacity-60': disabled,
               }"
               @click="selectTrueFalse(false)"
             >
@@ -159,10 +170,10 @@
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Glissez les éléments pour les remettre dans le bon ordre :
         </div>
-        
+
         <!-- Composant draggable pour réorganiser les éléments -->
-        <draggable 
-          v-model="orderItems" 
+        <draggable
+          v-model="orderItems"
           :disabled="disabled"
           item-key="id"
           class="order-container q-gutter-sm"
@@ -171,27 +182,23 @@
           @start="onDragStart"
           @end="onDragEnd"
         >
-          <template #item="{ element, index }">
+          <template v-slot:item="{ element, index }">
             <div class="order-item q-mb-sm">
-              <q-card 
-                flat 
-                bordered 
+              <q-card
+                flat
+                bordered
                 class="order-card q-pa-md transition-all"
                 :class="{
                   'cursor-move bg-grey-1': !disabled,
-                  'cursor-not-allowed bg-grey-3 opacity-60': disabled
+                  'cursor-not-allowed bg-grey-3 opacity-60': disabled,
                 }"
               >
                 <div class="row items-center q-gutter-md no-wrap">
-                  <q-icon 
-                    name="drag_indicator" 
-                    :color="disabled ? 'grey-4' : 'grey-6'" 
-                    size="md" 
-                  />
+                  <q-icon name="drag_indicator" :color="disabled ? 'grey-4' : 'grey-6'" size="md" />
                   <div class="text-body1 text-weight-medium">{{ element.text }}</div>
                   <q-space />
-                  <q-badge 
-                    :color="disabled ? 'grey-4' : 'secondary'" 
+                  <q-badge
+                    :color="disabled ? 'grey-4' : 'secondary'"
                     :text-color="disabled ? 'grey-6' : 'primary'"
                   >
                     {{ index + 1 }}
@@ -201,16 +208,10 @@
             </div>
           </template>
         </draggable>
-        
+
         <!-- Instructions -->
         <div class="text-center q-mt-md">
-          <q-chip 
-            dense 
-            color="info" 
-            text-color="white" 
-            icon="info"
-            class="text-body2"
-          >
+          <q-chip dense color="info" text-color="white" icon="info" class="text-body2">
             {{ disabled ? 'Ordre soumis' : 'Glissez pour réorganiser' }}
           </q-chip>
         </div>
@@ -218,10 +219,8 @@
 
       <!-- Questions de texte libre -->
       <div v-else-if="question.type === 'text'" class="text-answer">
-        <div class="text-body1 text-grey-7 text-center q-mb-lg">
-          Saisissez votre réponse :
-        </div>
-        
+        <div class="text-body1 text-grey-7 text-center q-mb-lg">Saisissez votre réponse :</div>
+
         <q-input
           v-model="textAnswer"
           outlined
@@ -240,7 +239,7 @@
     <!-- Informations supplémentaires -->
     <div v-if="showHint || question.hint" class="question-hint q-mt-xl">
       <q-banner class="bg-info text-white rounded-borders">
-        <template #avatar>
+        <template v-slot:avatar>
           <q-icon name="lightbulb" />
         </template>
         <div class="text-weight-medium">Indice :</div>
@@ -262,29 +261,29 @@ const props = defineProps({
       title: '',
       type: 'multiple_choice',
       answers: [],
-      points: 100
-    })
+      points: 100,
+    }),
   },
   questionNumber: {
     type: Number,
-    default: 1
+    default: 1,
   },
   totalQuestions: {
     type: Number,
-    default: 1
+    default: 1,
   },
   allowMultipleAnswers: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showHint: {
     type: Boolean,
-    default: false
+    default: false,
   },
   disabled: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['answer-selected', 'answer-changed'])
@@ -318,7 +317,7 @@ const getAnswerLetter = (index) => {
 
 const selectMultipleChoiceAnswer = (index) => {
   if (props.disabled) return
-  
+
   if (props.allowMultipleAnswers) {
     // Permettre plusieurs réponses
     const currentIndex = selectedAnswers.value.indexOf(index)
@@ -331,7 +330,7 @@ const selectMultipleChoiceAnswer = (index) => {
     // Une seule réponse
     selectedAnswers.value = [index]
   }
-  
+
   emitAnswer()
 }
 
@@ -343,7 +342,7 @@ const selectTrueFalse = (value) => {
 
 const emitAnswer = () => {
   let answer = null
-  
+
   switch (props.question.type) {
     case 'multiple_choice':
       answer = props.allowMultipleAnswers ? selectedAnswers.value : selectedAnswers.value[0]
@@ -352,17 +351,17 @@ const emitAnswer = () => {
       answer = selectedTrueFalse.value
       break
     case 'order':
-      answer = orderItems.value.map(item => item.text)
+      answer = orderItems.value.map((item) => item.text)
       break
     case 'text':
       answer = textAnswer.value.trim()
       break
   }
-  
+
   emit('answer-selected', {
     questionId: props.question.id,
     answer,
-    hasAnswered: hasAnswered.value
+    hasAnswered: hasAnswered.value,
   })
 }
 
@@ -383,7 +382,7 @@ const initializeOrderItems = () => {
     orderItems.value = [...props.question.items]
       .map((item, index) => ({
         ...item,
-        id: item.id || `item-${index}-${Date.now()}`
+        id: item.id || `item-${index}-${Date.now()}`,
       }))
       .sort(() => Math.random() - 0.5)
   }
@@ -398,13 +397,21 @@ const resetAnswers = () => {
 }
 
 // Watchers
-watch(() => props.question, () => {
-  resetAnswers()
-}, { immediate: true })
+watch(
+  () => props.question,
+  () => {
+    resetAnswers()
+  },
+  { immediate: true },
+)
 
-watch([selectedAnswers, selectedTrueFalse, textAnswer], () => {
-  emit('answer-changed', hasAnswered.value)
-}, { deep: true })
+watch(
+  [selectedAnswers, selectedTrueFalse, textAnswer],
+  () => {
+    emit('answer-changed', hasAnswered.value)
+  },
+  { deep: true },
+)
 
 // Exposer les méthodes et états
 defineExpose({
@@ -417,13 +424,13 @@ defineExpose({
       case 'true_false':
         return selectedTrueFalse.value
       case 'order':
-        return orderItems.value.map(item => item.text)
+        return orderItems.value.map((item) => item.text)
       case 'text':
         return textAnswer.value.trim()
       default:
         return null
     }
-  }
+  },
 })
 </script>
 
@@ -514,15 +521,15 @@ defineExpose({
   .question-title {
     font-size: 1.8rem;
   }
-  
+
   .answer-text {
     font-size: 1.1rem;
   }
-  
+
   .q-pa-xl {
     padding: 1rem;
   }
-  
+
   .q-pa-lg {
     padding: 0.75rem;
   }

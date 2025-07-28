@@ -142,42 +142,50 @@
           <h6 class="text-secondary q-ma-none">Éléments à ordonner</h6>
         </div>
         <div class="text-subtitle2 text-secondary text-bold q-mb-lg">
-          Saisissez les éléments dans le bon ordre (du 1er au dernier). Les joueurs devront les
-          remettre dans le bon ordre.
+          Saisissez les éléments dans le bon ordre (du 1er au dernier). Glissez-déposez pour
+          réorganiser l'ordre.
         </div>
 
-        <div
-          v-for="(answer, index) in localQuestion.answer"
-          :key="index"
-          class="row items-center q-mb-sm"
+        <VueDraggable
+          v-model="localQuestion.answer"
+          item-key="text"
+          handle=".drag-handle"
+          animation="300"
+          ghost-class="ghost-item"
+          @end="updateOrderNumbers"
         >
-          <div
-            class="flex flex-center bg-secondary text-white rounded-borders q-mr-sm"
-            style="min-width: 32px; height: 32px; font-size: 14px; font-weight: bold"
-          >
-            {{ index + 1 }}
-          </div>
-          <q-input
-            v-model="answer.text"
-            :label="`Position ${index + 1} *`"
-            outlined
-            class="custom-border col"
-            color="secondary"
-            bg-color="white"
-            label-color="secondary"
-          />
-          <q-btn
-            v-if="localQuestion.answer.length > 2"
-            flat
-            dense
-            round
-            icon="delete"
-            color="negative"
-            @click="removeAnswer(index)"
-            class="q-ml-sm"
-            :title="`Supprimer l'élément ${index + 1}`"
-          />
-        </div>
+          <template v-for="(element, index) in localQuestion.answer" :key="index">
+            <div class="row items-center q-mb-sm q-pa-sm bg-white rounded-borders">
+              <div
+                class="drag-handle flex flex-center bg-secondary text-white rounded-borders q-mr-sm"
+                style="min-width: 32px; height: 32px"
+              >
+                <q-icon name="mdi-drag" size="20px" />
+              </div>
+              <q-input
+                v-model="element.text"
+                :label="`Position ${index + 1} *`"
+                outlined
+                class="col"
+                color="secondary"
+                bg-color="white"
+                label-color="secondary"
+              />
+              <q-btn
+                v-if="localQuestion.answer.length > 2"
+                flat
+                dense
+                round
+                icon="delete"
+                color="negative"
+                @click="removeAnswer(index)"
+                class="q-ml-sm"
+                :title="`Supprimer l'élément ${index + 1}`"
+              />
+            </div>
+          </template>
+        </VueDraggable>
+
         <div class="row justify-center q-mt-lg">
           <q-btn
             class="bg-accent text-bold"
@@ -391,6 +399,7 @@
 
 <script setup>
 import { ref, watch, watchEffect } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 
 const props = defineProps({
   question: {
@@ -579,6 +588,12 @@ const updateIntruder = (newIndex) => {
   })
 }
 
+const updateOrderNumbers = () => {
+  localQuestion.value.answer.forEach((answer, index) => {
+    answer.correctOrder = index + 1
+  })
+}
+
 // Watch effect for association type
 watchEffect(() => {
   if (localQuestion.value.type === 'ASSOCIATION') {
@@ -586,3 +601,18 @@ watchEffect(() => {
   }
 })
 </script>
+
+<style lang="scss" scoped>
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.ghost-item {
+  opacity: 0.5;
+}
+</style>
