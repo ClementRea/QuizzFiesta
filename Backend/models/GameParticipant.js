@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const gameParticipantSchema = new mongoose.Schema({
+  // Référence à la session de jeu (plus au quiz directement)
+  sessionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'GameSession',
+    required: true
+  },
+  // On garde aussi quizId pour compatibilité et requêtes optimisées
   quizId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quiz',
@@ -18,9 +25,15 @@ const gameParticipantSchema = new mongoose.Schema({
   avatar: {
     type: String
   },
+  // Ces champs sont maintenant gérés au niveau de la GameSession
+  // On les garde pour le state individuel du participant
   currentQuestionIndex: {
     type: Number,
     default: 0
+  },
+  lastQuestionAnsweredAt: {
+    type: Date,
+    default: null
   },
   answers: [{
     questionId: {
@@ -28,7 +41,11 @@ const gameParticipantSchema = new mongoose.Schema({
       ref: 'Question',
       required: true
     },
-    answer: mongoose.Schema.Types.Mixed, // Number or Array
+    questionIndex: {
+      type: Number,
+      required: true
+    },
+    answer: mongoose.Schema.Types.Mixed, // Number, Array, String selon le type
     submittedAt: {
       type: Date,
       default: Date.now
@@ -42,7 +59,7 @@ const gameParticipantSchema = new mongoose.Schema({
       default: 0
     },
     timeSpent: {
-      type: Number,
+      type: Number, // en millisecondes
       default: 0
     }
   }],
@@ -52,7 +69,7 @@ const gameParticipantSchema = new mongoose.Schema({
   },
   gameStatus: {
     type: String,
-    enum: ['playing', 'waiting', 'finished'],
+    enum: ['playing', 'waiting', 'finished', 'disconnected'],
     default: 'playing'
   },
   joinedAt: {
@@ -67,10 +84,16 @@ const gameParticipantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Un seul user pour un seul quiz
-gameParticipantSchema.index({ quizId: 1, userId: 1 }, { unique: true });
+// Index unique par session (un user peut jouer plusieurs fois au même quiz dans des sessions différentes)
+gameParticipantSchema.index({ sessionId: 1, userId: 1 }, { unique: true });
 
-// Nettoyer les sessions inactives
+// Index pour retrouver les participants d'une session
+gameParticipantSchema.index({ sessionId: 1, gameStatus: 1 });
+
+// Index pour le leaderboard de session
+gameParticipantSchema.index({ sessionId: 1, totalScore: -1 });
+
+// Nettoyer les sessions inactives (2 heures)
 gameParticipantSchema.index({ lastActivity: 1 }, { expireAfterSeconds: 7200 });
 
 const GameParticipant = mongoose.model('GameParticipant', gameParticipantSchema);

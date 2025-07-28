@@ -821,8 +821,36 @@ exports.getQuizQuestions = async (req, res, next) => {
         userName: req.user.userName,
         avatar: req.user.avatar
       });
-      await gameParticipant.save();
+    } else if (gameParticipant.gameStatus === 'finished') {
+      // Si le participant a déjà terminé le quiz, réinitialiser pour permettre de rejouer
+      gameParticipant.currentQuestionIndex = 0;
+      gameParticipant.currentQuestionStartTime = null;
+      gameParticipant.currentQuestionTimeLimit = 30;
+      gameParticipant.answers = [];
+      gameParticipant.totalScore = 0;
+      gameParticipant.gameStatus = 'playing';
+      gameParticipant.lastActivity = new Date();
     }
+    
+    // Initialiser le timer pour la question actuelle si pas encore fait
+    const currentQuestion = quiz.questions[gameParticipant.currentQuestionIndex];
+    if (currentQuestion) {
+      if (!gameParticipant.currentQuestionStartTime) {
+        gameParticipant.currentQuestionStartTime = new Date();
+        gameParticipant.currentQuestionTimeLimit = currentQuestion.timeGiven || 30;
+      }
+      
+      // S'assurer que le timeLimit n'est jamais 0 ou négatif
+      if (gameParticipant.currentQuestionTimeLimit <= 0) {
+        gameParticipant.currentQuestionTimeLimit = currentQuestion.timeGiven || 30;
+        // Si la question n'a pas de timeGiven valide, utiliser 30 secondes par défaut
+        if (gameParticipant.currentQuestionTimeLimit <= 0) {
+          gameParticipant.currentQuestionTimeLimit = 30;
+        }
+      }
+    }
+    
+    await gameParticipant.save();
 
     // Préparer les questions sans les bonnes réponses
     const sanitizedQuestions = quiz.questions.map(question => ({
@@ -835,7 +863,11 @@ exports.getQuizQuestions = async (req, res, next) => {
         text: ans.text,
         // On ne renvoie PAS ans.correct
       })) : [],
-      items: question.orderItems || []
+      items: question.type === 'ORDER' && question.answer ? 
+        question.answer.map(ans => ({
+          text: ans.text,
+          id: ans._id
+        })) : []
     }));
 
     res.status(200).json({
@@ -912,15 +944,40 @@ exports.submitAnswer = async (req, res, next) => {
     let isCorrect = false;
     let points = 0;
 
-    if (question.type === 'multiple_choice') {
-      const correctAnswerIndex = question.answer.findIndex(ans => ans.correct);
+    if (question.type === 'MULTIPLE_CHOICE') {
+      const correctAnswerIndex = question.answer.findIndex(ans => ans.isCorrect);
       isCorrect = answer === correctAnswerIndex;
-    } else if (question.type === 'true_false') {
+    } else if (question.type === 'TRUE_FALSE') {
       isCorrect = answer === question.correctAnswer;
-    } else if (question.type === 'order') {
+    } else if (question.type === 'ORDER') {
       // Pour les questions d'ordre, comparer l'ordre donné avec le bon ordre
-      const correctOrder = question.orderItems.sort((a, b) => a.order - b.order).map(item => item.text);
+      const correctOrder = question.answer.sort((a, b) => a.correctOrder - b.correctOrder).map(item => item.text);
       isCorrect = JSON.stringify(answer) === JSON.stringify(correctOrder);
+    } else if (question.type === 'CLASSIC') {
+      // Pour les questions classiques, comparer avec la réponse attendue
+      const correctAnswer = question.answer[0].text.toLowerCase().trim();
+      isCorrect = answer.toLowerCase().trim() === correctAnswer;
+    } else if (question.type === 'ASSOCIATION') {
+      // Pour les questions d'association, vérifier que toutes les paires sont correctes
+      if (Array.isArray(answer)) {
+        // La bonne réponse est que chaque élément gauche (index i) doit être associé avec l'élément droit (index i)
+        const correctPairs = question.answer.map((_, index) => ({
+          leftIndex: index,
+          rightIndex: index
+        }));
+        
+        // Vérifier que toutes les associations sont correctes
+        isCorrect = answer.length === correctPairs.length && 
+          answer.every(pair => 
+            correctPairs.some(correct => 
+              correct.leftIndex === pair.leftIndex && correct.rightIndex === pair.rightIndex
+            )
+          );
+      }
+    } else if (question.type === 'FIND_INTRUDER') {
+      // Pour trouver l'intrus, vérifier que l'index sélectionné correspond à l'intrus
+      const correctIntruderIndex = question.answer.findIndex(ans => ans.isCorrect);
+      isCorrect = answer === correctIntruderIndex;
     }
 
     if (isCorrect) {
@@ -942,12 +999,21 @@ exports.submitAnswer = async (req, res, next) => {
 
     // Préparer la bonne réponse pour le frontend
     let correctAnswer = null;
-    if (question.type === 'multiple_choice') {
-      correctAnswer = question.answer.findIndex(ans => ans.correct);
-    } else if (question.type === 'true_false') {
+    if (question.type === 'MULTIPLE_CHOICE') {
+      correctAnswer = question.answer.findIndex(ans => ans.isCorrect);
+    } else if (question.type === 'TRUE_FALSE') {
       correctAnswer = question.correctAnswer;
-    } else if (question.type === 'order') {
-      correctAnswer = question.orderItems.sort((a, b) => a.order - b.order).map(item => item.text);
+    } else if (question.type === 'ORDER') {
+      correctAnswer = question.answer.sort((a, b) => a.correctOrder - b.correctOrder).map(item => item.text);
+    } else if (question.type === 'CLASSIC') {
+      correctAnswer = question.answer[0].text;
+    } else if (question.type === 'ASSOCIATION') {
+      correctAnswer = question.answer.map((_, index) => ({
+        leftIndex: index,
+        rightIndex: index
+      }));
+    } else if (question.type === 'FIND_INTRUDER') {
+      correctAnswer = question.answer.findIndex(ans => ans.isCorrect);
     }
 
     res.status(200).json({
@@ -977,6 +1043,64 @@ exports.submitAnswer = async (req, res, next) => {
 
   } catch (error) {
     console.error('Error in submitAnswer:', error);
+    next(error);
+  }
+};
+
+// Passer à la question suivante
+exports.nextQuestion = async (req, res, next) => {
+  try {
+    const quizId = req.params.id;
+    
+    // Récupérer le participant
+    let gameParticipant = await GameParticipant.findOne({
+      quizId,
+      userId: req.user.id
+    });
+    
+    if (!gameParticipant) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Participant non trouvé'
+      });
+    }
+    
+    // Récupérer le quiz pour les questions
+    const quiz = await Quiz.findById(quizId).populate('questions');
+    if (!quiz) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Quiz non trouvé'
+      });
+    }
+    
+    // Passer à la question suivante
+    gameParticipant.currentQuestionIndex++;
+    
+    // Vérifier si c'est la fin du quiz
+    if (gameParticipant.currentQuestionIndex >= quiz.questions.length) {
+      gameParticipant.gameStatus = 'finished';
+      gameParticipant.currentQuestionStartTime = null;
+    } else {
+      // Initialiser le timer pour la nouvelle question
+      const nextQuestion = quiz.questions[gameParticipant.currentQuestionIndex];
+      gameParticipant.currentQuestionStartTime = new Date();
+      gameParticipant.currentQuestionTimeLimit = nextQuestion.timeGiven || 30;
+    }
+    
+    await gameParticipant.save();
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        currentQuestionIndex: gameParticipant.currentQuestionIndex,
+        gameStatus: gameParticipant.gameStatus,
+        timeLeft: gameParticipant.currentQuestionTimeLimit || 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error in nextQuestion:', error);
     next(error);
   }
 };
@@ -1017,7 +1141,10 @@ exports.getGameState = async (req, res, next) => {
         currentParticipant: currentParticipant ? {
           currentQuestionIndex: currentParticipant.currentQuestionIndex,
           totalScore: currentParticipant.totalScore,
-          answeredQuestions: currentParticipant.answers.length
+          answeredQuestions: currentParticipant.answers.length,
+          timeLeft: currentParticipant.currentQuestionStartTime ? 
+            Math.max(0, currentParticipant.currentQuestionTimeLimit - Math.floor((Date.now() - currentParticipant.currentQuestionStartTime) / 1000))
+            : currentParticipant.currentQuestionTimeLimit
         } : null
       }
     });
