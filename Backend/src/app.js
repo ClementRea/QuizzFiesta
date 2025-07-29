@@ -9,6 +9,7 @@ const userRoutes = require('../routes/usersRoutes');
 const quizRoutes = require('../routes/quizRoutes');
 const organisationRoutes = require('../routes/organisationRoutes');
 const gameSessionRoutes = require('../routes/gameSessionRoutes');
+const socketMiddleware = require('../middlewares/socketMiddleware');
 
 
 const app = express();
@@ -55,7 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/organisation', organisationRoutes);
-app.use('/api/session', gameSessionRoutes);
+app.use('/api/session', socketMiddleware, gameSessionRoutes);
 // /api/quiz : gestion des quiz
 // /api/users : gestion des utilisateurs
 // /api/teams : gestion des équipes
