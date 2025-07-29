@@ -49,20 +49,6 @@
             </div>
           </q-card>
 
-          <q-card
-            flat
-            bordered
-            class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1"
-            v-if="object.joinCode"
-          >
-            <div class="text-center">
-              <q-icon name="key" size="2rem" color="green-6" class="q-mb-md" />
-              <div class="text-h5 text-weight-bold text-green-8">
-                {{ object.joinCode }}
-              </div>
-              <div class="text-body1 text-grey-7">Code d'accès</div>
-            </div>
-          </q-card>
 
           <q-card flat bordered class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1">
             <div class="text-center">
@@ -87,7 +73,7 @@
       <!-- Full actions -->
       <div class="row q-gutter-lg q-mt-xl">
         <q-btn
-          v-if="object.joinCode && detectedObjectType === 'quiz'"
+          v-if="detectedObjectType === 'quiz'"
           unelevated
           color="secondary"
           text-color="primary"
@@ -96,18 +82,6 @@
           size="lg"
           class="col-12 col-sm-6 col-md-3"
           @click.stop="handlePlay"
-        />
-
-        <q-btn
-          v-if="!object.joinCode && detectedObjectType === 'quiz'"
-          unelevated
-          color="primary"
-          text-color="secondary"
-          icon="qr_code"
-          label="Générer un Code"
-          size="lg"
-          class="col-12 col-sm-6 col-md-3"
-          @click.stop="handleGenerateCode"
         />
 
         <q-btn
@@ -216,18 +190,6 @@
           {{ object.questions.length || 0 }} questions
         </q-chip>
         <q-chip
-          v-if="object.joinCode"
-          color="green-2"
-          text-color="green-8"
-          icon="key"
-          class="text-weight-medium"
-          clickable
-          :ripple="true"
-          @click="copyCode"
-        >
-          Code: {{ object.joinCode }}
-        </q-chip>
-        <q-chip
           v-if="object.isPublic"
           color="orange-2"
           text-color="orange-8"
@@ -241,7 +203,7 @@
       <!-- Action Buttons -->
       <div class="row q-gutter-md q-mt-md items-center">
         <q-btn
-          v-if="object.joinCode && detectedObjectType === 'quiz'"
+          v-if="detectedObjectType === 'quiz'"
           unelevated
           color="secondary"
           text-color="primary"
@@ -250,18 +212,6 @@
           size="md"
           class="col-auto"
           @click.stop="handlePlay"
-        />
-
-        <q-btn
-          v-if="!object.joinCode && detectedObjectType === 'quiz'"
-          unelevated
-          color="primary"
-          text-color="secondary"
-          icon="qr_code"
-          label="Générer code"
-          size="md"
-          class="col-auto"
-          @click.stop="handleGenerateCode"
         />
 
         <q-space />
@@ -357,16 +307,6 @@
           {{ object.questions.length || 0 }} Question{{ object.questions.length > 1 ? 's' : '' }}
         </q-chip>
         <q-chip
-          v-if="object.joinCode"
-          color="green-1"
-          text-color="green-8"
-          icon="key"
-          size="sm"
-          class="text-weight-medium"
-        >
-          {{ object.joinCode }}
-        </q-chip>
-        <q-chip
           v-if="object.isPublic"
           color="orange-1"
           text-color="orange-8"
@@ -433,9 +373,6 @@
         <q-badge v-if="object.questions" color="blue-6" class="text-weight-medium">
           {{ object.questions.length || 0 }} Q
         </q-badge>
-        <q-badge v-if="object.joinCode" color="green-6" class="text-weight-medium">
-          {{ object.joinCode }}
-        </q-badge>
         <q-badge v-if="object.isPublic" color="orange-6" class="text-weight-medium">
           Public
         </q-badge>
@@ -481,7 +418,6 @@
       <div v-if="detectedObjectType === 'quiz'" class="row q-gutter-xs items-center">
         <q-icon name="quiz" size="xs" color="blue-6" />
         <span class="text-caption text-grey-7">{{ object.questions?.length || 0 }}</span>
-        <q-icon v-if="object.joinCode" name="key" size="xs" color="green-6" />
         <q-icon v-if="object.isPublic" name="public" size="xs" color="orange-6" />
       </div>
     </q-card-section>
@@ -508,7 +444,7 @@ const props = defineProps({
 
 const $q = useQuasar()
 
-const emit = defineEmits(['view', 'edit', 'delete', 'share', 'play', 'join', 'generateCode'])
+const emit = defineEmits(['view', 'edit', 'delete', 'share', 'play'])
 
 const detectedObjectType = computed(() => {
   if (props.objectType) return props.objectType
@@ -543,35 +479,11 @@ const getImageUrl = (obj) => {
   return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
 }
 
-const copyCode = () => {
-  const code = props.object.joinCode
-  if (code) {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
-        $q.notify({
-          type: 'positive',
-          message: 'Code copié dans le presse-papiers !',
-          position: 'top',
-        })
-      })
-      .catch(() => {
-        $q.notify({
-          type: 'negative',
-          message: 'Échec de la copie du code.',
-          position: 'top',
-        })
-      })
-  }
-}
-
 const handleView = () => emit('view', props.object)
 const handleEdit = () => emit('edit', props.object)
 const handleDelete = () => emit('delete', props.object)
 const handleShare = () => emit('share', props.object)
 const handlePlay = () => emit('play', props.object)
-// const handleJoin = () => emit('join', props.object)
-const handleGenerateCode = () => emit('generateCode', props.object)
 </script>
 
 <style scoped>

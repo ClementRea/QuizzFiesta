@@ -24,6 +24,7 @@ const routes = [
     meta: { requiresGuest: true, showHeader: false, showBackArrow: true }
   },
   {
+
     path: '/dashboard',
     component: () => import('pages/Dashboard/DashBoardIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
@@ -54,6 +55,11 @@ const routes = [
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
+    path: '/quiz/session/join',
+    component: () => import('pages/Quiz/SessionJoinPage.vue'),
+    meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
+  },
+  {
     path: '/quiz/manage',
     component: () => import('pages/Quiz/QuizManagementPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
@@ -63,14 +69,20 @@ const routes = [
     component: () => import('pages/Quiz/ObjectLayoutDemo.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
   {
-    path: '/quiz/lobby/:id',
-    component: () => import('pages/Quiz/QuizLobbyPage.vue'),
+    path: '/quiz/session/join/:sessionCode',
+    component: () => import('pages/Quiz/SessionLobbyPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
-    path: '/quiz/play/:id',
-    component: () => import('pages/Quiz/QuizPlayPage.vue'),
+    path: '/quiz/session/:sessionId/lobby',
+    component: () => import('pages/Quiz/SessionLobbyPage.vue'),
+    meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
+  },
+  {
+    path: '/quiz/session/:sessionId/play',
+    component: () => import('pages/Quiz/SessionPlayPage.vue'),
     meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
   },
   // {

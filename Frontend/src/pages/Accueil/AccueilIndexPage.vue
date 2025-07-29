@@ -202,9 +202,29 @@ const toggleShowAll = () => {
   showingAll.value = !showingAll.value
 }
 
-const handlePlayQuiz = (quiz) => {
-  // TODO: Implémenter la logique pour démarrer un quiz
-  router.push(`/quiz/play/${quiz._id}`)
+const handlePlayQuiz = async (quiz) => {
+  try {
+    // Créer une nouvelle session pour ce quiz
+    const sessionResult = await QuizService.createSession(quiz._id, {
+      name: `Session ${quiz.title} - ${new Date().toLocaleString()}`
+    })
+    
+    const sessionId = sessionResult.data.session._id
+    
+    // Rejoindre automatiquement la session en tant qu'organisateur
+    await QuizService.joinSession(sessionId)
+    
+    // Rediriger vers le lobby de la nouvelle session
+    router.push(`/quiz/session/${sessionId}/lobby`)
+    
+  } catch (error) {
+    console.error('Erreur lors de la création de session:', error)
+    $q.notify({
+      type: 'negative',
+      message: 'Erreur lors de la création de la session',
+      position: 'top'
+    })
+  }
 }
 
 const handleViewQuiz = (quiz) => {
@@ -212,21 +232,37 @@ const handleViewQuiz = (quiz) => {
   router.push(`/quiz/view/${quiz._id}`)
 }
 
-const handleShareQuiz = (quiz) => {
-  // TODO: Implémenter la logique de partage
-  if (navigator.share) {
-    navigator.share({
-      title: quiz.title,
-      text: quiz.description,
-      url: `${window.location.origin}/quiz/play/${quiz._id}`,
+const handleShareQuiz = async (quiz) => {
+  try {
+    // Créer une session temporaire pour le partage
+    const sessionResult = await QuizService.createSession(quiz._id, {
+      name: `Session partagée ${quiz.title} - ${new Date().toLocaleString()}`
     })
-  } else {
-    // Fallback pour les navigateurs qui ne supportent pas l'API de partage
-    navigator.clipboard.writeText(`${window.location.origin}/quiz/play/${quiz._id}`)
+    
+    const sessionCode = sessionResult.data.session.sessionCode
+    const shareUrl = `${window.location.origin}/quiz/session/join/${sessionCode}`
+    
+    if (navigator.share) {
+      navigator.share({
+        title: quiz.title,
+        text: `${quiz.description} - Code: ${sessionCode}`,
+        url: shareUrl,
+      })
+    } else {
+      // Fallback pour les navigateurs qui ne supportent pas l'API de partage
+      navigator.clipboard.writeText(`${shareUrl}\nCode de session: ${sessionCode}`)
+      $q.notify({
+        color: 'positive',
+        message: 'Lien de session copié dans le presse-papier',
+        position: 'top',
+      })
+    }
+  } catch (error) {
+    console.error('Erreur lors du partage:', error)
     $q.notify({
-      color: 'positive',
-      message: 'Lien du quiz copié dans le presse-papier',
-      position: 'top',
+      type: 'negative',
+      message: 'Erreur lors de la création du lien de partage',
+      position: 'top'
     })
   }
 }

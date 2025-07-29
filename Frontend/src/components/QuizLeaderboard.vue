@@ -29,11 +29,10 @@
               <q-avatar
                 v-if="index < 3"
                 :color="getPodiumColor(index)"
-                text-color="white"
                 size="lg"
                 :icon="getPodiumIcon(index)"
               />
-              <q-avatar v-else color="grey-5" text-color="white" size="lg">
+              <q-avatar v-else color="grey-5" size="lg">
                 {{ index + 1 }}
               </q-avatar>
             </q-item-section>
@@ -45,7 +44,6 @@
                   v-if="participant.userId === currentUserId"
                   dense
                   color="secondary"
-                  text-color="white"
                   class="q-ml-sm"
                 >
                   Vous
@@ -54,7 +52,7 @@
               <q-item-label caption>
                 {{ participant.totalScore }} points
                 <span v-if="participant.answeredQuestions !== undefined">
-                  • {{ participant.answeredQuestions }}/{{ totalQuestions }} réponses
+                  • {{ participant.answeredQuestions }}
                 </span>
               </q-item-label>
             </q-item-section>
@@ -79,8 +77,8 @@
         />
         <q-btn
           label="Retour à l'accueil"
-          color="primary"
-          text-color="secondary"
+          color="secondary"
+          text-color="primary"
           rounded
           outline
           @click="$emit('go-home')"

@@ -263,13 +263,23 @@ const joinQuiz = async () => {
   joiningQuiz.value = true
 
   try {
-    // Rediriger vers la salle d'attente/lobby
-    await router.push(`/quiz/lobby/${foundQuiz.value._id}`)
+    // Créer une session et rediriger vers la nouvelle architecture
+    const sessionResult = await QuizService.createSession(foundQuiz.value._id, {
+      name: `Session ${foundQuiz.value.title} - ${new Date().toLocaleString()}`
+    })
+    
+    const sessionId = sessionResult.data.session._id
+    
+    // Rejoindre automatiquement la session
+    await QuizService.joinSession(sessionId)
+    
+    // Rediriger vers le lobby de la nouvelle session
+    router.push(`/quiz/session/${sessionId}/lobby`)
 
     $q.notify({
-      type: 'warning',
+      type: 'positive',
       icon: 'mdi-account-multiple',
-      message: "Connexion à la salle d'attente...",
+      message: "Connexion à la session réussie !",
       position: 'top',
     })
   } catch (err) {

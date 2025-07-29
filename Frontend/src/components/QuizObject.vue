@@ -11,7 +11,6 @@
     @delete="handleDelete"
     @share="handleShare"
     @play="handlePlay"
-    @generateCode="handleGenerateCode"
   />
 </template>
 
@@ -68,89 +67,65 @@ const handleEdit = () => {
   emit('edit', props.quiz)
 }
 
-const handlePlay = () => {
-  if (props.quiz.joinCode) {
-    router.push(`${props.routes.play}/${props.quiz._id}`)
-    emit('play', props.quiz)
-  } else {
-    $q.notify({
-      type: 'warning',
-      message: "Générez d'abord un code pour jouer à ce quiz",
-      position: 'top',
-    })
-  }
-}
-
-const handleGenerateCode = async () => {
+const handlePlay = async () => {
   try {
-    const response = await QuizService.generateJoinCode(props.quiz._id)
-
-    // Mettre à jour le quiz avec le nouveau code
-    const updatedQuiz = { ...props.quiz, joinCode: response.data.joinCode }
-
-    $q.notify({
-      type: 'positive',
-      message: `Code généré : ${response.data.joinCode}`,
-      position: 'top',
-      actions: [
-        {
-          label: 'Copier',
-          color: 'white',
-          handler: () => {
-            navigator.clipboard.writeText(response.data.joinCode).then(() => {
-              $q.notify({
-                type: 'positive',
-                message: 'Code copié !',
-                position: 'top',
-              })
-            })
-          },
-        },
-      ],
+    // Créer une nouvelle session pour ce quiz
+    const sessionResult = await QuizService.createSession(props.quiz._id, {
+      name: `Session ${props.quiz.title} - ${new Date().toLocaleString()}`
     })
-
-    // Émettre l'événement de mise à jour
-    emit('updated', updatedQuiz)
+    
+    const sessionId = sessionResult.data.session._id || sessionResult.data.session.id
+    
+    // Rejoindre automatiquement la session en tant qu'organisateur
+    await QuizService.joinSession(sessionId)
+    
+    // Rediriger vers le lobby de la nouvelle session
+    router.push(`/quiz/session/${sessionId}/lobby`)
+    emit('play', props.quiz)
+    
   } catch (error) {
-    console.error('Erreur génération code:', error)
-
-    let message = 'Erreur lors de la génération du code'
-    if (error.message) {
-      message = error.message
-    }
-
+    console.error('Erreur lors de la création de session:', error)
     $q.notify({
       type: 'negative',
-      message,
-      position: 'top',
+      message: 'Erreur lors de la création de la session',
+      position: 'top'
     })
   }
 }
 
-const handleShare = () => {
-  if (props.quiz.joinCode) {
-    const shareText = `Rejoignez mon quiz "${props.quiz.title}" avec le code: ${props.quiz.joinCode}`
+
+const handleShare = async () => {
+  try {
+    // Créer une session temporaire pour le partage
+    const sessionResult = await QuizService.createSession(props.quiz._id, {
+      name: `Session partagée ${props.quiz.title} - ${new Date().toLocaleString()}`
+    })
+    
+    const sessionCode = sessionResult.data.session.sessionCode
+    const shareUrl = `${window.location.origin}/quiz/session/join/${sessionCode}`
+    
     if (navigator.share) {
       navigator.share({
         title: props.quiz.title,
-        text: shareText,
-        url: window.location.origin + '/quiz/join',
+        text: `${props.quiz.description} - Code: ${sessionCode}`,
+        url: shareUrl,
       })
     } else {
-      navigator.clipboard.writeText(shareText).then(() => {
-        $q.notify({
-          type: 'positive',
-          message: 'Lien de partage copié !',
-          position: 'top',
-        })
+      // Fallback pour les navigateurs qui ne supportent pas l'API de partage
+      navigator.clipboard.writeText(`${shareUrl}\nCode de session: ${sessionCode}`)
+      $q.notify({
+        color: 'positive',
+        message: 'Lien de session copié dans le presse-papier',
+        position: 'top',
       })
     }
     emit('share', props.quiz)
-  } else {
+  } catch (error) {
+    console.error('Erreur lors du partage:', error)
     $q.notify({
-      type: 'warning',
-      message: "Générez d'abord un code pour partager ce quiz",
-      position: 'top',
+      type: 'negative',
+      message: 'Erreur lors de la création du lien de partage',
+      position: 'top'
     })
   }
 }
