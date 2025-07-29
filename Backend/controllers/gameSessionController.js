@@ -3,7 +3,6 @@ const Quiz = require('../models/Quiz');
 const LobbyParticipant = require('../models/LobbyParticipant');
 const GameParticipant = require('../models/GameParticipant');
 const Question = require('../models/Question');
-const mongoose = require('mongoose');
 
 // Créer une nouvelle session de jeu
 exports.createGameSession = async (req, res) => {
@@ -168,13 +167,15 @@ exports.joinSessionLobby = async (req, res) => {
       await participant.save();
     } else {
       // Créer un nouveau participant
+      const isOrganizer = session.organizerId.toString() === userId.toString();
       participant = new LobbyParticipant({
         sessionId,
         quizId: session.quizId,
         userId,
         userName: user.userName,
         avatar: user.avatar,
-        isOrganizer: session.organizerId.toString() === userId.toString()
+        isOrganizer,
+        isReady: isOrganizer // L'organisateur est automatiquement prêt
       });
       await participant.save();
 
@@ -356,7 +357,7 @@ exports.startGameSession = async (req, res) => {
       });
     }
 
-    // Vérifier qu'il y a au moins 1 participant prêt (en plus de l'organisateur)
+    // Vérifier qu'il y a au moins 1 participant prêt (incluant l'organisateur)
     const readyParticipants = await LobbyParticipant.countDocuments({
       sessionId,
       isReady: true
@@ -365,7 +366,7 @@ exports.startGameSession = async (req, res) => {
     if (readyParticipants < 1) {
       return res.status(400).json({
         status: 'error',
-        message: 'Au moins un participant doit être prêt pour démarrer'
+        message: 'Au moins un participant (vous) doit être prêt pour démarrer'
       });
     }
 
@@ -378,7 +379,14 @@ exports.startGameSession = async (req, res) => {
       connectionStatus: 'connected'
     });
 
-    // Créer les GameParticipant
+    // Supprimer les anciens GameParticipant pour ce quiz/utilisateurs (éviter les doublons)
+    const userIds = lobbyParticipants.map(p => p.userId);
+    await GameParticipant.deleteMany({
+      quizId: session.quizId, 
+      userId: { $in: userIds }
+    });
+
+    // Créer les nouveaux GameParticipant
     const gameParticipants = lobbyParticipants.map(p => ({
       sessionId,
       quizId: session.quizId,

@@ -32,6 +32,12 @@ const gameSessionSchema = new mongoose.Schema({
     default: 'lobby'
   },
   
+  // Indique si cette session est créée automatiquement pour la compatibilité legacy
+  isLegacy: {
+    type: Boolean,
+    default: false
+  },
+  
   // Configuration de la session
   settings: {
     maxParticipants: {
@@ -137,12 +143,19 @@ gameSessionSchema.statics.createSession = async function(quizId, organizerId, se
     throw new Error('Impossible de générer un code de session unique');
   }
   
+  const defaultSettings = {
+    maxParticipants: 50,
+    timePerQuestion: 30,
+    showCorrectAnswers: true,
+    allowLateJoin: false
+  };
+
   const session = new this({
     quizId,
     organizerId,
     sessionCode,
     settings: {
-      ...this.schema.paths.settings.defaultValue,
+      ...defaultSettings,
       ...settings
     }
   });

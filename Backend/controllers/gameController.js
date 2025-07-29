@@ -3,6 +3,59 @@ const GameParticipant = require('../models/GameParticipant');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 
+// Fonction pour normaliser les réponses (supprime accents, casse, espaces multiples, caractères spéciaux)
+function normalizeAnswer(answer) {
+  return answer
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Fonction pour extraire les bonnes réponses selon le type de question
+function getCorrectAnswers(question) {
+  switch (question.type) {
+    case 'MULTIPLE_CHOICE':
+      // Pour les QCM, retourner les indices ou textes des bonnes réponses
+      const correctAnswers = question.answer
+        .map((ans, index) => ans.isCorrect ? index : null)
+        .filter(index => index !== null);
+      return correctAnswers.length === 1 ? correctAnswers[0] : correctAnswers;
+    
+    case 'TRUE_FALSE':
+      // Pour vrai/faux, retourner true ou false
+      const correctTF = question.answer.find(ans => ans.isCorrect);
+      return correctTF ? (correctTF.text.toLowerCase() === 'true' || correctTF.text.toLowerCase() === 'vrai') : false;
+    
+    case 'CLASSIC':
+      // Pour les questions classiques, retourner le texte de la bonne réponse
+      const correctClassic = question.answer.find(ans => ans.isCorrect);
+      return correctClassic ? correctClassic.text : '';
+    
+    case 'ORDER':
+      // Pour les questions d'ordre, retourner l'ordre correct
+      return question.answer
+        .sort((a, b) => a.correctOrder - b.correctOrder)
+        .map(ans => ans.text);
+    
+    case 'ASSOCIATION':
+      // Pour les associations, retourner les paires correctes
+      return question.answer.filter(ans => ans.isCorrect);
+    
+    case 'FIND_INTRUDER':
+      // Pour trouver l'intrus, retourner l'index de l'intrus
+      const intruder = question.answer.find(ans => ans.isCorrect);
+      return intruder ? question.answer.indexOf(intruder) : 0;
+    
+    default:
+      return null;
+  }
+}
+
 // Récupérer les questions d'une session
 exports.getSessionQuestions = async (req, res) => {
   try {
@@ -57,15 +110,15 @@ exports.getSessionQuestions = async (req, res) => {
     // Ne pas renvoyer les bonnes réponses
     const questionForClient = {
       id: currentQuestion._id,
-      title: currentQuestion.title,
+      title: currentQuestion.title || currentQuestion.content, // Utiliser content si title n'existe pas
       description: currentQuestion.description,
       type: currentQuestion.type,
-      answers: currentQuestion.answers.map(answer => ({
+      answers: currentQuestion.answer ? currentQuestion.answer.map(answer => ({
         text: answer.text,
         description: answer.description
-      })),
+      })) : [],
       points: currentQuestion.points,
-      timeLimit: session.settings.timePerQuestion,
+      timeLimit: currentQuestion.timeGiven || session.settings.timePerQuestion,
       image: currentQuestion.image,
       items: currentQuestion.items, // Pour les questions ORDER
       questionIndex: currentQuestionIndex,
@@ -80,7 +133,7 @@ exports.getSessionQuestions = async (req, res) => {
           currentQuestionIndex: session.gameState.currentQuestionIndex,
           totalQuestions: session.gameState.totalQuestions,
           currentQuestionStartTime: session.gameState.currentQuestionStartTime,
-          timeRemaining: session.settings.timePerQuestion
+          timeRemaining: currentQuestion.timeGiven || session.settings.timePerQuestion
         },
         participant: {
           currentQuestionIndex: participant.currentQuestionIndex,
@@ -92,9 +145,11 @@ exports.getSessionQuestions = async (req, res) => {
 
   } catch (error) {
     console.error('Erreur récupération questions session:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({
       status: 'error',
-      message: 'Erreur lors de la récupération des questions'
+      message: 'Erreur lors de la récupération des questions',
+      error: error.message
     });
   }
 };
@@ -164,45 +219,47 @@ exports.submitSessionAnswer = async (req, res) => {
     let points = 0;
     const timeSpent = Date.now() - session.gameState.currentQuestionStartTime.getTime();
 
+    const correctAnswers = getCorrectAnswers(question);
+    
     switch (question.type) {
       case 'MULTIPLE_CHOICE':
-        if (Array.isArray(question.correctAnswers)) {
+        if (Array.isArray(correctAnswers)) {
           // Réponses multiples
           isCorrect = Array.isArray(answer) && 
-            answer.length === question.correctAnswers.length &&
-            answer.every(a => question.correctAnswers.includes(a));
+            answer.length === correctAnswers.length &&
+            answer.every(a => correctAnswers.includes(a));
         } else {
           // Réponse unique
-          isCorrect = answer === question.correctAnswers;
+          isCorrect = answer === correctAnswers;
         }
         break;
         
       case 'TRUE_FALSE':
-        isCorrect = answer === question.correctAnswers;
+        isCorrect = answer === correctAnswers;
         break;
         
       case 'CLASSIC':
-        // Comparaison de texte (insensible à la casse et espaces)
-        const userAnswer = String(answer).trim().toLowerCase();
-        const correctAnswer = String(question.correctAnswers).trim().toLowerCase();
+        // Comparaison de texte normalisée (casse, accents, espaces, caractères spéciaux)
+        const userAnswer = normalizeAnswer(String(answer));
+        const correctAnswer = normalizeAnswer(String(correctAnswers));
         isCorrect = userAnswer === correctAnswer;
         break;
         
       case 'ORDER':
         // Vérifier l'ordre des éléments
         isCorrect = Array.isArray(answer) && 
-          Array.isArray(question.correctAnswers) &&
-          answer.length === question.correctAnswers.length &&
-          answer.every((item, index) => item === question.correctAnswers[index]);
+          Array.isArray(correctAnswers) &&
+          answer.length === correctAnswers.length &&
+          answer.every((item, index) => item === correctAnswers[index]);
         break;
         
       case 'ASSOCIATION':
         // Vérifier les associations
         isCorrect = Array.isArray(answer) && 
-          Array.isArray(question.correctAnswers) &&
-          answer.length === question.correctAnswers.length &&
+          Array.isArray(correctAnswers) &&
+          answer.length === correctAnswers.length &&
           answer.every(pair => 
-            question.correctAnswers.some(correctPair => 
+            correctAnswers.some(correctPair => 
               correctPair.leftIndex === pair.leftIndex && 
               correctPair.rightIndex === pair.rightIndex
             )
@@ -210,14 +267,15 @@ exports.submitSessionAnswer = async (req, res) => {
         break;
         
       case 'FIND_INTRUDER':
-        isCorrect = answer === question.correctAnswers;
+        isCorrect = answer === correctAnswers;
         break;
     }
 
     // Calculer les points basés sur la rapidité si correct
     if (isCorrect) {
       const basePoints = question.points || 100;
-      const maxTime = session.settings.timePerQuestion * 1000; // en ms
+      const questionTime = question.timeGiven || session.settings.timePerQuestion;
+      const maxTime = questionTime * 1000; // en ms
       const timeBonus = Math.max(0, (maxTime - timeSpent) / maxTime);
       points = Math.round(basePoints * (0.5 + 0.5 * timeBonus)); // 50% base + 50% bonus temps
     }
@@ -245,7 +303,7 @@ exports.submitSessionAnswer = async (req, res) => {
         isCorrect,
         points,
         totalScore: participant.totalScore,
-        correctAnswer: session.settings.showCorrectAnswers ? question.correctAnswers : undefined,
+        correctAnswer: session.settings.showCorrectAnswers ? correctAnswers : undefined,
         timeSpent
       }
     });
