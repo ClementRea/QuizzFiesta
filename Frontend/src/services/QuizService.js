@@ -130,8 +130,28 @@ class QuizService {
 
   async updateQuiz(quizId, quizData) {
     try {
-      const response = await this.api.put(`/quiz/update/${quizId}`, quizData)
-      return response.data
+      if (quizData.logo && quizData.logo instanceof File) {
+        const formData = new FormData()
+
+        formData.append('logo', quizData.logo)
+        formData.append('title', quizData.title)
+        formData.append('description', quizData.description)
+        formData.append('isPublic', quizData.isPublic)
+        
+        if (quizData.questions) {
+          formData.append('questions', JSON.stringify(quizData.questions))
+        }
+
+        const response = await this.api.put(`/quiz/update/${quizId}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        return response.data
+      } else {
+        const response = await this.api.put(`/quiz/update/${quizId}`, quizData)
+        return response.data
+      }
     } catch (error) {
       throw error.response?.data || error
     }
