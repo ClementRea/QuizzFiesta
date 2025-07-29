@@ -1,5 +1,5 @@
 <template>
-  <div class="fullscreen bg-accent text-center flex flex-center">
+  <div class="fullscreen bg-gradient-primary text-center flex flex-center">
     <div>
       <div style="width: 100%" class="flex justify-center">
         <div style="width: 90%">
