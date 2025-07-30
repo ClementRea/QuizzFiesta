@@ -1,21 +1,21 @@
 <template>
-  <div class="fullscreen bg-normal40 text-center flex flex-center">
+  <div class="fullscreen bg-gradient-primary text-center flex flex-center">
     <div>
       <div style="width: 100%" class="flex justify-center">
         <div style="width: 90%">
           <q-img :src="monsterImg" :ratio="1" />
         </div>
       </div>
-      <div class="column text-dark90 text-body1 q-mt-xl">
+      <div class="column text-secondary text-body1 q-mt-xl">
         <span>Vous avez trouvé le monstre de QuizzFiesta</span>
         <span>Mieux vaut pas le déranger ! </span>
       </div>
 
-      <div style="font-size: 10vh" class="text-dark90">404</div>
+      <div style="font-size: 10vh" class="text-secondary">404</div>
 
       <q-btn
-        color="light20"
-        text-color="dark"
+        color="primary"
+        text-color="secondary"
         to="/"
         label="Par ici !"
         no-caps

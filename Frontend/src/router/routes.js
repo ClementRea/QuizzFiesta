@@ -24,6 +24,7 @@ const routes = [
     meta: { requiresGuest: true, showHeader: false, showBackArrow: true }
   },
   {
+
     path: '/dashboard',
     component: () => import('pages/Dashboard/DashBoardIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
@@ -43,14 +44,21 @@ const routes = [
     component: () => import('pages/Search/SearchIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
+  //QUIZ
   {
     path: '/quiz/create',
     component: () => import('pages/Quiz/QuizCreateIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
-    path: '/quiz/join',
-    component: () => import('pages/Quiz/QuizJoinPage.vue'),
+    path: '/quiz/edit/:id',
+    component: () => import('pages/Quiz/QuizUpdateIndexPage.vue'),
+    meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
+  },
+  {
+    path: '/quiz/session/join',
+    component: () => import('pages/Quiz/SessionJoinPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
@@ -63,21 +71,24 @@ const routes = [
     component: () => import('pages/Quiz/ObjectLayoutDemo.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
   {
-    path: '/quiz/lobby/:id',
-    component: () => import('pages/Quiz/QuizLobbyPage.vue'),
+    path: '/quiz/session/join/:sessionCode',
+    component: () => import('pages/Quiz/SessionLobbyPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
-  // {
-  //   path: '/quiz/play/:id',
-  //   component: () => import('pages/Quiz/QuizPlayPage.vue'),
-  //   meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
-  // },
-  // {
-  //   path: '/quiz/results/:id',
-  //   component: () => import('pages/Quiz/QuizResultsPage.vue'),
-  //   meta: { requiresAuth: true, showHeader: true, showBackArrow: false }
-  // },
+  {
+    path: '/quiz/session/:sessionId/lobby',
+    component: () => import('pages/Quiz/SessionLobbyPage.vue'),
+    meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
+  },
+  {
+    path: '/quiz/session/:sessionId/play',
+    component: () => import('pages/Quiz/SessionPlayPage.vue'),
+    meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
+  },
+
+  //ORGANISATION
   {
     path: '/organisation/create',
     component: () => import('pages/Organisation/OrganisationCreateIndexPage.vue'),
@@ -93,6 +104,8 @@ const routes = [
     component: () => import('pages/Settings/SettingsIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
+  //ERROR 404
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue')

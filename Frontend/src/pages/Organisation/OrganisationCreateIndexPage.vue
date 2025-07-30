@@ -10,7 +10,7 @@
     >
       <template v-slot:content>
         <div
-          class="q-pa-xl bg-light20 rounded-borders q-mt-lg items-center justify-center column"
+          class="q-pa-xl bg-primary rounded-borders q-mt-lg items-center justify-center column"
           style="max-width: 500px; margin: auto"
         >
           <div class="q-mb-md cursor-pointer" @click="EditAvatarDialog = true">
@@ -21,7 +21,7 @@
             no-caps
             unelevated
             label="Ajouter un logo"
-            color="dark80"
+            color="secondary"
             outline
             rounded
             class="q-mb-md"
@@ -58,8 +58,8 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import axios from 'axios'
 import FormLayout from 'src/layouts/FormLayout.vue'
-import UploadFiles from 'src/components/UploadFiles.vue'
-import OrganisationAvatar from 'src/components/GetOrganisationAvatar.vue'
+import UploadFiles from 'src/components/common/UploadFiles.vue'
+import OrganisationAvatar from 'src/components/organisation/GetOrganisationAvatar.vue'
 import AuthService from 'src/services/AuthService'
 
 const router = useRouter()
@@ -96,15 +96,15 @@ const actionButtons = [
     action: 'cancel',
     label: 'Annuler',
     color: 'white',
-    class: 'text-dark80 q-pa-sm col-5',
+    class: 'text-secondary q-pa-sm col-5',
     ariaLabel: "Annuler la création de l'organisation",
     title: 'Revenir sans sauvegarder',
   },
   {
     action: 'save',
     label: "Créer l'organisation",
-    color: 'dark80',
-    class: 'text-light20 q-pa-sm col-5',
+    color: 'secondary',
+    class: 'text-primary q-pa-sm col-5',
     ariaLabel: "Créer l'organisation",
     title: "Finaliser la création de l'organisation",
   },

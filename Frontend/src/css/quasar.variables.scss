@@ -1,38 +1,55 @@
 // Quasar SCSS (& Sass) Variables
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Palette QuizzFiesta - Optimisée pour l'engagement utilisateur
+// Blanc & beiges avec pastels énergisants pour un quiz captivant
 
-// Check documentation for full list of Quasar variables
+// === COULEURS PRINCIPALES ===
+$primary : #ffffff;
+$secondary : #16212c;
+// $primary : #ECE8D2;
+// $secondary : #2A2C64;
+$accent : #b3ffd5;
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+// === GAMME DE BEIGES + PASTELS (light/normal/dark) ===
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$light10 : #F5F2E8;
+$light20 : #ECE8D2;
+$light30 : #E3DFC7;
+$normal40 : #D6D0B5;
+$normal50 : #C9C1A3;
+$normal60 : #BCB291;
+$dark70 : #2A2C64;
+$dark80 : #25276B;
+$dark90 : #1F2158;
+$dark100 : #191B45;
 
-$primary   : #665600;
-$secondary : #4C4000;
-$accent    : #FFF7CC;
+// === PASTELS ÉNERGISANTS ===
+$pastel-coral : #FFB3BA;
+$pastel-mint : #B8E6B8;
 
-$light10 : #FFFBE5;
-$light20 : #FFF7CC;
-$light30 : #FFEF99;
-$normal40 : #FFE766;
-$normal50 : #FFD700;
-$normal60 : #CCAC00;
-$dark70 : #998100;
-$dark80 : #665600;
-$dark90 : #4C4000;
-$dark100: #191500;
+// === COULEURS FONCTIONNELLES ===
+$success : #6BCF7F;
+$error : #FF8A80;
+$warning : #FFCC80;
+$info : #81C7F5;
 
-$blue: #015055;
+// === COULEURS SYSTÈME QUASAR ===
+$positive : #6BCF7F;
+$negative : #ff2613;
+$blue : #2196F3;
+$green : #4CAF50;
+$red : #F44336;
+$yellow : #FF9800;
 
-$dark      : #1D1D1D;
-$dark-page : #121212;
+// === THÈME SOMBRE ===
+$dark : #2A2C64;
+$dark-page : #191B45;
 
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+// === VARIABLES PERSONNALISÉES POUR LE QUIZ ===
+$quiz-bg : $primary;
+$quiz-card : $light10;
+$quiz-border : $normal40;
+$quiz-text : $secondary;
+$quiz-accent : $pastel-coral;
+$quiz-success : $pastel-mint;
+$quiz-hover : $light30;

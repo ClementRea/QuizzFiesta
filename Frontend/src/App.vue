@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import AppHeader from 'src/components/MainNavbar.vue'
+import AppHeader from 'src/components/common/MainNavbar.vue'
 </script>
 
 <style>

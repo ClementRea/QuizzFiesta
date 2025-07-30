@@ -1,10 +1,10 @@
 <template>
   <div class="q-pa-md">
-    <q-card class="bg-normal40 q-pa-sm">
+    <q-card class="bg-secondary q-pa-sm">
       <q-tabs
         v-model="tab"
-        class="text-blue bg-light20 custom-nav-tabs"
-        active-color="light10"
+        class="text-secondary bg-primary custom-nav-tabs"
+        active-color="primary"
         narrow-indicator
         indicator-color="transparent"
         no-caps
@@ -13,13 +13,13 @@
           name="organisation"
           label="Mon organisation"
           class="q-py-sm q-px-md"
-          :class="tab === 'organisation' ? 'text-weight-bold bg-blue' : ''"
+          :class="tab === 'organisation' ? 'text-weight-bold bg-secondary' : ''"
         />
         <q-tab
           name="statistiques"
           label="Statistiques"
           class="q-py-sm q-px-md"
-          :class="tab === 'statistiques' ? 'text-weight-bold bg-blue' : ''"
+          :class="tab === 'statistiques' ? 'text-weight-bold bg-secondary' : ''"
         />
       </q-tabs>
 

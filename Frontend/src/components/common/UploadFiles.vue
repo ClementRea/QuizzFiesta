@@ -1,11 +1,11 @@
 <template>
   <q-dialog v-model="isOpen">
-    <q-card class="bg-light30">
+    <q-card class="bg-primary">
       <q-card-section class="row justify-between items-center">
-        <span class="text-dark90 text-bold text-body1">{{
+        <span class="text-secondary text-bold text-body1">{{
           title || 'Nouvelle photo de profil'
         }}</span>
-        <q-btn class="text-dark90" dense flat icon="close" v-close-popup>
+        <q-btn class="text-secondary" dense flat icon="close" v-close-popup>
           <q-tooltip v-if="!$q.platform.is.mobile">Fermer</q-tooltip>
         </q-btn>
       </q-card-section>
@@ -14,25 +14,26 @@
           <q-img :src="imagePreview" class="profile-image-preview q-mb-sm" fit="cover" />
         </div>
         <q-file
-          color="dark90"
+          color="secondary"
           outlined
-          label-color="dark90"
+          label-color="secondary"
           v-model="file"
           label="Sélectionner une image"
           accept=".jpg, .jpeg, .png"
           @update:model-value="onFileSelected"
         >
           <template v-slot:prepend>
-            <q-icon name="attach_file" color="dark90" />
+            <q-icon name="attach_file" color="secondary" />
           </template>
         </q-file>
       </q-card-section>
 
-      <q-card-actions align="center" class="bg-light20 q-pa-md">
+      <q-card-actions align="center" class="bg-primary q-pa-md">
         <q-btn
           rounded
-          color="dark80"
-          class="text-light20 q-pa-sm q-ml-sm"
+          color="secondary"
+          text-color="primary"
+          class="q-pa-sm q-ml-sm"
           style="width: 35%"
           label="Confirmer"
           :disable="!file"

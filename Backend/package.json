@@ -9,7 +9,10 @@
     "test:watch": "jest --watch",
     "test:controllers": "jest controllers",
     "test:models": "jest models",
-    "test:middlewares": "jest middlewares"
+    "test:middlewares": "jest middlewares",
+    "migrate:sessions": "node scripts/migrate-to-sessions.js migrate",
+    "migrate:sessions:clean": "node scripts/migrate-to-sessions.js migrate --clean",
+    "migrate:check": "node scripts/migrate-to-sessions.js check"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +26,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.2"
+    "multer": "^1.4.5-lts.2",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "eslint": "^9.20.1",

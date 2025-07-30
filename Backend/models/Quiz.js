@@ -21,7 +21,7 @@ const quizSchema = new mongoose.Schema({
   },
   isPublic: {
     type: Boolean,
-    default: false
+    default: true
   },
   startDate: {
     type: Date,

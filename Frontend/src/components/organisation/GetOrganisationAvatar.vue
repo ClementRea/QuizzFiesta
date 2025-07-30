@@ -1,7 +1,7 @@
 <template>
   <div class="q-mb-md">
     <div
-      class="bg-normal50 rounded-borders overflow-hidden"
+      class="bg-accent rounded-borders overflow-hidden"
       :style="{
         width: sizeMap[size] || '96px',
         height: sizeMap[size] || '96px',
@@ -10,7 +10,7 @@
       }"
     >
       <q-img
-        :src="processedAvatarUrl"
+        :src="processedLogoUrl"
         :ratio="1"
         fit="cover"
         no-spinner
@@ -24,7 +24,7 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  avatarUrl: {
+  logoUrl: {
     type: String,
     default: null,
   },
@@ -47,24 +47,13 @@ const sizeMap = {
   xl: '160px',
 }
 
-const processedAvatarUrl = computed(() => {
+const processedLogoUrl = computed(() => {
   if (props.previewUrl) return props.previewUrl
 
-  const avatar = props.avatarUrl
+  const logo = props.logoUrl
 
-  if (!avatar) return '/src/assets/avatar/default-avatar.png'
+  if (!logo) return '/src/assets/avatar/logoOrganisation.png'
 
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-
-  if (avatar.includes('avatar-')) {
-    // Utiliser une URL dynamique qui fonctionnera en dev et prod
-    const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
-    const protocol = window.location.protocol
-    const hostname = window.location.hostname
-
-    return `${protocol}//${hostname}${backendPort}/avatars/${avatar}`
-  }
-
-  return `/src/assets/avatar/${avatar}`
+  return logo.startsWith('http') ? logo : `/api/v1/files/${logo}`
 })
 </script>

@@ -21,6 +21,7 @@
         round
         icon="mdi-account-plus"
         color="primary"
+        text-color="secondary"
         @click.stop="$emit('join', organisation)"
       >
         <q-tooltip>Rejoindre</q-tooltip>
@@ -49,6 +50,7 @@
         <q-btn
           v-if="showJoinButton && !isMember"
           color="primary"
+          text-color="secondary"
           icon="mdi-account-plus"
           label="Rejoindre"
           @click.stop="$emit('join', object)"
@@ -60,6 +62,7 @@
         <q-btn
           v-if="showManageButton && isMember"
           color="primary"
+          text-color="secondary"
           icon="mdi-cog"
           label="Gérer"
           @click.stop="$emit('manage', object)"

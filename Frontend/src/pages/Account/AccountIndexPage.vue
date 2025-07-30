@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-light10 full-width" style="border-radius: 20px 20px 0px 0px">
+  <div class="bg-primary full-width" style="border-radius: 20px 20px 0px 0px">
     <div class="column flex flex-center q-gutter-y-md">
       <div style="width: 100%" class="flex justify-center">
         <div>
@@ -10,11 +10,11 @@
           />
         </div>
       </div>
-      <span class="text-dark90 text-h5">{{ user?.userName }}</span>
+      <span class="text-secondary text-h5">{{ user?.userName }}</span>
       <q-btn
         class="q-mb-lg"
-        color="dark90"
-        text-color="light20"
+        color="secondary"
+        text-color="primary"
         label="Editer le profil"
         no-caps
         unelevated
@@ -32,8 +32,8 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
 import { useQuasar } from 'quasar'
-import AccountToggle from '../../components/AccountToggle.vue'
-import Avatar from 'src/components/GetAvatar.vue'
+import AccountToggle from '../../components/user/AccountToggle.vue'
+import Avatar from 'src/components/user/GetAvatar.vue'
 
 const user = ref(null)
 const loading = ref(true)

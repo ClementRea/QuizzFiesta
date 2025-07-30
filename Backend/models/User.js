@@ -39,8 +39,8 @@ const userSchema = new mongoose.Schema({
       ref: 'Team'
   },
   refreshTokens: [{
-      tokenHash: String, // Hash du token pour sécurité
-      family: String,    // Famille de tokens pour détecter la réutilisation
+      tokenHash: String,
+      family: String,
       createdAt: {
           type: Date,
           default: Date.now
@@ -88,7 +88,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
-// Mettre un avatar aléatoire parmis les deux disponibles, à la création du comtpe
+// Mettre un avatar aléatoire parmis les deux disponibles à la création du compte
 function getRandomAvatar() {
   const avatars = ['avatar1.png', 'avatar2.png'];
   return avatars[Math.floor(Math.random() * avatars.length)]

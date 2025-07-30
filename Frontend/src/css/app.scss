@@ -9,9 +9,14 @@ body {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
-  background-color: #FFE766;
+  background-color: $primary;
   position: relative;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  color: $secondary;
+}
+
 
 //Setup des background colors
 .bg-light10 {
@@ -47,6 +52,27 @@ body {
 
 .bg-blue{
   background-color: $blue !important;
+}
+
+.bg-secondary {
+  background-color: $secondary !important;
+}
+.bg-primary {
+  background-color: $primary !important;
+}
+.bg-accent {
+  background-color: $accent !important;
+}
+.bg-pastel-mint {
+  background-color: $pastel-mint !important;
+}
+
+.bg-pastel-coral {
+  background-color: $pastel-coral !important;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, $primary, $light20) !important;
 }
 
 //Setup des text-colors
@@ -85,6 +111,22 @@ body {
   color: $blue !important;
 }
 
+.text-secondary {
+  color: $secondary !important;
+}
+
+.text-primary {
+  color: $primary !important;
+}
+
+.text-accent {
+  color: $accent !important;
+}
+
+.text-pastel-mint {
+  color: $pastel-mint !important;
+}
+
 //Setup des input outlined
 .custom-border {
   .q-field__control {
@@ -94,6 +136,31 @@ body {
   &.q-field--outlined .q-field__control:before {
     border: 1px solid $dark80 !important;
     border-radius: 14px !important;
+  }
+}
+
+// Default styles for inputs and selects  
+.default-input {
+  .q-field__control {
+    background-color: white !important;
+    border-radius: 14px !important;
+  }
+  
+  .q-field__label {
+    color: $secondary !important;
+  }
+  
+  .q-field__native {
+    color: $secondary !important;
+  }
+  
+  &.q-field--outlined .q-field__control:before {
+    border: 1px solid $dark80 !important;
+    border-radius: 14px !important;
+  }
+  
+  &.q-field--focused .q-field__control:before {
+    border: 2px solid $secondary !important;
   }
 }
 
@@ -142,4 +209,5 @@ button:focus-visible,
   min-height: 44px;
   min-width: 44px;
 }
+
 
