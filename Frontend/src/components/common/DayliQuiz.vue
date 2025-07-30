@@ -1,7 +1,7 @@
 <template>
   <div class="daily-quiz-section">
     <div v-if="dailyQuiz" class="q-mb-xl">
-      <div class="text-center q-mb-lg">
+      <div class="text-start q-mb-lg">
         <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">⭐ Quiz du Jour</h2>
         <p class="text-body1 text-secondary">Le quiz le plus populaire aujourd'hui</p>
         <q-separator class="q-mt-md" color="secondary" size="2px" />
@@ -14,7 +14,7 @@
 
     <!-- Quiz Publics Populaires -->
     <div v-if="publicQuizzes.length > 0">
-      <div class="text-center q-mb-lg">
+      <div class="text-start q-mb-lg">
         <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">🔥 Quiz Populaires</h2>
         <p class="text-body1 text-secondary">Découvrez les quiz les plus appréciés</p>
         <q-separator class="q-mt-md" color="secondary" size="2px" />
