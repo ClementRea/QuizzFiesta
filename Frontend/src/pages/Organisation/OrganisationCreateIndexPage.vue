@@ -58,8 +58,8 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import axios from 'axios'
 import FormLayout from 'src/layouts/FormLayout.vue'
-import UploadFiles from 'src/components/UploadFiles.vue'
-import OrganisationAvatar from 'src/components/GetOrganisationAvatar.vue'
+import UploadFiles from 'src/components/common/UploadFiles.vue'
+import OrganisationAvatar from 'src/components/organisation/GetOrganisationAvatar.vue'
 import AuthService from 'src/services/AuthService'
 
 const router = useRouter()

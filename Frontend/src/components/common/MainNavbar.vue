@@ -265,9 +265,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import Avatar from 'src/components/GetAvatar.vue'
-import BackArrow from 'src/components/BackArrow.vue'
-import logo from '../assets/logo_quiz_fiesta.svg'
+import Avatar from 'src/components/user/GetAvatar.vue'
+import BackArrow from 'src/components/common/BackArrow.vue'
+import logo from '../../assets/logo_quiz_fiesta.svg'
 import AuthService from 'src/services/AuthService'
 import UserService from 'src/services/UserService'
 

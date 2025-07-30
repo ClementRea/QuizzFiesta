@@ -72,7 +72,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import QuizObject from './QuizObject.vue'
+import QuizObject from '../quiz/QuizObject.vue'
 
 const props = defineProps({
   dailyQuiz: {

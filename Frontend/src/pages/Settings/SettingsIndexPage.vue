@@ -39,7 +39,7 @@
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
-import BackArrow from 'src/components/BackArrow.vue'
+import BackArrow from 'src/components/common/BackArrow.vue'
 
 const router = useRouter()
 

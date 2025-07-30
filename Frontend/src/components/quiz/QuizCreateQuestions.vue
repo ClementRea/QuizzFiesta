@@ -149,7 +149,7 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
-import QuestionTypeSelector from 'src/components/QuestionTypeSelector.vue'
+import QuestionTypeSelector from 'src/components/quiz/QuestionTypeSelector.vue'
 
 const props = defineProps({
   questions: {

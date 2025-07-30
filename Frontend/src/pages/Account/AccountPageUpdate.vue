@@ -150,8 +150,8 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import UserService from 'src/services/UserService'
 import FormLayout from 'src/layouts/FormLayout.vue'
-import EditAvatar from 'src/components/EditAvatar.vue'
-import Avatar from 'src/components/GetAvatar.vue'
+import EditAvatar from 'src/components/user/EditAvatar.vue'
+import Avatar from 'src/components/user/GetAvatar.vue'
 
 const router = useRouter()
 const $q = useQuasar()

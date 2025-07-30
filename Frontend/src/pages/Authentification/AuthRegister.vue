@@ -97,7 +97,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import axios from 'axios'
 import FormLayout from '../../layouts/FormLayout.vue'
-import Header from '../../components/AuthHeader.vue'
+import Header from '../../components/auth/AuthHeader.vue'
 import AuthService from 'src/services/AuthService'
 
 const userName = ref('')

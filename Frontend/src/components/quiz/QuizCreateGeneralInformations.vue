@@ -112,7 +112,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import UploadFiles from 'src/components/UploadFiles.vue'
+import UploadFiles from 'src/components/common/UploadFiles.vue'
 
 const props = defineProps({
   quizData: {

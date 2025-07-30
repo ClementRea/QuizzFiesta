@@ -65,7 +65,7 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
-import QuizObject from 'src/components/QuizObject.vue'
+import QuizObject from 'src/components/quiz/QuizObject.vue'
 
 const $q = useQuasar()
 

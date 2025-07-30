@@ -122,7 +122,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import UserService from 'src/services/UserService'
 import QuizService from 'src/services/QuizService'
-import DayliQuiz from 'src/components/DayliQuiz.vue'
+import DayliQuiz from 'src/components/common/DayliQuiz.vue'
 
 const $q = useQuasar()
 const router = useRouter()

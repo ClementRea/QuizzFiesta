@@ -189,7 +189,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
-import QuizObject from 'src/components/QuizObject.vue'
+import QuizObject from 'src/components/quiz/QuizObject.vue'
 
 const router = useRouter()
 const $q = useQuasar()

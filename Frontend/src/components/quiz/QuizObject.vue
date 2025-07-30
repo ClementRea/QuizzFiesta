@@ -17,7 +17,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import ObjectLayout from '../layouts/ObjectLayout.vue'
+import ObjectLayout from '../../layouts/ObjectLayout.vue'
 import QuizService from 'src/services/QuizService'
 
 const router = useRouter()
@@ -71,39 +71,37 @@ const handlePlay = async () => {
   try {
     // Créer une nouvelle session pour ce quiz
     const sessionResult = await QuizService.createSession(props.quiz._id, {
-      name: `Session ${props.quiz.title} - ${new Date().toLocaleString()}`
+      name: `Session ${props.quiz.title} - ${new Date().toLocaleString()}`,
     })
-    
+
     const sessionId = sessionResult.data.session._id || sessionResult.data.session.id
-    
+
     // Rejoindre automatiquement la session en tant qu'organisateur
     await QuizService.joinSession(sessionId)
-    
+
     // Rediriger vers le lobby de la nouvelle session
     router.push(`/quiz/session/${sessionId}/lobby`)
     emit('play', props.quiz)
-    
   } catch (error) {
     console.error('Erreur lors de la création de session:', error)
     $q.notify({
       type: 'negative',
       message: 'Erreur lors de la création de la session',
-      position: 'top'
+      position: 'top',
     })
   }
 }
-
 
 const handleShare = async () => {
   try {
     // Créer une session temporaire pour le partage
     const sessionResult = await QuizService.createSession(props.quiz._id, {
-      name: `Session partagée ${props.quiz.title} - ${new Date().toLocaleString()}`
+      name: `Session partagée ${props.quiz.title} - ${new Date().toLocaleString()}`,
     })
-    
+
     const sessionCode = sessionResult.data.session.sessionCode
     const shareUrl = `${window.location.origin}/quiz/session/join/${sessionCode}`
-    
+
     if (navigator.share) {
       navigator.share({
         title: props.quiz.title,
@@ -125,7 +123,7 @@ const handleShare = async () => {
     $q.notify({
       type: 'negative',
       message: 'Erreur lors de la création du lien de partage',
-      position: 'top'
+      position: 'top',
     })
   }
 }

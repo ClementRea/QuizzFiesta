@@ -32,8 +32,8 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from 'src/services/AuthService'
 import { useQuasar } from 'quasar'
-import AccountToggle from '../../components/AccountToggle.vue'
-import Avatar from 'src/components/GetAvatar.vue'
+import AccountToggle from '../../components/user/AccountToggle.vue'
+import Avatar from 'src/components/user/GetAvatar.vue'
 
 const user = ref(null)
 const loading = ref(true)
