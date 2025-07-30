@@ -211,20 +211,77 @@ exports.quizUpdate = async (req, res, next) => {
       });
     }
 
-    const filteredBody = filterObj(req.body, 'title', 'description', 'isPublic', 'active');
-    
-    const updatedQuiz = await Quiz.findByIdAndUpdate(
-      req.params.id,
-      filteredBody,
-      { new: true, runValidators: true }
-    ).populate('questions').populate('createdBy', 'userName');
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        quiz: updatedQuiz
+    try {
+      // Filtrer les champs autorisés pour la mise à jour du quiz
+      const filteredBody = filterObj(req.body, 'title', 'description', 'isPublic', 'active');
+
+      // Traitement du logo si présent
+      if (req.file) {
+        filteredBody.logo = req.file.filename;
       }
-    });
+
+      // Mettre à jour les informations de base du quiz
+      const updatedQuiz = await Quiz.findByIdAndUpdate(
+        req.params.id,
+        filteredBody,
+        { new: true, runValidators: true, session }
+      );
+
+      // Traiter les questions si elles sont fournies
+      if (req.body.questions) {
+        const parsedQuestions = typeof req.body.questions === 'string'
+          ? JSON.parse(req.body.questions)
+          : req.body.questions;
+
+        if (Array.isArray(parsedQuestions)) {
+          // Supprimer les anciennes questions
+          await Question.deleteMany({ quizId: quiz._id }, { session });
+
+          // Créer les nouvelles questions
+          if (parsedQuestions.length > 0) {
+            const questionPromises = parsedQuestions.map(async (questionData) => {
+              questionData.quizId = quiz._id;
+              const question = new Question(questionData);
+              return await question.save({ session });
+            });
+
+            const newQuestions = await Promise.all(questionPromises);
+
+            // Mettre à jour les références des questions dans le quiz
+            updatedQuiz.questions = newQuestions.map(q => q._id);
+            await updatedQuiz.save({ session });
+          } else {
+            // Si aucune question, vider le tableau
+            updatedQuiz.questions = [];
+            await updatedQuiz.save({ session });
+          }
+        }
+      }
+
+      await session.commitTransaction();
+
+      // Récupérer le quiz mis à jour avec toutes les données
+      const populatedQuiz = await Quiz.findById(updatedQuiz._id)
+        .populate('questions')
+        .populate('createdBy', 'userName');
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          quiz: populatedQuiz
+        }
+      });
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
   } catch (error) {
     console.error('Error in quizUpdate:', error);
     next(error);

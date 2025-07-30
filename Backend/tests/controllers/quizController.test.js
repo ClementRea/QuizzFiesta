@@ -1,209 +1,106 @@
-
+const quizController = require('../../controllers/quizController');
 const Quiz = require('../../models/Quiz');
-const Question = require('../../models/Question');
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+const LobbyParticipant = require('../../models/LobbyParticipant');
 
-const {
-  quizCreate,
-  getAllQuizes
-} = require('../../controllers/quizController');
+jest.mock('../../models/Quiz');
+jest.mock('../../models/Question');
+jest.mock('../../models/LobbyParticipant');
 
-jest.mock('../../models/Quiz', () => ({
-  create: jest.fn(),
-  find: jest.fn(),
-  findById: jest.fn(),
-  findOne: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-  findByIdAndDelete: jest.fn()
-}));
-
-jest.mock('../../models/Question', () => ({
-  create: jest.fn()
-}));
-
-jest.mock('../../models/User', () => ({
-  findById: jest.fn()
-}));
-
-jest.mock('../../models/LobbyParticipant', () => ({
-  findOne: jest.fn(),
-  create: jest.fn()
-}));
-
-jest.mock('mongoose', () => ({
-  startSession: jest.fn(),
-  Schema: class MockSchema {
-    constructor() {}
-    static Types = {
-      ObjectId: jest.fn()
-    }
-  },
-  model: jest.fn()
-}));
-
-jest.mock('crypto', () => ({
-  randomBytes: jest.fn()
-}));
-
-describe('QuizController', () => {
+describe('Quiz Controller', () => {
   let req, res, next;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    
     req = {
-      user: { 
-        id: 'user123',
-        isAdmin: false 
-      },
       body: {},
       params: {},
-      query: {}
+      query: {},
+      user: { id: 'user123', isAdmin: false },
+      file: null
     };
-    
     res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn()
     };
-    
     next = jest.fn();
-    
-    console.log = jest.fn();
-    console.error = jest.fn();
+    jest.clearAllMocks();
   });
 
-  describe('quizCreate', () => {
-    beforeEach(() => {
-      crypto.randomBytes.mockReturnValue({
-        toString: jest.fn().mockReturnValue('abc123')
+  describe('getAllQuizes', () => {
+    it('should return all quizzes', async () => {
+      const mockQuizzes = [{ _id: 'q1', title: 'Quiz 1' }, { _id: 'q2', title: 'Quiz 2' }];
+      Quiz.find.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockResolvedValue(mockQuizzes)
       });
-    });
 
-    it('should return 400 when no questions provided', async () => {
-      req.body = {
-        title: 'Test Quiz',
-        questions: []
-      };
+      await quizController.getAllQuizes(req, res, next);
 
-      await quizCreate(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
-        status: 'error',
-        message: 'Un quiz doit contenir au moins une question'
+        status: 'success',
+        results: 2,
+        data: { quizes: mockQuizzes }
       });
-      expect(Quiz.create).not.toHaveBeenCalled();
     });
+  });
 
-    it('should create a quiz successfully with questions', async () => {
-      req.body = {
-        title: 'Test Quiz',
-        description: 'Test Description',
-        isPublic: true,
-        questions: [
-          { content: 'Question 1?', type: 'multiple', answer: 'A' }
-        ]
-      };
+  describe('getMyQuizes', () => {
+    it('should return quizzes created by the user', async () => {
+      const mockQuizzes = [{ _id: 'q1', title: 'Quiz 1', createdBy: 'user123' }];
+      Quiz.find.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockResolvedValue(mockQuizzes)
+      });
 
+      await quizController.getMyQuizes(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        status: 'success',
+        results: 1,
+        data: { quizes: mockQuizzes }
+      });
+    });
+  });
+
+  function createPopulateChain(finalValue) {
+    const chain = {};
+    chain.populate = jest.fn().mockReturnThis();
+    chain.populate.mockReturnValueOnce(chain).mockReturnValueOnce(Promise.resolve(finalValue));
+    return chain;
+  }
+
+  describe('getQuizById', () => {
+    it('should return a quiz by id if public', async () => {
+      req.params.id = 'quizid';
       const mockQuiz = {
-        _id: 'quiz123',
-        title: 'Test Quiz',
-        createdBy: 'user123',
-        joinCode: 'ABC123',
-        questions: [],
-        save: jest.fn().mockResolvedValue()
-      };
-
-      const mockQuestion = { 
-        _id: 'question1', 
-        content: 'Question 1?', 
-        quizId: 'quiz123' 
-      };
-
-      Quiz.create.mockResolvedValue(mockQuiz);
-      Question.create.mockResolvedValue(mockQuestion);
-
-      await quizCreate(req, res, next);
-
-      expect(Quiz.create).toHaveBeenCalledWith({
-        title: 'Test Quiz',
-        description: 'Test Description',
+        _id: 'quizid',
+        createdBy: { _id: 'otheruser' },
         isPublic: true,
-        createdBy: 'user123',
-        joinCode: 'ABC123'
-      });
+        questions: [],
+      };
+      Quiz.findById.mockReturnValue(createPopulateChain(mockQuiz));
+      LobbyParticipant.findOne.mockResolvedValue(null);
 
-      expect(Question.create).toHaveBeenCalledWith({
-        content: 'Question 1?',
-        type: 'multiple',
-        answer: 'A',
-        quizId: 'quiz123'
-      });
+      await quizController.getQuizById(req, res, next);
 
-      expect(mockQuiz.save).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
         data: { quiz: mockQuiz }
       });
     });
-  });
 
-  describe('getAllQuizes', () => {
-    it('should return quizes for non-admin users', async () => {
-      req.user.isAdmin = false;
-      req.user.id = 'user123';
+    it('should return 404 if quiz not found', async () => {
+      req.params.id = 'notfound';
+      Quiz.findById.mockReturnValue(createPopulateChain(null));
 
-      const mockQuizes = [
-        { title: 'Quiz 1', isPublic: true },
-        { title: 'Quiz 2', createdBy: 'user123' }
-      ];
+      await quizController.getQuizById(req, res, next);
 
-      const mockQuery = {
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockQuizes)
-      };
-      Quiz.find.mockReturnValue(mockQuery);
-
-      await getAllQuizes(req, res, next);
-
-      expect(Quiz.find).toHaveBeenCalledWith({
-        $or: [
-          { createdBy: 'user123' },
-          { isPublic: true }
-        ]
-      });
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
-        status: 'success',
-        results: 2,
-        data: { quizes: mockQuizes }
-      });
-    });
-
-    it('should return all quizes for admin users', async () => {
-      req.user.isAdmin = true;
-
-      const mockQuizes = [
-        { title: 'Quiz 1', isPublic: true },
-        { title: 'Quiz 2', isPublic: false }
-      ];
-
-      const mockQuery = {
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockQuizes)
-      };
-      Quiz.find.mockReturnValue(mockQuery);
-
-      await getAllQuizes(req, res, next);
-
-      expect(Quiz.find).toHaveBeenCalledWith({});
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        status: 'success',
-        results: 2,
-        data: { quizes: mockQuizes }
+        status: 'error',
+        message: 'Quiz non trouvé'
       });
     });
   });

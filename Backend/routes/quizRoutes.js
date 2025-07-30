@@ -38,7 +38,7 @@ const uploadLogo = multer({
 router.post('/create', protect, uploadLogo.single('logo'), quizController.quizCreate);
 
 //PUT
-router.put('/update/:id', protect, quizController.quizUpdate);
+router.put('/update/:id', protect, uploadLogo.single('logo'), quizController.quizUpdate);
 router.put('/addQuestions/:id', protect, quizController.addQuestionsToQuiz);
 
 //GET
