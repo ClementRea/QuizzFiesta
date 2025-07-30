@@ -137,7 +137,7 @@ class QuizService {
         formData.append('title', quizData.title)
         formData.append('description', quizData.description)
         formData.append('isPublic', quizData.isPublic)
-        
+
         if (quizData.questions) {
           formData.append('questions', JSON.stringify(quizData.questions))
         }
@@ -313,9 +313,8 @@ class QuizService {
   }
 
 
-  // ======== MÉTHODES UTILITAIRES ========
 
-  // Validation des codes de session (même format que les codes de quiz)
+  // Validation des codes de session
   static validateSessionCode(code) {
     const hexPattern = /^[A-Fa-f0-9]{6}$/
     return hexPattern.test(code)

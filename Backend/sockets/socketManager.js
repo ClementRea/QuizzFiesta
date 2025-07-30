@@ -324,6 +324,13 @@ class SocketManager {
     try {
       const userId = socket.user._id.toString();
       
+      console.log('handleGameAnswer - Données reçues:', {
+        sessionId,
+        questionId,
+        answer,
+        userId
+      });
+
       // Vérifier la session
       const session = await GameSession.findById(sessionId);
       if (!session || session.status !== 'playing') {
@@ -348,7 +355,10 @@ class SocketManager {
       }
 
       // Traiter la réponse (même logique que le controller)
+      console.log('Recherche de la question avec ID:', questionId);
       const question = await Question.findById(questionId);
+      console.log('Question trouvée:', question ? 'Oui' : 'Non');
+      
       if (!question) {
         socket.emit('error', { message: 'Question non trouvée' });
         return;

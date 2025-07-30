@@ -1,6 +1,5 @@
 <template>
   <main class="full-width bg-gradient-primary" aria-label="Accueil QuizFiesta">
-    <!-- Hero Section -->
     <section class="q-pa-lg rounded-borders-bottom">
       <div class="row justify-center">
         <div class="col-12 col-md-8 text-center">
@@ -18,7 +17,7 @@
             <q-input
               v-model="searchQuery"
               aria-label="Rechercher un quiz par nom ou catégorie"
-              placeholder="🔍 Rechercher un quiz..."
+              placeholder="Rechercher un quiz..."
               outlined
               rounded
               bg-color="white"
@@ -35,7 +34,7 @@
           <!-- Action Buttons -->
           <div class="row q-gutter-md justify-center">
             <q-btn
-              label="🎮 Rejoindre un Quiz"
+              label="Rejoindre un Quiz"
               color="accent"
               text-color="secondary"
               rounded
@@ -46,7 +45,7 @@
               unelevated
             />
             <q-btn
-              label="➕ Créer un Quiz"
+              label="Créer un Quiz"
               color="secondary"
               text-color="primary"
               rounded
@@ -84,12 +83,12 @@
       <div class="row justify-center">
         <div class="col-12 col-md-8">
           <div class="text-center q-mb-lg">
-            <h2 class="text-h5 text-secondary text-weight-bold">⚙️ Mes Actions</h2>
+            <h2 class="text-h5 text-secondary text-weight-bold">Mes Actions</h2>
           </div>
 
           <div class="row q-gutter-md justify-center">
             <q-btn
-              label="📊 Gérer mes Quiz"
+              label="Gérer mes Quiz"
               color="secondary"
               rounded
               class="col-12 col-sm-5 shadow-2"
@@ -99,7 +98,7 @@
               outline
             />
             <q-btn
-              label="📈 Statistiques"
+              label="Statistiques"
               color="secondary"
               rounded
               class="col-12 col-sm-5 shadow-2"

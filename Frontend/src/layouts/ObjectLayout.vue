@@ -49,7 +49,6 @@
             </div>
           </q-card>
 
-
           <q-card flat bordered class="col-12 col-sm-6 col-md-4 q-pa-lg bg-grey-1">
             <div class="text-center">
               <q-icon
@@ -287,7 +286,6 @@
         style="
           line-height: 1.5;
           display: -webkit-box;
-          -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         "
@@ -358,12 +356,7 @@
       <div
         v-if="object.description"
         class="text-caption text-grey-6 q-mb-sm"
-        style="
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        "
+        style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden"
       >
         {{ object.description }}
       </div>
