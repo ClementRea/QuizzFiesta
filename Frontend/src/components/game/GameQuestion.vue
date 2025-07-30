@@ -1,42 +1,19 @@
 <template>
   <div
-    class="quiz-question bg-white rounded-borders q-pa-xl shadow-8"
+    class="quiz-question bg-white rounded-borders q-pa-lg shadow-8"
     :class="{ 'disabled-question': disabled }"
   >
-    <!-- En-tête de la question -->
-    <div class="question-header text-center q-mb-xl">
-      <div class="question-number text-h6 text-secondary q-mb-sm">
-        Question {{ questionNumber }} / {{ totalQuestions }}
-      </div>
-
+    <div class="question-header text-center q-mb-md">
       <h2 class="question-title text-h4 text-secondary text-weight-bold q-mb-md">
         {{ question.title }}
       </h2>
 
-      <div v-if="question.description" class="question-description text-body1 text-grey-7 q-mb-lg">
-        {{ question.description }}
-      </div>
-
-      <!-- Points de la question -->
       <q-chip color="accent" text-color="secondary" icon="star" class="text-weight-medium">
-        {{ question.points || 100 }} points
+        {{ question.points }} points
       </q-chip>
     </div>
 
-    <!-- Image de la question (si présente) -->
-    <div v-if="question.image" class="question-image text-center q-mb-xl">
-      <q-img
-        :src="question.image"
-        :alt="question.title"
-        style="max-height: 300px; max-width: 100%"
-        class="rounded-borders shadow-2"
-        spinner-color="secondary"
-      />
-    </div>
-
-    <!-- Réponses selon le type de question -->
     <div class="question-content">
-      <!-- Questions à choix multiples -->
       <div v-if="question.type === 'MULTIPLE_CHOICE'" class="multiple-choice-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           {{
@@ -67,35 +44,16 @@
             >
               <q-card-section class="q-pa-lg">
                 <div class="row items-center q-gutter-md no-wrap">
-                  <!-- Indicateur de sélection -->
                   <div class="col-auto">
                     <q-icon
                       :name="
-                        allowMultipleAnswers
-                          ? selectedAnswers.includes(index)
-                            ? 'check_box'
-                            : 'check_box_outline_blank'
-                          : selectedAnswers.includes(index)
-                            ? 'radio_button_checked'
-                            : 'radio_button_unchecked'
+                        selectedAnswers.includes(index) ? 'check_box' : 'check_box_outline_blank'
                       "
                       :color="selectedAnswers.includes(index) ? 'primary' : 'grey-6'"
                       size="lg"
                     />
                   </div>
 
-                  <!-- Lettre de la réponse -->
-                  <div class="col-auto">
-                    <q-badge
-                      :color="selectedAnswers.includes(index) ? 'primary' : 'secondary'"
-                      :text-color="selectedAnswers.includes(index) ? 'secondary' : 'primary'"
-                      class="answer-letter text-weight-bold"
-                    >
-                      {{ getAnswerLetter(index) }}
-                    </q-badge>
-                  </div>
-
-                  <!-- Texte de la réponse -->
                   <div class="col">
                     <div class="answer-text text-h6 text-weight-medium">
                       {{ answer.text }}
@@ -114,64 +72,12 @@
         </div>
       </div>
 
-      <!-- Questions de type vrai/faux -->
-      <div v-else-if="question.type === 'TRUE_FALSE'" class="true-false-answers">
-        <div class="text-body1 text-grey-7 text-center q-mb-lg">
-          Cette affirmation est-elle vraie ou fausse ?
-        </div>
-
-        <div class="row q-gutter-lg justify-center">
-          <div class="col-12 col-sm-5">
-            <q-card
-              flat
-              bordered
-              class="answer-card transition-all text-center"
-              :class="{
-                selected: selectedTrueFalse === true,
-                'bg-positive text-white': selectedTrueFalse === true,
-                'bg-grey-1 hover-shadow': selectedTrueFalse !== true && !disabled,
-                'cursor-pointer': !disabled,
-                'cursor-not-allowed opacity-60': disabled,
-              }"
-              @click="selectTrueFalse(true)"
-            >
-              <q-card-section class="q-pa-xl">
-                <q-icon name="check_circle" size="3rem" class="q-mb-md" />
-                <div class="text-h5 text-weight-bold">VRAI</div>
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="col-12 col-sm-5">
-            <q-card
-              flat
-              bordered
-              class="answer-card transition-all text-center"
-              :class="{
-                selected: selectedTrueFalse === false,
-                'bg-negative text-white': selectedTrueFalse === false,
-                'bg-grey-1 hover-shadow': selectedTrueFalse !== false && !disabled,
-                'cursor-pointer': !disabled,
-                'cursor-not-allowed opacity-60': disabled,
-              }"
-              @click="selectTrueFalse(false)"
-            >
-              <q-card-section class="q-pa-xl">
-                <q-icon name="cancel" size="3rem" class="q-mb-md" />
-                <div class="text-h5 text-weight-bold">FAUX</div>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-      </div>
-
-      <!-- Questions de remise en ordre -->
+      <!-- ORDER-->
       <div v-else-if="question.type === 'ORDER'" class="order-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Glissez les éléments pour les remettre dans le bon ordre :
         </div>
 
-        <!-- Composant draggable pour réorganiser les éléments -->
         <VueDraggable
           v-model="orderItems"
           :disabled="disabled"
@@ -194,12 +100,14 @@
               >
                 <div class="row items-center q-gutter-md no-wrap">
                   <div
-                    class="drag-handle flex flex-center bg-secondary text-white rounded-borders"
-                    style="min-width: 32px; height: 32px"
-                    :class="{
-                      'cursor-grab': !disabled,
-                      'cursor-not-allowed': disabled,
-                    }"
+                    class="drag-handle flex flex-center bg-secondary text-white rounded-borders q-mx-none q-my-none q-pa-none"
+                    :class="[
+                      !disabled ? 'cursor-grab' : 'cursor-not-allowed',
+                      'q-mx-none',
+                      'q-my-none',
+                      'q-pa-none',
+                      'q-size-md',
+                    ]"
                   >
                     <q-icon name="mdi-drag" size="20px" :color="disabled ? 'grey-4' : 'white'" />
                   </div>
@@ -216,7 +124,6 @@
           </template>
         </VueDraggable>
 
-        <!-- Instructions -->
         <div class="text-center q-mt-md">
           <q-chip dense color="info" text-color="white" icon="info" class="text-body2">
             {{ disabled ? 'Ordre soumis' : 'Glissez pour réorganiser' }}
@@ -224,14 +131,13 @@
         </div>
       </div>
 
-      <!-- Questions d'association -->
+      <!-- ASSOCIATION -->
       <div v-else-if="question.type === 'ASSOCIATION'" class="association-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Associez les éléments de gauche avec ceux de droite :
         </div>
 
         <div class="row q-col-gutter-lg">
-          <!-- Colonne gauche -->
           <div class="col-5">
             <h6 class="text-secondary text-center q-mb-md">Éléments A</h6>
             <div class="q-gutter-sm">
@@ -260,7 +166,6 @@
             </div>
           </div>
 
-          <!-- Colonne du milieu avec les connexions -->
           <div class="col-2 flex flex-center">
             <div class="association-connections">
               <div
@@ -271,13 +176,14 @@
                 <q-icon
                   name="link"
                   size="24px"
-                  :color="pair.leftIndex !== null && pair.rightIndex !== null ? 'positive' : 'grey-4'"
+                  :color="
+                    pair.leftIndex !== null && pair.rightIndex !== null ? 'positive' : 'grey-4'
+                  "
                 />
               </div>
             </div>
           </div>
 
-          <!-- Colonne droite -->
           <div class="col-5">
             <h6 class="text-secondary text-center q-mb-md">Éléments B</h6>
             <div class="q-gutter-sm">
@@ -307,7 +213,6 @@
           </div>
         </div>
 
-        <!-- Instructions -->
         <div class="text-center q-mt-lg">
           <q-chip dense color="info" text-color="white" icon="info" class="text-body2">
             {{ disabled ? 'Associations soumises' : 'Cliquez pour associer les éléments' }}
@@ -315,7 +220,7 @@
         </div>
       </div>
 
-      <!-- Questions pour trouver l'intrus -->
+      <!-- FIND INTRUDER -->
       <div v-else-if="question.type === 'FIND_INTRUDER'" class="find-intruder-answers">
         <div class="text-body1 text-grey-7 text-center q-mb-lg">
           Cliquez sur l'élément qui ne fait pas partie du groupe :
@@ -342,21 +247,22 @@
             >
               <q-card-section class="q-pa-lg">
                 <div class="row items-center q-gutter-md no-wrap">
-                  <!-- Indicateur de sélection -->
                   <div class="col-auto">
                     <q-icon
-                      :name="selectedIntruder === index ? 'radio_button_checked' : 'radio_button_unchecked'"
+                      :name="
+                        selectedIntruder === index
+                          ? 'radio_button_checked'
+                          : 'radio_button_unchecked'
+                      "
                       :color="selectedIntruder === index ? 'white' : 'grey-6'"
                       size="lg"
                     />
                   </div>
 
-                  <!-- Icône d'intrus si sélectionné -->
                   <div class="col-auto" v-if="selectedIntruder === index">
                     <q-icon name="search" color="white" size="lg" />
                   </div>
 
-                  <!-- Texte de la réponse -->
                   <div class="col">
                     <div class="answer-text text-h6 text-weight-medium">
                       {{ answer.text }}
@@ -369,19 +275,19 @@
         </div>
       </div>
 
-      <!-- Questions de texte libre / Classique -->
+      <!-- CLASSIC -->
       <div v-else-if="question.type === 'CLASSIC'" class="text-answer">
-        <div class="text-body1 text-grey-7 text-center q-mb-lg">Saisissez votre réponse :</div>
-
         <q-input
           v-model="textAnswer"
           outlined
           type="textarea"
           :rows="4"
           placeholder="Tapez votre réponse ici..."
-          bg-color="grey-1"
+          bg-color="white"
+          label-color="secondary"
+          color="secondary"
           class="text-answer-input"
-          :maxlength="question.maxLength || 500"
+          :maxlength="150"
           :disable="disabled"
           counter
         />
@@ -398,12 +304,6 @@ const props = defineProps({
   question: {
     type: Object,
     required: true,
-    default: () => ({
-      title: '',
-      type: 'multiple_choice',
-      answers: [],
-      points: 100,
-    }),
   },
   questionNumber: {
     type: Number,
@@ -434,17 +334,16 @@ const selectedIntruder = ref(null)
 const selectedLeftIndex = ref(null)
 const selectedRightIndex = ref(null)
 
-// Computed properties pour ASSOCIATION
 const leftItems = computed(() => {
   if (props.question.type === 'ASSOCIATION' && props.question.answers) {
-    return props.question.answers.map(answer => answer.text.split('|')[0])
+    return props.question.answers.map((answer) => answer.text.split('|')[0])
   }
   return []
 })
 
 const rightItems = computed(() => {
   if (props.question.type === 'ASSOCIATION' && props.question.answers) {
-    return props.question.answers.map(answer => answer.text.split('|')[1])
+    return props.question.answers.map((answer) => answer.text.split('|')[1])
   }
   return []
 })
@@ -460,8 +359,10 @@ const hasAnswered = computed(() => {
     case 'CLASSIC':
       return textAnswer.value.trim().length > 0
     case 'ASSOCIATION':
-      return associationPairs.value.length > 0 && 
-             associationPairs.value.every(pair => pair.leftIndex !== null && pair.rightIndex !== null)
+      return (
+        associationPairs.value.length > 0 &&
+        associationPairs.value.every((pair) => pair.leftIndex !== null && pair.rightIndex !== null)
+      )
     case 'FIND_INTRUDER':
       return selectedIntruder.value !== null
     default:
@@ -469,34 +370,19 @@ const hasAnswered = computed(() => {
   }
 })
 
-const getAnswerLetter = (index) => {
-  return String.fromCharCode(65 + index)
-}
-
 const selectMultipleChoiceAnswer = (index) => {
   if (props.disabled) return
 
-  if (props.allowMultipleAnswers) {
-    const currentIndex = selectedAnswers.value.indexOf(index)
-    if (currentIndex > -1) {
-      selectedAnswers.value.splice(currentIndex, 1)
-    } else {
-      selectedAnswers.value.push(index)
-    }
+  const currentIndex = selectedAnswers.value.indexOf(index)
+  if (currentIndex > -1) {
+    selectedAnswers.value.splice(currentIndex, 1)
   } else {
-    selectedAnswers.value = [index]
+    selectedAnswers.value.push(index)
   }
 
   emitAnswer()
 }
 
-const selectTrueFalse = (value) => {
-  if (props.disabled) return
-  selectedTrueFalse.value = value
-  emitAnswer()
-}
-
-// Méthodes pour ASSOCIATION
 const selectLeftItem = (index) => {
   if (props.disabled) return
   selectedLeftIndex.value = index
@@ -504,43 +390,38 @@ const selectLeftItem = (index) => {
 }
 
 const selectRightItem = (index) => {
-  if (props.disabled) return  
+  if (props.disabled) return
   selectedRightIndex.value = index
   tryCreateAssociation()
 }
 
 const tryCreateAssociation = () => {
   if (selectedLeftIndex.value !== null && selectedRightIndex.value !== null) {
-    // Créer une nouvelle association
     const newPair = {
       leftIndex: selectedLeftIndex.value,
-      rightIndex: selectedRightIndex.value
+      rightIndex: selectedRightIndex.value,
     }
-    
-    // Vérifier si cette association existe déjà
+
     const existingPairIndex = associationPairs.value.findIndex(
-      pair => pair.leftIndex === newPair.leftIndex && pair.rightIndex === newPair.rightIndex
+      (pair) => pair.leftIndex === newPair.leftIndex && pair.rightIndex === newPair.rightIndex,
     )
-    
+
     if (existingPairIndex === -1) {
-      // Supprimer les anciennes associations impliquant ces éléments
       associationPairs.value = associationPairs.value.filter(
-        pair => pair.leftIndex !== newPair.leftIndex && pair.rightIndex !== newPair.rightIndex
+        (pair) => pair.leftIndex !== newPair.leftIndex && pair.rightIndex !== newPair.rightIndex,
       )
-      
-      // Ajouter la nouvelle association
+
       associationPairs.value.push(newPair)
     }
-    
-    // Réinitialiser les sélections
+
     selectedLeftIndex.value = null
     selectedRightIndex.value = null
-    
+
     emitAnswer()
   }
 }
 
-// Méthode pour FIND_INTRUDER
+// FIND_INTRUDER
 const selectIntruder = (index) => {
   if (props.disabled) return
   selectedIntruder.value = index
@@ -564,9 +445,9 @@ const emitAnswer = () => {
       answer = textAnswer.value.trim()
       break
     case 'ASSOCIATION':
-      answer = associationPairs.value.map(pair => ({
+      answer = associationPairs.value.map((pair) => ({
         leftIndex: pair.leftIndex,
-        rightIndex: pair.rightIndex
+        rightIndex: pair.rightIndex,
       }))
       break
     case 'FIND_INTRUDER':
@@ -581,7 +462,6 @@ const emitAnswer = () => {
   })
 }
 
-// Drag and drop handlers
 const onDragEnd = () => {
   emitAnswer()
 }
@@ -620,7 +500,6 @@ watch(
   [selectedAnswers, selectedTrueFalse, textAnswer, associationPairs, selectedIntruder],
   () => {
     emit('answer-changed', hasAnswered.value)
-    // Émettre l'événement answer-selected pour les questions textuelles
     if (props.question.type === 'CLASSIC' && textAnswer.value.trim().length > 0) {
       emitAnswer()
     }
@@ -642,9 +521,9 @@ defineExpose({
       case 'CLASSIC':
         return textAnswer.value.trim()
       case 'ASSOCIATION':
-        return associationPairs.value.map(pair => ({
+        return associationPairs.value.map((pair) => ({
           leftIndex: pair.leftIndex,
-          rightIndex: pair.rightIndex
+          rightIndex: pair.rightIndex,
         }))
       case 'FIND_INTRUDER':
         return selectedIntruder.value
@@ -655,7 +534,7 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<!-- <style scoped>
 .quiz-question {
   max-width: 100%;
 }
@@ -665,18 +544,11 @@ defineExpose({
 }
 
 .answer-card {
-  transition: all 0.3s ease;
   border: 2px solid transparent;
-}
-
-.answer-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .answer-card.selected {
   border-color: var(--q-primary);
-  transform: translateY(-2px);
 }
 
 .answer-letter {
@@ -685,34 +557,14 @@ defineExpose({
   min-height: 2rem;
 }
 
-.order-card {
-  transition: all 0.3s ease;
-}
-
-.order-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 .text-answer-input {
   font-size: 1.1rem;
 }
 
-.transition-all {
-  transition: all 0.3s ease;
-}
-
-/* État désactivé */
 .disabled-question {
   pointer-events: none;
 }
 
-.disabled-question .answer-card:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* Drag and drop styles */
 .drag-handle {
   cursor: grab;
   user-select: none;
@@ -722,40 +574,10 @@ defineExpose({
   }
 }
 
-.ghost-item {
-  opacity: 0.5;
-  transform: rotate(2deg);
-}
-
 .order-container {
   min-height: 200px;
   padding: 1rem;
   border: 2px dashed transparent;
   border-radius: 0.5rem;
-  transition: all 0.3s ease;
 }
-
-.order-container:hover {
-  border-color: var(--q-primary);
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .question-title {
-    font-size: 1.8rem;
-  }
-
-  .answer-text {
-    font-size: 1.1rem;
-  }
-
-  .q-pa-xl {
-    padding: 1rem;
-  }
-
-  .q-pa-lg {
-    padding: 0.75rem;
-  }
-}
-</style>
+</style> -->

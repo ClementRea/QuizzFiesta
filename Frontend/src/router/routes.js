@@ -44,14 +44,16 @@ const routes = [
     component: () => import('pages/Search/SearchIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
+  //QUIZ
   {
     path: '/quiz/create',
     component: () => import('pages/Quiz/QuizCreateIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
-    path: '/quiz/join',
-    component: () => import('pages/Quiz/QuizJoinPage.vue'),
+    path: '/quiz/edit/:id',
+    component: () => import('pages/Quiz/QuizUpdateIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
   {
@@ -85,11 +87,8 @@ const routes = [
     component: () => import('pages/Quiz/SessionPlayPage.vue'),
     meta: { requiresAuth: true, showHeader: false, showBackArrow: false }
   },
-  // {
-  //   path: '/quiz/results/:id',
-  //   component: () => import('pages/Quiz/QuizResultsPage.vue'),
-  //   meta: { requiresAuth: true, showHeader: true, showBackArrow: false }
-  // },
+
+  //ORGANISATION
   {
     path: '/organisation/create',
     component: () => import('pages/Organisation/OrganisationCreateIndexPage.vue'),
@@ -105,6 +104,8 @@ const routes = [
     component: () => import('pages/Settings/SettingsIndexPage.vue'),
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
+
+  //ERROR 404
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue')

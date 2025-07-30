@@ -4,7 +4,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import UploadFiles from './UploadFiles.vue'
+import UploadFiles from '../common/UploadFiles.vue'
 
 const props = defineProps({
   modelValue: {
@@ -21,7 +21,7 @@ const dialogVisible = computed({
   },
   set(value) {
     emit('update:modelValue', value)
-  }
+  },
 })
 
 const handleAvatarSelected = (file) => {

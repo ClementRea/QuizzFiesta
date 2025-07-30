@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import logo from '../assets/logo_quiz_fiesta.svg'
+import logo from '../../assets/logo_quiz_fiesta.svg'
 </script>
 
 <style scoped>

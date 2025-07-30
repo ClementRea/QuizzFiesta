@@ -3,35 +3,19 @@
     <div class="q-pa-md">
       <div class="text-h6 q-mb-md flex items-center">
         <q-icon name="settings" class="q-mr-sm" />
-        Contrôles organisateur
+        <span>Contrôles organisateur</span>
+        <q-icon
+          name="close"
+          color="negative"
+          size="26px"
+          rounded
+          class="q-ml-auto cursor-pointer"
+          @click="$emit('update:modelValue', false)"
+        />
       </div>
 
-      <!-- Bouton question suivante -->
-      <q-btn
-        v-if="session?.status === 'playing' && !isLastQuestion"
-        color="primary"
-        icon="skip_next"
-        label="Question suivante"
-        @click="nextQuestion"
-        :loading="loadingNext"
-        class="full-width q-mb-md"
-      />
-
-      <!-- Bouton terminer -->
-      <q-btn
-        v-if="session?.status === 'playing'"
-        color="negative"
-        icon="stop"
-        label="Terminer la session"
-        @click="endSession"
-        :loading="ending"
-        outline
-        class="full-width q-mb-md"
-      />
-
-      <!-- Classement en temps réel -->
-      <div class="q-mt-lg">
-        <div class="text-subtitle1 q-mb-sm">Classement en cours</div>
+      <div class="q-mb-lg">
+        <div class="text-subtitle1 q-mb-sm text-weight-medium">Classement</div>
         <q-list dense>
           <q-item v-for="(participant, index) in leaderboard" :key="participant.userId">
             <q-item-section avatar>
@@ -44,6 +28,27 @@
           </q-item>
         </q-list>
       </div>
+
+      <q-btn
+        v-if="session?.status === 'playing' && !isLastQuestion"
+        color="secondary"
+        icon="skip_next"
+        label="Question suivante"
+        @click="nextQuestion"
+        :loading="loadingNext"
+        class="full-width q-mb-md"
+      />
+
+      <q-btn
+        v-if="session?.status === 'playing'"
+        color="negative"
+        icon="stop"
+        label="Terminer la session"
+        @click="endSession"
+        :loading="ending"
+        outline
+        class="full-width q-mb-md"
+      />
     </div>
   </q-drawer>
 </template>
