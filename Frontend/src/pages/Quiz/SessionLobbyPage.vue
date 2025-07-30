@@ -8,9 +8,10 @@
               <q-icon name="mdi-account-group text-secondary" size="md" class="q-mr-sm" />
               <span class="text-secondary q-mr-md">Salle d'attente</span>
               <span class="text-secondary">
-                Code :
                 <q-btn
                   color="secondary"
+                  icon="mdi-content-copy"
+                  flat
                   :label="session?.sessionCode || '...'"
                   @click="copyCode"
                   :disable="!session || !session.sessionCode"
@@ -83,8 +84,8 @@
                   class="q-pa-md"
                 >
                   <q-item-section avatar>
-                    <q-avatar color="primary" text-color="white" size="md">
-                      <img v-if="participant.avatar" :src="participant.avatar" alt="Avatar" />
+                    <q-avatar color="primary" text-color="white" size="xl">
+                      <Avatar v-if="participant.avatar" :avatarUrl="participant.avatar" size="sm" />
                       <span v-else>{{ participant.userName?.[0]?.toUpperCase() || '?' }}</span>
                     </q-avatar>
                   </q-item-section>
@@ -205,6 +206,7 @@ import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
 import UserService from 'src/services/UserService'
 import SocketService from 'src/services/SocketService'
+import Avatar from 'src/components/user/GetAvatar.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -283,6 +285,7 @@ const loadSession = async () => {
   } catch (error) {
     $q.notify({
       type: 'negative',
+      position: 'top',
       message: error.message || 'Erreur lors du chargement de la session',
     })
     router.push('/accueil')
@@ -344,17 +347,8 @@ const setupSocketEventListeners = () => {
   SocketService.onLobbyUserJoined((data) => {
     $q.notify({
       type: 'positive',
+      position: 'top',
       message: `${data.user.userName} a rejoint le lobby`,
-      timeout: 2000,
-    })
-  })
-
-  // Utilisateur a quitté
-  SocketService.onLobbyUserLeft((data) => {
-    $q.notify({
-      type: 'info',
-      message: `${data.userName} a quitté le lobby`,
-      timeout: 2000,
     })
   })
 
@@ -363,6 +357,7 @@ const setupSocketEventListeners = () => {
     const statusText = data.isReady ? 'est prêt' : "n'est plus prêt"
     $q.notify({
       type: 'info',
+      position: 'top',
       message: `${data.userName} ${statusText}`,
       timeout: 1500,
     })
@@ -428,6 +423,7 @@ const startSession = async () => {
       await QuizService.startGameSession(actualSessionId)
       $q.notify({
         type: 'positive',
+        position: 'top',
         message: 'Session démarrée !',
       })
       router.push(`/quiz/session/${actualSessionId}/play`)
@@ -454,6 +450,7 @@ const leaveSession = async () => {
 
     $q.notify({
       type: 'info',
+      position: 'top',
       message: "Vous avez quitté la salle d'attente",
     })
 
@@ -468,6 +465,7 @@ const copyCode = () => {
     navigator.clipboard.writeText(session.value.sessionCode)
     $q.notify({
       type: 'positive',
+      position: 'top',
       message: `Code ${session.value.sessionCode} copié !`,
     })
   }
@@ -547,6 +545,7 @@ watch(
     if (newStatus === 'playing') {
       $q.notify({
         type: 'info',
+        position: 'top',
         message: 'La session a commencé !',
       })
       const actualSessionId = session.value.id || session.value._id

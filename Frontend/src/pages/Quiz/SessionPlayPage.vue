@@ -1,5 +1,9 @@
 <template>
-  <main class="full-width bg-gradient-primary" aria-label="Jouer à la session de quiz">
+  <main
+    class="full-width bg-gradient-primary"
+    style="height: 100vh"
+    aria-label="Jouer à la session de quiz"
+  >
     <section class="q-pa-lg rounded-borders-bottom">
       <div class="row justify-center">
         <div class="col-12 col-md-10">
@@ -15,30 +19,6 @@
                 <q-chip color="accent" text-color="secondary" icon="people">
                   {{ participantsCount }} participants
                 </q-chip>
-              </div>
-            </div>
-
-            <!-- Timer linéaire -->
-            <div class="col-auto" style="min-width: 160px">
-              <q-linear-progress
-                v-if="timeRemaining > 0"
-                :value="timeProgress / 100"
-                color="negative"
-                track-color="grey-3"
-                size="20px"
-                class="q-mt-md"
-                rounded
-                animation-speed="100"
-              >
-                <div class="absolute-full flex flex-center">
-                  <span class="text-h6 text-secondary text-weight-bold">{{
-                    timeRemainingSeconds
-                  }}</span>
-                </div>
-              </q-linear-progress>
-              <div v-else class="text-center q-pa-md">
-                <q-icon name="timer_off" size="40px" color="grey-5" />
-                <div class="text-caption text-grey-6">Temps écoulé</div>
               </div>
             </div>
           </div>
@@ -113,6 +93,10 @@
               @answer-changed="onAnswerChanged"
             />
 
+            <div class="q-mt-lg">
+              <GameTimer :timeLeft="timeRemainingSeconds" :totalTime="timeLimit / 1000" />
+            </div>
+
             <!-- Submit button -->
             <div class="text-center q-mt-lg">
               <q-btn
@@ -150,7 +134,6 @@
       </div>
     </section>
 
-    <!-- Panneau latéral du classement (organisateur) -->
     <SessionOrganizerPanel
       v-if="isOrganizer"
       v-model="showOrganizerPanel"
@@ -163,7 +146,6 @@
       @endSession="handleEndSession"
     />
 
-    <!-- Bouton flottant pour organisateur -->
     <q-page-sticky v-if="isOrganizer" position="bottom-right" :offset="[18, 18]">
       <q-btn
         fab
@@ -181,6 +163,7 @@ import { useRouter, useRoute } from 'vue-router'
 import SessionOrganizerPanel from 'src/components/session/SessionOrganizerPanel.vue'
 import GameFinalRanking from 'src/components/game/GameFinalRanking.vue'
 import GameQuestion from 'src/components/game/GameQuestion.vue'
+import GameTimer from 'src/components/game/GameTimer.vue'
 
 // Composables
 import { useGameSession } from 'src/composables/useGameSession'
@@ -193,6 +176,12 @@ const route = useRoute()
 
 // Props dérivées
 const sessionId = computed(() => route.params.sessionId)
+
+const setupAllSocketListeners = () => {
+  setupTimerSocketListeners()
+  setupAnswerSocketListeners()
+  setupOrganizerSocketListeners()
+}
 
 // Composables principaux
 const {
@@ -209,16 +198,10 @@ const {
   isOrganizer,
   isLastQuestion,
   retry,
-} = useGameSession(sessionId)
+} = useGameSession(sessionId, setupAllSocketListeners)
 
-const {
-  timeRemaining,
-  timeProgress,
-  timeRemainingSeconds,
-  isTimeUp,
-  isTimerStarted,
-  setupTimerSocketListeners,
-} = useGameTimer()
+const { timeLimit, timeRemainingSeconds, isTimeUp, isTimerStarted, setupTimerSocketListeners } =
+  useGameTimer()
 
 const {
   hasAnswered,
@@ -239,7 +222,6 @@ const {
   setupOrganizerSocketListeners,
 } = useOrganizerControls(sessionId, isOrganizer, socketConnected)
 
-// Méthodes simplifiées
 const handleSubmitAnswer = () => {
   submitCurrentAnswer(currentQuestion, socketConnected)
 }
@@ -255,25 +237,4 @@ const handleEndSession = () => {
 const goHome = () => {
   router.push('/accueil')
 }
-
-// Configuration des listeners WebSocket - centralisée
-const setupAllSocketListeners = () => {
-  setupTimerSocketListeners()
-  setupAnswerSocketListeners()
-  setupOrganizerSocketListeners()
-}
-
-// Initialisation automatique des listeners
-setupAllSocketListeners()
 </script>
-
-<style scoped>
-.full-width {
-  width: 100%;
-}
-
-.rounded-borders-bottom {
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-</style>

@@ -42,7 +42,7 @@
               size="lg"
               class="col-12 col-sm-5 shadow-4 text-weight-medium"
               no-caps
-              @click="router.push('/quiz/join')"
+              @click="router.push('/quiz/session/join')"
               unelevated
             />
             <q-btn
@@ -80,7 +80,6 @@
       </div>
     </section>
 
-    <!-- Quick Actions Section -->
     <section class="bg-white q-pa-lg q-mt-lg">
       <div class="row justify-center">
         <div class="col-12 col-md-8">
@@ -206,23 +205,22 @@ const handlePlayQuiz = async (quiz) => {
   try {
     // Créer une nouvelle session pour ce quiz
     const sessionResult = await QuizService.createSession(quiz._id, {
-      name: `Session ${quiz.title} - ${new Date().toLocaleString()}`
+      name: `Session ${quiz.title} - ${new Date().toLocaleString()}`,
     })
-    
+
     const sessionId = sessionResult.data.session._id
-    
+
     // Rejoindre automatiquement la session en tant qu'organisateur
     await QuizService.joinSession(sessionId)
-    
+
     // Rediriger vers le lobby de la nouvelle session
     router.push(`/quiz/session/${sessionId}/lobby`)
-    
   } catch (error) {
     console.error('Erreur lors de la création de session:', error)
     $q.notify({
       type: 'negative',
       message: 'Erreur lors de la création de la session',
-      position: 'top'
+      position: 'top',
     })
   }
 }
@@ -236,12 +234,12 @@ const handleShareQuiz = async (quiz) => {
   try {
     // Créer une session temporaire pour le partage
     const sessionResult = await QuizService.createSession(quiz._id, {
-      name: `Session partagée ${quiz.title} - ${new Date().toLocaleString()}`
+      name: `Session partagée ${quiz.title} - ${new Date().toLocaleString()}`,
     })
-    
+
     const sessionCode = sessionResult.data.session.sessionCode
     const shareUrl = `${window.location.origin}/quiz/session/join/${sessionCode}`
-    
+
     if (navigator.share) {
       navigator.share({
         title: quiz.title,
@@ -262,7 +260,7 @@ const handleShareQuiz = async (quiz) => {
     $q.notify({
       type: 'negative',
       message: 'Erreur lors de la création du lien de partage',
-      position: 'top'
+      position: 'top',
     })
   }
 }
