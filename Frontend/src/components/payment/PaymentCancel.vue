@@ -22,7 +22,7 @@
 
         <div class="q-gutter-sm">
           <q-btn
-            color="primary"
+            color="secondary"
             label="Retour à l'accueil"
             icon="home"
             no-caps
