@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
       },
       expiresAt: {
           type: Date,
-          default: function() { return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); } // 7 jours
+          default: function() { return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); }
       },
       lastUsed: Date,
       userAgent: String,
@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Hash du mot de passe
+// Hash password
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -79,7 +79,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Comparer les mots de passe
+// compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
       return await bcrypt.compare(candidatePassword, this.password);
@@ -88,7 +88,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
-// Mettre un avatar aléatoire parmis les deux disponibles à la création du compte
+// Set a random avatar from the two available at account creation
 function getRandomAvatar() {
   const avatars = ['avatar1.png', 'avatar2.png'];
   return avatars[Math.floor(Math.random() * avatars.length)]

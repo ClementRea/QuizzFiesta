@@ -4,7 +4,6 @@ const Question = require('../models/Question');
 const LobbyParticipant = require('../models/LobbyParticipant');
 const mongoose = require('mongoose');
 
-// Filtrer les champs
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach(el => {
@@ -13,11 +12,11 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+//Create quiz
 exports.quizCreate = async (req, res, next) => {
   try {
 
     const filteredBody = filterObj(req.body, 'title', 'description', 'startDate', 'questions');
-    // Supprimer le champ questions pour éviter le cast error
     if (filteredBody.questions) delete filteredBody.questions;
 
     if (!filteredBody.title || !filteredBody.description) {
@@ -27,23 +26,21 @@ exports.quizCreate = async (req, res, next) => {
       });
     }
 
-    // Traitement du logo si présent
     if (req.file) {
       filteredBody.logo = req.file.filename;
     }
 
     filteredBody.createdBy = req.user.id;
 
-    // Démarrer une transaction pour créer le quiz et les questions
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      // Créer le quiz sans questions
+      // 1st create the quiz without questions
       const quiz = new Quiz(filteredBody);
       await quiz.save({ session });
 
-      // Traiter les questions si elles sont fournies
+      // 2nd create the questions if provided
       let questions = [];
       if (req.body.questions) {
         const parsedQuestions = typeof req.body.questions === 'string'
@@ -51,7 +48,7 @@ exports.quizCreate = async (req, res, next) => {
           : req.body.questions;
 
         if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
-          // Créer toutes les questions
+          // Create all questions
           const questionPromises = parsedQuestions.map(async (questionData) => {
             questionData.quizId = quiz._id;
             const question = new Question(questionData);
@@ -60,7 +57,7 @@ exports.quizCreate = async (req, res, next) => {
 
           questions = await Promise.all(questionPromises);
 
-          // Mettre à jour le quiz avec les IDs des questions
+          // Update the quiz with the question IDs
           quiz.questions = questions.map(q => q._id);
           await quiz.save({ session });
         }
@@ -92,15 +89,43 @@ exports.quizCreate = async (req, res, next) => {
   }
 };
 
-// Récupérer tous les quiz
+
 exports.getAllQuizes = async (req, res, next) => {
   try {
     const { isPublic, active } = req.query;
     
     let filter = {};
     
+    if (req.user.role === 'user') {
+      filter.isPublic = true;
+    } else {
+      if (req.user.role === 'gestionnaire') {
+        const User = require('../models/User');
+        const usersInOrg = await User.find({ organization: req.user.organization }).select('_id');
+        const userIds = usersInOrg.map(u => u._id);
+        
+        filter.$or = [
+          { isPublic: true },
+          { createdBy: { $in: userIds } }
+        ];
+      }
+    }
+    
     if (isPublic !== undefined) {
-      filter.isPublic = isPublic === 'true';
+      if (req.user.role === 'user') {
+        filter.isPublic = true; 
+      } else {
+        if (filter.$or) {
+          filter.$or = filter.$or.map(condition => {
+            if (condition.isPublic !== undefined || condition.createdBy !== undefined) {
+              return { ...condition, ...(isPublic === 'true' ? {} : { isPublic: isPublic === 'true' }) };
+            }
+            return condition;
+          });
+        } else {
+          filter.isPublic = isPublic === 'true';
+        }
+      }
     }
     
     if (active !== undefined) {
@@ -125,7 +150,6 @@ exports.getAllQuizes = async (req, res, next) => {
   }
 };
 
-// Récupérer les quiz de l'utilisateur connecté
 exports.getMyQuizes = async (req, res, next) => {
   try {
     const quizes = await Quiz.find({ createdBy: req.user.id })
@@ -145,7 +169,6 @@ exports.getMyQuizes = async (req, res, next) => {
   }
 };
 
-// Récupérer un quiz par ID
 exports.getQuizById = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.id)
@@ -162,18 +185,36 @@ exports.getQuizById = async (req, res, next) => {
       });
     }
 
-    // Vérifications d'autorisation
     const isCreator = quiz.createdBy._id.toString() === req.user.id;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.role === 'admin';
+    const isGestionnaire = req.user.role === 'gestionnaire';
     const isPublic = quiz.isPublic;
     
-    // Vérifier si l'utilisateur est dans le lobby (a rejoint via le code)
     const isInLobby = await LobbyParticipant.findOne({
       quizId: quiz._id,
       userId: req.user.id
     });
 
-    if (!isPublic && !isCreator && !isAdmin && !isInLobby) {
+    let hasAccess = false;
+    
+    if (isAdmin) {
+      hasAccess = true;
+    } else if (isCreator) {
+      hasAccess = true;
+    } else if (isPublic) {
+      hasAccess = true;
+    } else if (isInLobby) {
+      hasAccess = true;
+    } else if (isGestionnaire && req.user.organization) {
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy._id);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        hasAccess = true;
+      }
+    }
+    
+    if (!hasAccess) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à accéder à ce quiz'
@@ -192,7 +233,6 @@ exports.getQuizById = async (req, res, next) => {
   }
 };
 
-// Mettre à jour un quiz
 exports.quizUpdate = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -204,7 +244,22 @@ exports.quizUpdate = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    let canModify = false;
+    
+    if (req.user.role === 'admin') {
+      canModify = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canModify = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canModify = true;
+      }
+    }
+    
+    if (!canModify) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à modifier ce quiz'
@@ -215,32 +270,26 @@ exports.quizUpdate = async (req, res, next) => {
     session.startTransaction();
 
     try {
-      // Filtrer les champs autorisés pour la mise à jour du quiz
       const filteredBody = filterObj(req.body, 'title', 'description', 'isPublic', 'active');
 
-      // Traitement du logo si présent
       if (req.file) {
         filteredBody.logo = req.file.filename;
       }
 
-      // Mettre à jour les informations de base du quiz
       const updatedQuiz = await Quiz.findByIdAndUpdate(
         req.params.id,
         filteredBody,
         { new: true, runValidators: true, session }
       );
 
-      // Traiter les questions si elles sont fournies
       if (req.body.questions) {
         const parsedQuestions = typeof req.body.questions === 'string'
           ? JSON.parse(req.body.questions)
           : req.body.questions;
 
         if (Array.isArray(parsedQuestions)) {
-          // Supprimer les anciennes questions
           await Question.deleteMany({ quizId: quiz._id }, { session });
 
-          // Créer les nouvelles questions
           if (parsedQuestions.length > 0) {
             const questionPromises = parsedQuestions.map(async (questionData) => {
               questionData.quizId = quiz._id;
@@ -250,7 +299,6 @@ exports.quizUpdate = async (req, res, next) => {
 
             const newQuestions = await Promise.all(questionPromises);
 
-            // Mettre à jour les références des questions dans le quiz
             updatedQuiz.questions = newQuestions.map(q => q._id);
             await updatedQuiz.save({ session });
           } else {
@@ -263,7 +311,6 @@ exports.quizUpdate = async (req, res, next) => {
 
       await session.commitTransaction();
 
-      // Récupérer le quiz mis à jour avec toutes les données
       const populatedQuiz = await Quiz.findById(updatedQuiz._id)
         .populate('questions')
         .populate('createdBy', 'userName');
@@ -288,7 +335,7 @@ exports.quizUpdate = async (req, res, next) => {
   }
 };
 
-// Supprimer un quiz
+// delete a quiz
 exports.deleteQuiz = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -300,7 +347,23 @@ exports.deleteQuiz = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    let canDelete = false;
+    
+    if (req.user.role === 'admin') {
+      canDelete = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canDelete = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      // Vérifier si le créateur fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canDelete = true;
+      }
+    }
+    
+    if (!canDelete) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à supprimer ce quiz'
@@ -320,7 +383,6 @@ exports.deleteQuiz = async (req, res, next) => {
   }
 };
 
-// Récupérer un quiz par son code de partage
 exports.getQuizByJoinCode = async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({ joinCode: req.params.joinCode.toUpperCase() })
@@ -334,7 +396,6 @@ exports.getQuizByJoinCode = async (req, res, next) => {
       });
     }
 
-    // Peu importe s'il est public ou privé, le code donne accès
     res.status(200).json({
       status: 'success',
       data: {
@@ -347,7 +408,6 @@ exports.getQuizByJoinCode = async (req, res, next) => {
   }
 };
 
-// Ajouter des questions à un quiz existant
 exports.addQuestionsToQuiz = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -359,7 +419,23 @@ exports.addQuestionsToQuiz = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    let canModify = false;
+    
+    if (req.user.role === 'admin') {
+      canModify = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canModify = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      // Vérifier si le créateur fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canModify = true;
+      }
+    }
+    
+    if (!canModify) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à modifier ce quiz'
