@@ -78,41 +78,7 @@
         </div>
       </div>
     </section>
-
-    <section class="bg-white q-pa-lg q-mt-lg">
-      <div class="row justify-center">
-        <div class="col-12 col-md-8">
-          <div class="text-center q-mb-lg">
-            <h2 class="text-h5 text-secondary text-weight-bold">Mes Actions</h2>
-          </div>
-
-          <div class="row q-gutter-md justify-center">
-            <q-btn
-              label="Gérer mes Quiz"
-              color="secondary"
-              rounded
-              icon="mdi-cog"
-              class="col-12 col-sm-5 shadow-2"
-              size="md"
-              no-caps
-              @click="router.push('/quiz/manage')"
-              outline
-            />
-            <q-btn
-              label="Statistiques"
-              color="secondary"
-              rounded
-              icon="mdi-chart-bar"
-              class="col-12 col-sm-5 shadow-2"
-              size="md"
-              no-caps
-              outline
-              disabled
-            />
-          </div>
-        </div>
-      </div>
-    </section>
+    <AccueilActions />
   </main>
 </template>
 
@@ -123,6 +89,7 @@ import { useQuasar } from 'quasar'
 import UserService from 'src/services/UserService'
 import QuizService from 'src/services/QuizService'
 import DayliQuiz from 'src/components/common/DayliQuiz.vue'
+import AccueilActions from 'src/components/common/AccueilActions.vue'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -141,8 +108,6 @@ const userData = ref({
 
 const publicQuizzes = ref([])
 const dailyQuiz = ref(null)
-
-// Computed properties
 
 // Methods
 const getUser = async () => {

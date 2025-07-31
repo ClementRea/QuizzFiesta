@@ -9,6 +9,7 @@ const userRoutes = require('../routes/usersRoutes');
 const quizRoutes = require('../routes/quizRoutes');
 const organisationRoutes = require('../routes/organisationRoutes');
 const gameSessionRoutes = require('../routes/gameSessionRoutes');
+const paymentRoutes = require('../routes/paymentRoutes');
 const socketMiddleware = require('../middlewares/socketMiddleware');
 
 
@@ -57,10 +58,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/organisation', organisationRoutes);
 app.use('/api/session', socketMiddleware, gameSessionRoutes);
-// /api/quiz : gestion des quiz
-// /api/users : gestion des utilisateurs
-// /api/teams : gestion des équipes
-// /api/badges : gestion des badges
+app.use('/api/payment', paymentRoutes);
 
 // Middleware de gestion des routes non trouvées
 app.use((req, res, next) => {

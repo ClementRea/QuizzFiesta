@@ -3,9 +3,7 @@ import AuthService from 'src/services/AuthService'
 import axios from 'axios'
 
 export default boot(({ router }) => {
-  // Configuration globale des intercepteurs Axios pour l'authentification
 
-  // Intercepteur de requête - Ajouter le token et gérer l'expiration
   axios.interceptors.request.use(
     async (config) => {
       // Skip auth for authentication endpoints
@@ -13,10 +11,8 @@ export default boot(({ router }) => {
         return config
       }
 
-      // Ensure valid token before making any request
       const isValid = await AuthService.ensureValidToken()
       if (!isValid) {
-        // Redirect to login if token cannot be renewed
         router.push('/login')
         return Promise.reject(new Error('Authentication failed'))
       }
@@ -30,7 +26,6 @@ export default boot(({ router }) => {
     (error) => Promise.reject(error)
   )
 
-  // Intercepteur de réponse - Gérer les erreurs 401
   axios.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -39,7 +34,6 @@ export default boot(({ router }) => {
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true
 
-        // Don't try to refresh on auth routes
         if (originalRequest.url?.includes('/auth/')) {
           return Promise.reject(error)
         }
@@ -61,7 +55,6 @@ export default boot(({ router }) => {
     }
   )
 
-  // Configuration initiale du token au démarrage
   const accessToken = localStorage.getItem('accessToken')
   if (accessToken) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
