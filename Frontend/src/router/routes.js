@@ -105,6 +105,23 @@ const routes = [
     meta: { requiresAuth: true, showHeader: true, showBackArrow: true }
   },
 
+  //PAYMENT
+  {
+    path: '/payment/success',
+    component: () => import('pages/Payment/PaymentSuccessPage.vue'),
+    meta: {  showHeader: false, showBackArrow: false }
+  },
+  {
+    path: '/payment/cancel',
+    component: () => import('pages/Payment/PaymentCancelPage.vue'),
+    meta: { showHeader: false, showBackArrow: false }
+  },
+  {
+    path: '/payment/checkout',
+    component: () => import('pages/Payment/PaymentCheckoutPage.vue'),
+    meta: { showHeader: false, showBackArrow: false }
+  },
+
   //ERROR 404
   {
     path: '/:catchAll(.*)*',

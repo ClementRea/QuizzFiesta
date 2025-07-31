@@ -12,10 +12,11 @@ exports.createCheckoutSession = async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `${YOUR_DOMAIN}/success.html`,
-      cancel_url: `${YOUR_DOMAIN}/cancel.html`,
+      success_url: `${YOUR_DOMAIN}/#/payment/success`,
+      cancel_url: `${YOUR_DOMAIN}/#/payment/cancel`,
     });
 
+    console.log("price", process.env.STRIPE_PRICE_ID);
     res.json({ url: session.url });
   } catch (error) {
     res.status(500).json({ error: error.message });
