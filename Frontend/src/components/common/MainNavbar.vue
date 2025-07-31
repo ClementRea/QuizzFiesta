@@ -1,6 +1,6 @@
 <template>
   <q-header
-    class="bg-white q-py-sm shadow-1"
+    class="bg-white q-py-sm shadow-4"
     style="border-bottom: 1px solid #f5f4f0; position: relative"
     role="banner"
   >
@@ -66,7 +66,7 @@
         <q-btn
           flat
           round
-          class="bg-grey-2 text-dark shadow-1"
+          class="bg-grey-2 text-dark"
           size="md"
           icon="mdi-bell-outline"
           tabindex="0"
@@ -187,7 +187,7 @@
         round
         dense
         icon="menu"
-        class="lt-md text-dark q-ml-sm shadow-1"
+        class="lt-md text-dark q-ml-sm"
         size="md"
         @click="mobileMenuOpen = !mobileMenuOpen"
         style="min-width: 40px; min-height: 40px"
@@ -202,7 +202,7 @@
     <q-slide-transition>
       <div
         v-if="mobileMenuOpen"
-        class="lt-md bg-white q-pa-md shadow-1"
+        class="lt-md bg-white q-pa-md"
         id="mobile-menu"
         role="navigation"
         aria-label="Menu de navigation mobile"

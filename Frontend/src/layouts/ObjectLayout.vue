@@ -480,10 +480,6 @@ const getImageUrl = (obj) => {
   return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
 }
 
-onMounted(() => {
-  console.log('ObjectCard mounted with object:', props.object)
-})
-
 const handleView = () => emit('view', props.object)
 const handleEdit = () => emit('edit', props.object)
 const handleDelete = () => emit('delete', props.object)
