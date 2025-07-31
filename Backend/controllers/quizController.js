@@ -92,15 +92,47 @@ exports.quizCreate = async (req, res, next) => {
   }
 };
 
-// Récupérer tous les quiz
+// Récupérer tous les quiz (avec vérification de rôles)
 exports.getAllQuizes = async (req, res, next) => {
   try {
     const { isPublic, active } = req.query;
     
     let filter = {};
     
+    // Les utilisateurs normaux ne voient que les quiz publics
+    if (req.user.role === 'user') {
+      filter.isPublic = true;
+    } else {
+      // Les gestionnaires voient les quiz publics + ceux de leur organisation
+      if (req.user.role === 'gestionnaire') {
+        const User = require('../models/User');
+        const usersInOrg = await User.find({ organization: req.user.organization }).select('_id');
+        const userIds = usersInOrg.map(u => u._id);
+        
+        filter.$or = [
+          { isPublic: true },
+          { createdBy: { $in: userIds } }
+        ];
+      }
+      // Les admins voient tout (pas de filtre supplémentaire)
+    }
+    
     if (isPublic !== undefined) {
-      filter.isPublic = isPublic === 'true';
+      if (req.user.role === 'user') {
+        filter.isPublic = true; // Force toujours true pour les users
+      } else {
+        if (filter.$or) {
+          // Si on a déjà un filtre $or, on l'adapte
+          filter.$or = filter.$or.map(condition => {
+            if (condition.isPublic !== undefined || condition.createdBy !== undefined) {
+              return { ...condition, ...(isPublic === 'true' ? {} : { isPublic: isPublic === 'true' }) };
+            }
+            return condition;
+          });
+        } else {
+          filter.isPublic = isPublic === 'true';
+        }
+      }
     }
     
     if (active !== undefined) {
@@ -164,7 +196,8 @@ exports.getQuizById = async (req, res, next) => {
 
     // Vérifications d'autorisation
     const isCreator = quiz.createdBy._id.toString() === req.user.id;
-    const isAdmin = req.user.isAdmin;
+    const isAdmin = req.user.role === 'admin';
+    const isGestionnaire = req.user.role === 'gestionnaire';
     const isPublic = quiz.isPublic;
     
     // Vérifier si l'utilisateur est dans le lobby (a rejoint via le code)
@@ -173,7 +206,28 @@ exports.getQuizById = async (req, res, next) => {
       userId: req.user.id
     });
 
-    if (!isPublic && !isCreator && !isAdmin && !isInLobby) {
+    // Vérifications d'accès selon les rôles
+    let hasAccess = false;
+    
+    if (isAdmin) {
+      hasAccess = true; // Admin a accès à tout
+    } else if (isCreator) {
+      hasAccess = true; // Créateur a accès à son quiz
+    } else if (isPublic) {
+      hasAccess = true; // Quiz public accessible à tous
+    } else if (isInLobby) {
+      hasAccess = true; // Utilisateur dans le lobby
+    } else if (isGestionnaire && req.user.organization) {
+      // Vérifier si le créateur du quiz fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy._id);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        hasAccess = true;
+      }
+    }
+    
+    if (!hasAccess) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à accéder à ce quiz'
@@ -204,7 +258,24 @@ exports.quizUpdate = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    // Vérification des droits de modification
+    let canModify = false;
+    
+    if (req.user.role === 'admin') {
+      canModify = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canModify = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      // Vérifier si le créateur fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canModify = true;
+      }
+    }
+    
+    if (!canModify) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à modifier ce quiz'
@@ -300,7 +371,24 @@ exports.deleteQuiz = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    // Vérification des droits de suppression
+    let canDelete = false;
+    
+    if (req.user.role === 'admin') {
+      canDelete = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canDelete = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      // Vérifier si le créateur fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canDelete = true;
+      }
+    }
+    
+    if (!canDelete) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à supprimer ce quiz'
@@ -359,7 +447,24 @@ exports.addQuestionsToQuiz = async (req, res, next) => {
       });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id && !req.user.isAdmin) {
+    // Vérification des droits de modification
+    let canModify = false;
+    
+    if (req.user.role === 'admin') {
+      canModify = true;
+    } else if (quiz.createdBy.toString() === req.user.id) {
+      canModify = true;
+    } else if (req.user.role === 'gestionnaire' && req.user.organization) {
+      // Vérifier si le créateur fait partie de la même organisation
+      const User = require('../models/User');
+      const quizCreator = await User.findById(quiz.createdBy);
+      if (quizCreator && quizCreator.organization && 
+          quizCreator.organization.toString() === req.user.organization.toString()) {
+        canModify = true;
+      }
+    }
+    
+    if (!canModify) {
       return res.status(403).json({
         status: 'error',
         message: 'Vous n\'êtes pas autorisé à modifier ce quiz'
