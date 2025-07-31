@@ -5,7 +5,7 @@
         <div class="col-12 col-md-8 text-center">
           <div class="q-mb-lg">
             <h1 class="text-h3 text-secondary text-weight-bold q-mb-md">
-              👋 Bonjour {{ userData.userName }} !
+              Bonjour {{ userData.userName }} !
             </h1>
             <p class="text-h6 text-secondary q-mt-none q-mb-xl">
               Découvrez et créez des quiz captivants
@@ -91,6 +91,7 @@
               label="Gérer mes Quiz"
               color="secondary"
               rounded
+              icon="mdi-cog"
               class="col-12 col-sm-5 shadow-2"
               size="md"
               no-caps
@@ -101,6 +102,7 @@
               label="Statistiques"
               color="secondary"
               rounded
+              icon="mdi-chart-bar"
               class="col-12 col-sm-5 shadow-2"
               size="md"
               no-caps

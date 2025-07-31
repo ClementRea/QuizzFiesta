@@ -112,6 +112,17 @@ class UserService {
       throw error.response?.data || error
     }
   }
+
+  async getUserById(userId) {
+    try {
+      const response = await axios.get(`${this.baseURL}/user/${userId}`, {
+        headers: getAuthHeaders()
+      })
+      return response.data
+    } catch (error) {
+      throw error.response?.data || error
+    }
+  }
 }
 
 const userServiceInstance = new UserService()

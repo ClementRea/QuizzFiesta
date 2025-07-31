@@ -293,7 +293,10 @@
         {{ object.description }}
       </div>
 
-      <div v-if="detectedObjectType === 'quiz'" class="q-gutter-xs">
+      <div
+        v-if="detectedObjectType === 'quiz'"
+        class="q-gutter-xs flex row items-center justify-between"
+      >
         <q-chip
           v-if="object.questions"
           color="blue-1"
@@ -308,12 +311,22 @@
           v-if="object.isPublic"
           color="orange-1"
           text-color="orange-8"
-          icon="public"
           size="sm"
+          icon="mdi-creation"
           class="text-weight-medium"
         >
-          Public
+          {{ object?.createdBy?.userName }}
         </q-chip>
+
+        <q-btn
+          label="Jouer"
+          color="secondary"
+          class="q-mt-md"
+          size="md"
+          icon="play_arrow"
+          dense
+          @click="handlePlay"
+        />
       </div>
     </q-card-section>
   </q-card>
@@ -347,7 +360,6 @@
       </q-img>
     </div>
 
-    <!-- Content SM -->
     <q-card-section class="q-pa-sm">
       <div v-if="!showImage" class="text-subtitle1 text-weight-bold q-mb-xs text-primary">
         {{ object.title || object.name }}
@@ -361,7 +373,6 @@
         {{ object.description }}
       </div>
 
-      <!-- Mini Metadata -->
       <div v-if="detectedObjectType === 'quiz'" class="row q-gutter-xs items-center">
         <q-badge v-if="object.questions" color="blue-6" class="text-weight-medium">
           {{ object.questions.length || 0 }} Q
@@ -418,8 +429,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useQuasar } from 'quasar'
+import { computed, onMounted } from 'vue'
+import Avatar from 'src/components/user/GetAvatar.vue'
 
 const props = defineProps({
   object: { type: Object, required: true },
@@ -435,8 +446,6 @@ const props = defineProps({
   showShareButton: { type: Boolean, default: true },
 })
 
-const $q = useQuasar()
-
 const emit = defineEmits(['view', 'edit', 'delete', 'share', 'play'])
 
 const detectedObjectType = computed(() => {
@@ -448,7 +457,6 @@ const detectedObjectType = computed(() => {
 })
 
 const showImage = computed(() => {
-  // Montrer l'image pour toutes les tailles si elle existe
   return !!getImageUrl(props.object)
 })
 
@@ -471,6 +479,10 @@ const getImageUrl = (obj) => {
   const hostname = window.location.hostname
   return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
 }
+
+onMounted(() => {
+  console.log('ObjectCard mounted with object:', props.object)
+})
 
 const handleView = () => emit('view', props.object)
 const handleEdit = () => emit('edit', props.object)

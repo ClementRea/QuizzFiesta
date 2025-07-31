@@ -35,6 +35,7 @@ const upload = multer({
 
 // Routes
 router.get('/getMe', protect, userController.getMe);
+router.get('/:id', protect, userController.getUserById);
 router.put('/updateMe', protect, upload.single('avatar'), userController.updateMe);
 
 module.exports = router;

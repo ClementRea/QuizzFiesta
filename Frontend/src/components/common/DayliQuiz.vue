@@ -2,7 +2,10 @@
   <div class="daily-quiz-section">
     <div v-if="dailyQuiz" class="q-mb-xl">
       <div class="text-start q-mb-lg">
-        <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">⭐ Quiz du Jour</h2>
+        <div class="flex row items-center q-mb-sm">
+          <q-icon name="mdi-calendar-today" color="secondary" size="md" class="q-mr-sm" />
+          <h2 class="text-h4 text-secondary text-weight-bold q-ma-none">Quiz du Jour</h2>
+        </div>
         <p class="text-body1 text-secondary">Le quiz le plus populaire aujourd'hui</p>
         <q-separator class="q-mt-md" color="secondary" size="2px" />
       </div>
@@ -15,7 +18,10 @@
     <!-- Quiz Publics Populaires -->
     <div v-if="publicQuizzes.length > 0">
       <div class="text-start q-mb-lg">
-        <h2 class="text-h4 text-secondary text-weight-bold q-mb-sm">🔥 Quiz Populaires</h2>
+        <div class="flex row items-center q-mb-sm">
+          <q-icon name="mdi-star" color="yellow" size="lg" class="q-mr-sm" />
+          <h2 class="text-h4 text-secondary text-weight-bold q-ma-none">Quiz populaires</h2>
+        </div>
         <p class="text-body1 text-secondary">Découvrez les quiz les plus appréciés</p>
         <q-separator class="q-mt-md" color="secondary" size="2px" />
       </div>

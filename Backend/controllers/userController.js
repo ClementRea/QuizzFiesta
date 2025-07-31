@@ -33,6 +33,29 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
+exports.getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select('-refreshTokens -tokenVersion -suspiciousActivity');
+    
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user
+      }
+    });
+  } catch (error) {
+    console.error('Error in getUserById:', error);
+    next(error);
+  }
+};
+
 exports.updateMe = async (req, res, next) => {
   try {
     // Filtrer les champs autorisés (sans avatar car on le gère séparément)

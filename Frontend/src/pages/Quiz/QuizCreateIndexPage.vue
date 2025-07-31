@@ -63,9 +63,9 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import FormLayout from 'src/layouts/FormLayout.vue'
 import StepProgressBar from 'src/components/common/StepProgressBar.vue'
-import QuizCreateGeneralInformations from 'src/components/quiz/components/QuizCreateGeneralInformations.vue'
-import QuizCreateQuestions from 'src/components/quiz/components/QuizCreateQuestions.vue'
-import QuizCreateRecap from 'src/components/quiz/components/QuizCreateRecap.vue'
+import QuizCreateGeneralInformations from 'src/components/quiz/QuizCreateGeneralInformations.vue'
+import QuizCreateQuestions from 'src/components/quiz/QuizCreateQuestions.vue'
+import QuizCreateRecap from 'src/components/quiz/QuizCreateRecap.vue'
 import QuizService from 'src/services/QuizService'
 
 const router = useRouter()
