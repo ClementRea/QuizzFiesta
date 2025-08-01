@@ -1,21 +1,17 @@
-FROM node:22-alpine
+FROM node:22-alpine AS builder
 
 WORKDIR /app
-
-# Installer les dépendances globales
 RUN npm install -g @quasar/cli
 
-# Copier les fichiers package.json et package-lock.json
-COPY package*.json ./
-
-# Installer les dépendances sans exécuter les scripts
-RUN npm install --no-audit --no-fund
-
-# Copier les fichiers du projet
 COPY . .
 
-# Exposer le port
-EXPOSE 8080
+RUN npm ci
 
-# Démarrer le serveur de développement
-CMD ["quasar", "dev", "--host", "0.0.0.0"]
+RUN quasar build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist/spa /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
