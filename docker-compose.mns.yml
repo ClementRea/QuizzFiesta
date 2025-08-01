@@ -1,0 +1,34 @@
+# docker compose pour le registry privé MNS
+#   UNIQUEMENT DANS LE CADRE DE l'ÉVALUTATION DOCKER
+services:
+  frontend:
+    image: clementrea/quizfiesta-frontend:latest
+    container_name: quizzfiesta-frontend-mns
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - quizzfiesta-network
+    restart: unless-stopped
+
+  backend:
+    image: clementrea/quizfiesta-backend:latest
+    container_name: quizzfiesta-backend-mns
+    expose:
+      - "3000"
+    env_file:
+      - .env.prod
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - quizzfiesta-network
+    restart: unless-stopped
+
+volumes:
+  uploads:
+    driver: local
+
+networks:
+  quizzfiesta-network:
+    driver: bridge

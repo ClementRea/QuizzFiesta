@@ -1,0 +1,61 @@
+services:
+  backup:
+    image: mongo:7
+    container_name: quizzfiesta-backup
+    entrypoint: ["/backup-mongo.sh"]
+    env_file:
+      - ./Backend/.env.prod
+    volumes:
+      - ./backup-mongo.sh:/backup-mongo.sh:ro
+      - ./backups:/backup
+    networks:
+      - quizzfiesta-network
+    restart: "no"
+    profiles:
+      - backup
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: quizzfiesta-frontend-prod
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - quizzfiesta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: quizzfiesta-backend-prod
+    expose:
+      - "3000"
+    env_file:
+      - ./Backend/.env.prod
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - quizzfiesta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  uploads:
+    driver: local
+
+networks:
+  quizzfiesta-network:
+    driver: bridge

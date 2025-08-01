@@ -1,1 +1,5 @@
 /node_modules
+/backups
+/.vscode
+/CLAUDE.md
+/.claude/agents/vue-quasar-ui-enhancer.md
