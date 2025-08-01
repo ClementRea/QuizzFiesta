@@ -21,27 +21,22 @@ class SocketManager {
     this.io.use(this.authenticateSocket.bind(this));
     
     this.io.on('connection', (socket) => {
-      console.log(`Socket connected: ${socket.id}, User: ${socket.user?.userName}`);
       
-      // Stocker la relation socket-user
       if (socket.user) {
         this.userSockets.set(socket.user._id.toString(), socket.id);
         this.socketUsers.set(socket.id, socket.user._id.toString());
       }
 
-      // Handlers pour le lobby
       socket.on('lobby:join', this.handleLobbyJoin.bind(this, socket));
       socket.on('lobby:leave', this.handleLobbyLeave.bind(this, socket));
       socket.on('lobby:ready', this.handleLobbyReady.bind(this, socket));
       socket.on('lobby:start', this.handleLobbyStart.bind(this, socket));
       
-      // Handlers pour le jeu
       socket.on('game:join', this.handleGameJoin.bind(this, socket));
       socket.on('game:answer', this.handleGameAnswer.bind(this, socket));
       socket.on('game:next-question', this.handleNextQuestion.bind(this, socket));
       socket.on('game:end', this.handleEndGame.bind(this, socket));
       
-      // Handlers génériques
       socket.on('disconnect', this.handleDisconnect.bind(this, socket));
     });
   }
@@ -69,13 +64,11 @@ class SocketManager {
     }
   }
 
-  // === LOBBY HANDLERS ===
   
   async handleLobbyJoin(socket, { sessionId }) {
     try {
       const userId = socket.user._id.toString();
       
-      // Vérifier que la session existe
       const session = await GameSession.findById(sessionId);
       if (!session) {
         socket.emit('error', { message: 'Session non trouvée' });
@@ -87,11 +80,9 @@ class SocketManager {
         return;
       }
 
-      // Rejoindre la room
       socket.join(`lobby_${sessionId}`);
       this.addToSessionRoom(sessionId, socket.id);
 
-      // Créer ou mettre à jour le participant
       let participant = await LobbyParticipant.findOne({ sessionId, userId });
       
       if (participant) {
@@ -114,10 +105,8 @@ class SocketManager {
         await session.updateParticipantCount(1);
       }
 
-      // Notifier le lobby
       await this.broadcastLobbyUpdate(sessionId);
       
-      // Notifier l'arrivée du participant
       socket.to(`lobby_${sessionId}`).emit('lobby:user-joined', {
         user: {
           userId: participant.userId,
@@ -127,7 +116,6 @@ class SocketManager {
         }
       });
 
-      // Envoyer l'état actuel au nouveau participant
       socket.emit('lobby:joined', { 
         sessionId,
         participant: {
@@ -146,11 +134,9 @@ class SocketManager {
     try {
       const userId = socket.user._id.toString();
       
-      // Quitter la room
       socket.leave(`lobby_${sessionId}`);
       this.removeFromSessionRoom(sessionId, socket.id);
 
-      // Supprimer le participant
       const participant = await LobbyParticipant.findOne({ sessionId, userId });
       if (participant) {
         await LobbyParticipant.deleteOne({ sessionId, userId });
@@ -159,7 +145,6 @@ class SocketManager {
         if (session) {
           await session.updateParticipantCount(-1);
           
-          // Gérer le transfert d'organisateur si nécessaire
           if (session.organizerId.toString() === userId) {
             const remainingParticipants = await LobbyParticipant.find({ sessionId });
             if (remainingParticipants.length > 0) {
@@ -176,7 +161,6 @@ class SocketManager {
           }
         }
 
-        // Notifier le départ
         socket.to(`lobby_${sessionId}`).emit('lobby:user-left', {
           userId: participant.userId,
           userName: participant.userName
@@ -205,7 +189,6 @@ class SocketManager {
       );
 
       if (participant) {
-        // Notifier le changement de statut
         this.io.to(`lobby_${sessionId}`).emit('lobby:user-ready-changed', {
           userId: participant.userId,
           userName: participant.userName,
@@ -231,13 +214,11 @@ class SocketManager {
         return;
       }
 
-      // Vérifier que c'est l'organisateur
       if (session.organizerId.toString() !== userId) {
         socket.emit('error', { message: 'Seul l\'organisateur peut démarrer' });
         return;
       }
 
-      // Vérifier les conditions de démarrage
       const readyParticipants = await LobbyParticipant.countDocuments({
         sessionId,
         isReady: true
@@ -248,10 +229,8 @@ class SocketManager {
         return;
       }
 
-      // Démarrer la session
       await session.startGame();
 
-      // Migrer les participants vers le jeu
       const lobbyParticipants = await LobbyParticipant.find({
         sessionId,
         connectionStatus: 'connected'
@@ -277,13 +256,11 @@ class SocketManager {
 
       await GameParticipant.insertMany(gameParticipants);
 
-      // Notifier tous les participants
       this.io.to(`lobby_${sessionId}`).emit('lobby:session-started', {
         sessionId,
         gameState: session.gameState
       });
 
-      // Démarrer le timer de la première question avec son temps spécifique
       await this.startQuestionTimerWithQuestionTime(sessionId);
 
     } catch (error) {
@@ -292,13 +269,11 @@ class SocketManager {
     }
   }
 
-  // === GAME HANDLERS ===
 
   async handleGameJoin(socket, { sessionId }) {
     try {
       const userId = socket.user._id.toString();
       
-      // Vérifier la session et le participant
       const session = await GameSession.findById(sessionId);
       const participant = await GameParticipant.findOne({ sessionId, userId });
       
@@ -307,11 +282,9 @@ class SocketManager {
         return;
       }
 
-      // Rejoindre la room de jeu
       socket.join(`game_${sessionId}`);
       this.addToSessionRoom(sessionId, socket.id, 'game');
 
-      // Envoyer l'état actuel du jeu
       await this.sendGameState(socket, sessionId);
 
     } catch (error) {
@@ -323,29 +296,19 @@ class SocketManager {
   async handleGameAnswer(socket, { sessionId, questionId, answer }) {
     try {
       const userId = socket.user._id.toString();
-      
-      console.log('handleGameAnswer - Données reçues:', {
-        sessionId,
-        questionId,
-        answer,
-        userId
-      });
-
-      // Vérifier la session
+    
       const session = await GameSession.findById(sessionId);
       if (!session || session.status !== 'playing') {
         socket.emit('error', { message: 'Session non valide' });
         return;
       }
 
-      // Récupérer le participant
       const participant = await GameParticipant.findOne({ sessionId, userId });
       if (!participant) {
         socket.emit('error', { message: 'Participant non trouvé' });
         return;
       }
 
-      // Vérifier qu'il n'a pas déjà répondu
       const currentQuestionIndex = session.gameState.currentQuestionIndex;
       const existingAnswer = participant.answers.find(a => a.questionIndex === currentQuestionIndex);
       
@@ -354,10 +317,7 @@ class SocketManager {
         return;
       }
 
-      // Traiter la réponse (même logique que le controller)
-      console.log('Recherche de la question avec ID:', questionId);
       const question = await Question.findById(questionId);
-      console.log('Question trouvée:', question ? 'Oui' : 'Non');
       
       if (!question) {
         socket.emit('error', { message: 'Question non trouvée' });
@@ -366,10 +326,8 @@ class SocketManager {
 
       const result = await this.processAnswer(participant, question, answer, session, currentQuestionIndex);
       
-      // Notifier le participant de sa réponse
       socket.emit('game:answer-result', result);
       
-      // Notifier l'organisateur qu'un participant a répondu
       const organizerSocketId = this.userSockets.get(session.organizerId.toString());
       if (organizerSocketId) {
         this.io.to(organizerSocketId).emit('game:participant-answered', {
@@ -397,33 +355,26 @@ class SocketManager {
         return;
       }
 
-      // Vérifier que c'est l'organisateur
       if (session.organizerId.toString() !== userId) {
         socket.emit('error', { message: 'Seul l\'organisateur peut passer à la question suivante' });
         return;
       }
 
-      // Arrêter le timer actuel
       this.stopQuestionTimer(sessionId);
 
-      // Passer à la question suivante
       await session.nextQuestion();
 
       if (session.status === 'finished') {
-        // Session terminée
         this.io.to(`game_${sessionId}`).emit('game:session-ended', {
           finalLeaderboard: await this.getLeaderboard(sessionId)
         });
       } else {
-        // Nouvelle question
         this.io.to(`game_${sessionId}`).emit('game:new-question', {
           gameState: session.gameState
         });
 
-        // Démarrer le timer pour la nouvelle question avec son temps spécifique
         await this.startQuestionTimerWithQuestionTime(sessionId);
 
-        // Envoyer la nouvelle question à tous
         await this.broadcastCurrentQuestion(sessionId);
       }
 
@@ -443,25 +394,20 @@ class SocketManager {
         return;
       }
 
-      // Vérifier que c'est l'organisateur
       if (session.organizerId.toString() !== userId) {
         socket.emit('error', { message: 'Seul l\'organisateur peut terminer la session' });
         return;
       }
 
-      // Arrêter le timer
       this.stopQuestionTimer(sessionId);
 
-      // Terminer la session
       await session.endSession();
       await GameParticipant.updateMany({ sessionId }, { gameStatus: 'finished' });
 
-      // Notifier tous les participants
       this.io.to(`game_${sessionId}`).emit('game:session-ended', {
         finalLeaderboard: await this.getLeaderboard(sessionId)
       });
 
-      // Nettoyer les rooms
       this.cleanupSession(sessionId);
 
     } catch (error) {
@@ -471,15 +417,12 @@ class SocketManager {
   }
 
   async handleDisconnect(socket) {
-    console.log(`Socket disconnected: ${socket.id}`);
     
     const userId = this.socketUsers.get(socket.id);
     if (userId) {
-      // Nettoyer les maps
       this.userSockets.delete(userId);
       this.socketUsers.delete(socket.id);
       
-      // Marquer le participant comme déconnecté dans toutes les sessions
       await LobbyParticipant.updateMany(
         { userId },
         { connectionStatus: 'disconnected', lastSeen: new Date() }
@@ -487,40 +430,31 @@ class SocketManager {
     }
   }
 
-  // === HELPER METHODS ===
-
-  // Fonction pour extraire les bonnes réponses selon le type de question
   getCorrectAnswers(question) {
     switch (question.type) {
       case 'MULTIPLE_CHOICE':
-        // Pour les QCM, retourner les indices ou textes des bonnes réponses
         const correctAnswers = question.answer
           .map((ans, index) => ans.isCorrect ? index : null)
           .filter(index => index !== null);
         return correctAnswers.length === 1 ? correctAnswers[0] : correctAnswers;
       
       case 'TRUE_FALSE':
-        // Pour vrai/faux, retourner true ou false
         const correctTF = question.answer.find(ans => ans.isCorrect);
         return correctTF ? (correctTF.text.toLowerCase() === 'true' || correctTF.text.toLowerCase() === 'vrai') : false;
       
       case 'CLASSIC':
-        // Pour les questions classiques, retourner le texte de la bonne réponse
         const correctClassic = question.answer.find(ans => ans.isCorrect);
         return correctClassic ? correctClassic.text : '';
       
       case 'ORDER':
-        // Pour les questions d'ordre, retourner l'ordre correct
         return question.answer
           .sort((a, b) => a.correctOrder - b.correctOrder)
           .map(ans => ans.text);
       
       case 'ASSOCIATION':
-        // Pour les associations, retourner les paires correctes
         return question.answer.filter(ans => ans.isCorrect);
       
       case 'FIND_INTRUDER':
-        // Pour trouver l'intrus, retourner l'index de l'intrus
         const intruder = question.answer.find(ans => ans.isCorrect);
         return intruder ? question.answer.indexOf(intruder) : 0;
       
@@ -611,7 +545,6 @@ class SocketManager {
         });
       }
 
-      // Envoyer aussi le leaderboard
       const leaderboard = await this.getLeaderboard(sessionId);
       socket.emit('game:leaderboard-updated', { leaderboard });
 
@@ -659,7 +592,6 @@ class SocketManager {
     let points = 0;
     const timeSpent = Date.now() - session.gameState.currentQuestionStartTime.getTime();
 
-    // Logique de vérification des réponses (même que le controller)
     const correctAnswers = this.getCorrectAnswers(question);
     
     switch (question.type) {
@@ -702,7 +634,6 @@ class SocketManager {
         break;
     }
 
-    // Calculer les points
     if (isCorrect) {
       const basePoints = question.points || 100;
       const questionTime = question.timeGiven || session.settings.timePerQuestion;
@@ -711,7 +642,6 @@ class SocketManager {
       points = Math.round(basePoints * (0.5 + 0.5 * timeBonus));
     }
 
-    // Sauvegarder la réponse
     participant.answers.push({
       questionId: question._id,
       questionIndex: currentQuestionIndex,
@@ -777,12 +707,10 @@ class SocketManager {
   }
 
   startQuestionTimer(sessionId, timeInSeconds) {
-    // Arrêter le timer existant
     this.stopQuestionTimer(sessionId);
 
     const timer = setTimeout(async () => {
       try {
-        // Temps écoulé, notifier tout le monde
         this.io.to(`game_${sessionId}`).emit('game:time-up', {
           currentQuestionIndex: this.gameState?.currentQuestionIndex || 0
         });
@@ -790,36 +718,29 @@ class SocketManager {
         const session = await GameSession.findById(sessionId);
         if (!session) return;
 
-        console.log(`⏰ Passage automatique à la question suivante dans 3s pour session ${sessionId}`);
         
-        // Attendre 3 secondes puis passer automatiquement à la question suivante
         setTimeout(async () => {
           try {
-            // Passer à la question suivante automatiquement
             await session.nextQuestion();
 
             if (session.status === 'finished') {
-              // Session terminée
               this.io.to(`game_${sessionId}`).emit('game:session-ended', {
                 finalLeaderboard: await this.getLeaderboard(sessionId)
               });
               this.cleanupSession(sessionId);
             } else {
-              // Nouvelle question
               this.io.to(`game_${sessionId}`).emit('game:new-question', {
                 gameState: session.gameState
               });
 
-              // Démarrer le timer pour la nouvelle question avec son temps spécifique
               await this.startQuestionTimerWithQuestionTime(sessionId);
 
-              // Envoyer la nouvelle question à tous
               await this.broadcastCurrentQuestion(sessionId);
             }
           } catch (error) {
             console.error('Erreur passage automatique question suivante:', error);
           }
-        }, 3000); // 3 secondes de délai pour voir les résultats
+        }, 3000);
       } catch (error) {
         console.error('Erreur timer question:', error);
       }
@@ -849,10 +770,8 @@ class SocketManager {
   }
 
   cleanupSession(sessionId) {
-    // Arrêter les timers
     this.stopQuestionTimer(sessionId);
     
-    // Nettoyer les rooms
     this.sessionRooms.delete(`lobby_${sessionId}`);
     this.sessionRooms.delete(`game_${sessionId}`);
   }

@@ -38,13 +38,6 @@ export function useGameAnswers(sessionId, participantState) {
   const submitCurrentAnswer = async (currentQuestion, socketConnected) => {
     if (!currentAnswer.value || submitting.value || !currentQuestion) return
 
-    console.log('Submitting answer:', {
-      currentQuestion: currentQuestion.value,
-      questionId: currentQuestion.value?.id,
-      answer: currentAnswer.value.answer,
-      sessionId: sessionId.value
-    })
-
     try {
       submitting.value = true
 

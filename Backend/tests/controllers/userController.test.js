@@ -23,8 +23,6 @@ describe('UserController', () => {
     
     next = jest.fn();
     
-    console.log = jest.fn();
-    console.error = jest.fn();
   });
 
   describe('getMe', () => {

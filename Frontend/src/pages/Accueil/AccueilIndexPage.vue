@@ -160,7 +160,6 @@ const getPublicQuizzes = async () => {
 
 const handleSearch = () => {
   // TODO: Implémenter la logique de recherche
-  console.log('Searching for:', searchQuery.value)
 }
 
 const toggleShowAll = () => {

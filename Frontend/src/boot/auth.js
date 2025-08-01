@@ -44,7 +44,6 @@ export default boot(({ router }) => {
           originalRequest.headers.Authorization = `Bearer ${newToken}`
           return axios.request(originalRequest)
         } catch (refreshError) {
-          console.log('Global token refresh failed, redirecting to login')
           AuthService.clearTokens()
           router.push('/login')
           return Promise.reject(refreshError)

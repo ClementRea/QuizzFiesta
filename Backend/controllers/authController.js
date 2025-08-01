@@ -6,7 +6,6 @@ exports.register = async (req, res, next) => {
   try {
       const { email, password, userName, role } = req.body;
 
-      // On vérifie s'il exite déja un user
       const existingUser = await User.findOne({ email });
       if (existingUser) {
           return res.status(400).json({
@@ -14,7 +13,6 @@ exports.register = async (req, res, next) => {
               message: 'Email already registered',
           });
       }else{            
-        // On crée un nouveau user
         const user = await User.create({
             email,
             password,
@@ -28,7 +26,6 @@ exports.register = async (req, res, next) => {
         const tokenFamily = tokenService.generateTokenFamily();
         const securityInfo = tokenService.extractSecurityInfo(req);
 
-        // Détecter activité suspecte
         const suspiciousCheck = tokenService.detectSuspiciousActivity(user, securityInfo);
         if (suspiciousCheck.suspicious) {
             user.suspiciousActivity = {
@@ -36,21 +33,18 @@ exports.register = async (req, res, next) => {
                 lastDetection: new Date(),
                 reason: suspiciousCheck.reason
             };
-            // En cas d'activité suspecte, invalider tous les tokens
             tokenService.invalidateAllTokens(user);
         }
 
-        // Nettoyer les tokens expirés
         tokenService.cleanExpiredTokens(user);
 
-        // Hasher et stocker le refresh token
         const tokenHash = await tokenService.hashRefreshToken(refreshToken);
         user.refreshTokens = user.refreshTokens || [];
         user.refreshTokens.push({
             tokenHash,
             family: tokenFamily,
             createdAt: new Date(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 jours
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             lastUsed: new Date(),
             userAgent: securityInfo.userAgent,
             ipAddress: securityInfo.ipAddress
@@ -58,14 +52,13 @@ exports.register = async (req, res, next) => {
 
         await user.save();
 
-        // On retire le mot de passe de la réponse
         user.password = undefined;
         
         res.status(201).json({
             status: 'success register',
             accessToken,
             refreshToken,
-            expiresIn: 10 * 60, // 10 minutes en secondes
+            expiresIn: 10 * 60,
             data: {
                 user
             }
@@ -81,7 +74,6 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // On vérifie si l'email et le mdp sont fournis
     if (!email || !password) {
         return res.status(400).json({
             status: 'error',
@@ -89,7 +81,6 @@ exports.login = async (req, res, next) => {
         });
     }
 
-    // On trouve le user et on compare les mdp
     const user = await User.findOne({ email }).select('+password');
     
     if (!user || !(await user.comparePassword(password))) {
@@ -106,7 +97,6 @@ exports.login = async (req, res, next) => {
     const tokenFamily = tokenService.generateTokenFamily();
     const securityInfo = tokenService.extractSecurityInfo(req);
 
-    // Détecter activité suspecte
     const suspiciousCheck = tokenService.detectSuspiciousActivity(user, securityInfo);
     if (suspiciousCheck.suspicious) {
         user.suspiciousActivity = {
@@ -117,10 +107,8 @@ exports.login = async (req, res, next) => {
         tokenService.invalidateAllTokens(user);
     }
 
-    // Nettoyer les tokens expirés
     tokenService.cleanExpiredTokens(user);
 
-    // Hasher et stocker le refresh token
     const tokenHash = await tokenService.hashRefreshToken(refreshToken);
     user.refreshTokens = user.refreshTokens || [];
     user.refreshTokens.push({
@@ -137,12 +125,11 @@ exports.login = async (req, res, next) => {
 
     user.password = undefined;
 
-    console.log("success login")
     res.status(200).json({
         status: 'success login',
         accessToken,
         refreshToken,
-        expiresIn: 10 * 60, // 10 minutes
+        expiresIn: 10 * 60,
         data: {
             user
         }
@@ -152,7 +139,6 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// REFRESH TOKEN avec rotation sécurisée
 exports.refreshToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
@@ -165,7 +151,6 @@ exports.refreshToken = async (req, res, next) => {
       });
     }
 
-    // Trouver l'utilisateur avec un refresh token valide
     const user = await User.findOne({
       'refreshTokens.expiresAt': { $gt: new Date() }
     });
@@ -177,7 +162,6 @@ exports.refreshToken = async (req, res, next) => {
       });
     }
 
-    // Vérifier le refresh token hashé
     let matchingTokenIndex = -1;
     let matchingToken = null;
 
@@ -193,11 +177,8 @@ exports.refreshToken = async (req, res, next) => {
     }
 
     if (!matchingToken) {
-      // DÉTECTION DE RÉUTILISATION - Token invalide utilisé
-      // Cela peut indiquer que le token a été volé
-      console.log(`🚨 SECURITY ALERT: Invalid refresh token attempted for user ${user._id}`);
+
       
-      // Invalider TOUS les tokens de cet utilisateur par sécurité
       tokenService.invalidateAllTokens(user);
       user.suspiciousActivity = {
         detected: true,
@@ -212,12 +193,9 @@ exports.refreshToken = async (req, res, next) => {
       });
     }
 
-    // Vérifier si le token a déjà été utilisé récemment (possible réutilisation)
     const timeSinceLastUse = Date.now() - (matchingToken.lastUsed?.getTime() || 0);
-    if (timeSinceLastUse < 1000) { // Moins d'1 seconde
-      console.log(`🚨 SECURITY ALERT: Possible token reuse for user ${user._id}`);
+    if (timeSinceLastUse < 1000) {
       
-      // Invalider toute la famille de tokens
       tokenService.invalidateTokenFamily(user, matchingToken.family);
       user.suspiciousActivity = {
         detected: true,
@@ -243,7 +221,7 @@ exports.refreshToken = async (req, res, next) => {
     // Ajouter le nouveau refresh token
     user.refreshTokens.push({
       tokenHash: newTokenHash,
-      family: matchingToken.family, // Même famille pour le suivi
+      family: matchingToken.family, 
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       lastUsed: new Date(),
@@ -251,7 +229,6 @@ exports.refreshToken = async (req, res, next) => {
       ipAddress: securityInfo.ipAddress
     });
 
-    // Nettoyer les tokens expirés
     tokenService.cleanExpiredTokens(user);
 
     await user.save();
@@ -260,7 +237,7 @@ exports.refreshToken = async (req, res, next) => {
       status: 'success',
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      expiresIn: 10 * 60 // 10 minutes
+      expiresIn: 10 * 60
     });
 
   } catch (error) {
@@ -269,7 +246,7 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
-// LOGOUT sécurisé avec options d'invalidation
+// LOGOUT
 exports.logout = async (req, res, next) => {
   try {
     const { refreshToken, logoutAll } = req.body;
@@ -279,17 +256,13 @@ exports.logout = async (req, res, next) => {
       
       if (user) {
         if (logoutAll) {
-          // Déconnexion de toutes les sessions
           tokenService.invalidateAllTokens(user);
-          console.log(`User ${user._id} logged out from all sessions`);
         } else {
-          // Déconnexion de la session actuelle uniquement
           for (let i = 0; i < user.refreshTokens.length; i++) {
             const tokenObj = user.refreshTokens[i];
             const isValid = await tokenService.verifyRefreshToken(refreshToken, tokenObj.tokenHash);
             
             if (isValid) {
-              // Invalider toute la famille de ce token
               tokenService.invalidateTokenFamily(user, tokenObj.family);
               break;
             }

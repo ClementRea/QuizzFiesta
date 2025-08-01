@@ -10,7 +10,6 @@ const filterObj = (obj, ...allowedFields) => {
 
 exports.getMe = async (req, res, next) => {
   try {
-    console.log('User ID from token:', req.user.id);
     
     const user = await User.findById(req.user.id);
     
