@@ -116,7 +116,6 @@ const gameSessionSchema = new mongoose.Schema({
 });
 
 // Index pour performance et nettoyage automatique
-gameSessionSchema.index({ sessionCode: 1 }, { unique: true });
 gameSessionSchema.index({ quizId: 1, status: 1 });
 gameSessionSchema.index({ organizerId: 1 });
 gameSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

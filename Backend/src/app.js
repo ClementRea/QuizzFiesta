@@ -44,6 +44,24 @@ app.use(morgan('dev'));
 
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Route de base pour éviter les 404
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'QuizzFiesta API is running',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth',
+            user: '/api/user',
+            quiz: '/api/quiz',
+            organisation: '/api/organisation'
+        }
+    });
+});
+
+// Route pour favicon.ico
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Route test pour vérifier si le serv est correctement lancé
 app.get('/api/health', (req, res) => {
     res.status(200).json({
