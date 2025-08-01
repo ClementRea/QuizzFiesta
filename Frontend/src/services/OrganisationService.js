@@ -2,11 +2,15 @@ import axios from 'axios'
 
 // Dynamic URL based on environment
 const getApiBaseUrl = () => {
-  const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
-  const protocol = window.location.protocol
-  const hostname = window.location.hostname
-
-  return `${protocol}//${hostname}${backendPort}/api`
+  // Utilise la variable d'environnement ou l'URL de production
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+  
+  // Fallback pour le développement local
+  if (window.location.hostname === 'localhost') {
+    return 'http://localhost:3000/api'
+  }
+  
+  return `${apiUrl}/api`
 }
 
 class OrganisationService {

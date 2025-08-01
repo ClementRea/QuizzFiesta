@@ -45,7 +45,9 @@ const router = useRouter()
 
 const logout = async () => {
   try {
-    await axios.post('http://localhost:3000/api/auth/logout')
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+    const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : apiUrl
+    await axios.post(`${baseUrl}/api/auth/logout`)
     AuthService.clearTokens()
     router.push('/login')
   } catch (error) {

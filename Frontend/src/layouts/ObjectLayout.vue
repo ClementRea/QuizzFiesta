@@ -474,10 +474,9 @@ const getImageUrl = (obj) => {
   if (obj.logo) folder = 'logos'
   else if (obj.avatar) folder = 'avatars'
   else if (obj.image) folder = 'images'
-  const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
-  const protocol = window.location.protocol
-  const hostname = window.location.hostname
-  return `${protocol}//${hostname}${backendPort}/${folder}/${imageField}`
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+  const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : apiUrl
+  return `${baseUrl}/${folder}/${imageField}`
 }
 
 const handleView = () => emit('view', props.object)

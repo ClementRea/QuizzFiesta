@@ -58,11 +58,10 @@ const processedAvatarUrl = computed(() => {
 
   if (avatar.includes('avatar-')) {
     // Utiliser une URL dynamique qui fonctionnera en dev et prod
-    const backendPort = window.location.hostname === 'localhost' ? ':3000' : ''
-    const protocol = window.location.protocol
-    const hostname = window.location.hostname
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+    const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : apiUrl
 
-    return `${protocol}//${hostname}${backendPort}/avatars/${avatar}`
+    return `${baseUrl}/avatars/${avatar}`
   }
 
   return `/src/assets/avatar/${avatar}`

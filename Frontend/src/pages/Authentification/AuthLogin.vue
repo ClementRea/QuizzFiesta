@@ -98,7 +98,9 @@ const submitForm = async (type) => {
     router.push('/register')
   } else if (type === 'login' && isFormValid.value) {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+      const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : apiUrl
+      const response = await axios.post(`${baseUrl}/api/auth/login`, {
         email: email.value,
         password: password.value,
       })

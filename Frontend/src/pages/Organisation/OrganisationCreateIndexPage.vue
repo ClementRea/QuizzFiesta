@@ -135,7 +135,9 @@ const handleAction = async (action) => {
         formData.append('logo', logoFile.value)
       }
 
-      const response = await axios.post('http://localhost:3000/api/organisation/create', formData, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+      const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : apiUrl
+      const response = await axios.post(`${baseUrl}/api/organisation/create`, formData, {
         headers: {
           Authorization: `Bearer ${AuthService.getAccessToken()}`,
           'Content-Type': 'multipart/form-data',
