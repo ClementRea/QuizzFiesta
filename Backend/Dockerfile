@@ -5,11 +5,11 @@ RUN apk add --no-cache wget && \
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY Backend/package*.json ./
 
 RUN npm ci --only=production && npm cache clean --force
 
-COPY --chown=appuser:appgroup . .
+COPY --chown=appuser:appgroup Backend/ .
 
 USER appuser
 
