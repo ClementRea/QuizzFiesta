@@ -35,18 +35,18 @@ const uploadLogo = multer({
 
 
 //POST
-router.post('/create', protect, uploadLogo.single('logo'), quizController.quizCreate);
+router.post('/create', uploadLogo.single('logo'), quizController.quizCreate); // protect désactivé
 
 //PUT
-router.put('/update/:id', protect, uploadLogo.single('logo'), quizController.quizUpdate);
-router.put('/addQuestions/:id', protect, quizController.addQuestionsToQuiz);
+router.put('/update/:id', uploadLogo.single('logo'), quizController.quizUpdate); // protect désactivé
+router.put('/addQuestions/:id', quizController.addQuestionsToQuiz); // protect désactivé
 
 //GET
-router.get('/', protect, quizController.getAllQuizes);
-router.get('/myQuizes', protect, quizController.getMyQuizes);
-router.get('/:id', protect, quizController.getQuizById);
+router.get('/', quizController.getAllQuizes); // protect désactivé
+router.get('/myQuizes', quizController.getMyQuizes); // protect désactivé
+router.get('/:id', quizController.getQuizById); // protect désactivé
 
 //DELETE
-router.delete('/:id', protect, quizController.deleteQuiz);
+router.delete('/:id', quizController.deleteQuiz); // protect désactivé
 
 module.exports = router;
