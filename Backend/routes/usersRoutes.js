@@ -39,18 +39,18 @@ const upload = multer({
 });
 
 // public routes
-router.get('/getMe', userController.getMe); // protect désactivé
-router.put('/updateMe', upload.single('avatar'), userController.updateMe);
+router.get('/getMe', protect, userController.getMe);
+router.put('/updateMe', protect, upload.single('avatar'), userController.updateMe);
 
 // View a specific user
 router.get('/:id', protect, checkOrganizationAccess, userController.getUserById);
 
 // admin + gestionnaires routes
 router.get('/', protect, requireGestionnaireOrAdmin, userController.getAllUsers);
-router.get('/organization/:organizationId', requireGestionnaireOrAdmin, userController.getUsersByOrganization);
+router.get('/organization/:organizationId', protect, requireGestionnaireOrAdmin, userController.getUsersByOrganization);
 
 // Routes for user management (managers can manage their org, admins can manage everything)
-router.put('/:id/role', requireGestionnaireOrAdmin, checkOrganizationAccess, userController.updateUserRole);
-router.delete('/:id', requireGestionnaireOrAdmin, checkOrganizationAccess, userController.deleteUser);
+router.put('/:id/role', protect, requireGestionnaireOrAdmin, checkOrganizationAccess, userController.updateUserRole);
+router.delete('/:id', protect, requireGestionnaireOrAdmin, checkOrganizationAccess, userController.deleteUser);
 
 module.exports = router;

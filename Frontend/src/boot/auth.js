@@ -3,60 +3,59 @@ import AuthService from 'src/services/AuthService'
 import axios from 'axios'
 
 export default boot(({ router }) => {
-  // Intercepteurs désactivés temporairement pour plugin Figma
-  
-  // axios.interceptors.request.use(
-  //   async (config) => {
-  //     // Skip auth for authentication endpoints
-  //     if (config.url?.includes('/auth/')) {
-  //       return config
-  //     }
 
-  //     const isValid = await AuthService.ensureValidToken()
-  //     if (!isValid) {
-  //       router.push('/login')
-  //       return Promise.reject(new Error('Authentication failed'))
-  //     }
+  axios.interceptors.request.use(
+    async (config) => {
+      // Skip auth for authentication endpoints
+      if (config.url?.includes('/auth/')) {
+        return config
+      }
 
-  //     const token = AuthService.getAccessToken()
-  //     if (token) {
-  //       config.headers.Authorization = `Bearer ${token}`
-  //     }
-  //     return config
-  //   },
-  //   (error) => Promise.reject(error)
-  // )
+      const isValid = await AuthService.ensureValidToken()
+      if (!isValid) {
+        router.push('/login')
+        return Promise.reject(new Error('Authentication failed'))
+      }
 
-  // axios.interceptors.response.use(
-  //   (response) => response,
-  //   async (error) => {
-  //     const originalRequest = error.config
+      const token = AuthService.getAccessToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error)
+  )
 
-  //     if (error.response?.status === 401 && !originalRequest._retry) {
-  //       originalRequest._retry = true
+  axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config
 
-  //       if (originalRequest.url?.includes('/auth/')) {
-  //         return Promise.reject(error)
-  //       }
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true
 
-  //       try {
-  //         await AuthService.refreshAccessToken()
-  //         const newToken = AuthService.getAccessToken()
-  //         originalRequest.headers.Authorization = `Bearer ${newToken}`
-  //         return axios.request(originalRequest)
-  //       } catch (refreshError) {
-  //         AuthService.clearTokens()
-  //         router.push('/login')
-  //         return Promise.reject(refreshError)
-  //       }
-  //     }
+        if (originalRequest.url?.includes('/auth/')) {
+          return Promise.reject(error)
+        }
 
-  //     return Promise.reject(error)
-  //   }
-  // )
+        try {
+          await AuthService.refreshAccessToken()
+          const newToken = AuthService.getAccessToken()
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+          return axios.request(originalRequest)
+        } catch (refreshError) {
+          AuthService.clearTokens()
+          router.push('/login')
+          return Promise.reject(refreshError)
+        }
+      }
 
-  // const accessToken = localStorage.getItem('accessToken')
-  // if (accessToken) {
-  //   axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
-  // }
+      return Promise.reject(error)
+    }
+  )
+
+  const accessToken = localStorage.getItem('accessToken')
+  if (accessToken) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+  }
 })

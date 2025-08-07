@@ -122,23 +122,6 @@ const routes = [
     meta: { showHeader: false, showBackArrow: false }
   },
 
-  // Routes pour le plugin Figma (sans authentification)
-  {
-    path: '/demo/accueil',
-    component: () => import('pages/Accueil/AccueilIndexPage.vue'),
-    meta: { showHeader: true, showBackArrow: true }
-  },
-  {
-    path: '/demo/dashboard',
-    component: () => import('pages/Dashboard/DashBoardIndexPage.vue'),
-    meta: { showHeader: true, showBackArrow: true }
-  },
-  {
-    path: '/demo/account',
-    component: () => import('pages/Account/AccountIndexPage.vue'),
-    meta: { showHeader: true, showBackArrow: true }
-  },
-
   //ERROR 404
   {
     path: '/:catchAll(.*)*',
