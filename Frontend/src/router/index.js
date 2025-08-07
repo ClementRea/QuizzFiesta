@@ -1,4 +1,3 @@
-// src/router/index.js
 import { route } from 'quasar/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
@@ -17,24 +16,24 @@ export default route(function () {
 
   Router.beforeEach(async (to, from, next) => {
     const isAuthenticated = AuthService.isAuthenticated()
-    
+
     if (to.matched.some(record => record.meta.requiresAuth)) {
       if (!isAuthenticated) {
-        next({ 
-          path: '/login', 
-          query: { redirect: to.fullPath } 
+        next({
+          path: '/login',
+          query: { redirect: to.fullPath }
         })
       } else {
         next()
       }
-    } 
+    }
     else if (to.matched.some(record => record.meta.requiresGuest)) {
       if (isAuthenticated) {
         next({ path: '/accueil' })
       } else {
-        next() 
+        next()
       }
-    } 
+    }
     else {
       next()
     }
