@@ -128,20 +128,19 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import QuizService from 'src/services/QuizService'
+import SessionService from 'src/services/SessionService'
 import QuizObject from 'src/components/quiz/QuizObject.vue'
 import Avatar from 'src/components/user/GetAvatar.vue'
 
 const router = useRouter()
 const $q = useQuasar()
 
-// State
 const sessionCode = ref('')
 const foundSession = ref(null)
 const loading = ref(false)
 const joining = ref(false)
 const error = ref('')
 
-// Computed
 const canSearch = computed(() => {
   return sessionCode.value.length === 6
 })
@@ -153,28 +152,10 @@ const canJoinSession = computed(() => {
   return status === 'lobby' || (status === 'playing' && foundSession.value.settings?.allowLateJoin)
 })
 
-const joinDisabledReason = computed(() => {
-  if (!foundSession.value) return 'Session non trouvée'
-
-  switch (foundSession.value.status) {
-    case 'finished':
-      return 'Session terminée'
-    case 'cancelled':
-      return 'Session annulée'
-    case 'playing':
-      return foundSession.value.settings?.allowLateJoin ? 'Rejoindre en cours' : 'Session en cours'
-    default:
-      return 'Non disponible'
-  }
-})
-
-// Methods
 const onCodeInput = (value) => {
-  // Formatter le code automatiquement
   sessionCode.value = QuizService.formatSessionCode(value)
   error.value = ''
 
-  // Auto-recherche si 6 caractères valides
   if (canSearch.value) {
     searchSession()
   }
@@ -190,7 +171,7 @@ const searchSession = async () => {
     loading.value = true
     error.value = ''
 
-    const response = await QuizService.joinSessionByCode(sessionCode.value)
+    const response = await SessionService.joinSessionByCode(sessionCode.value)
     foundSession.value = response.data.session
 
     $q.notify({
@@ -218,18 +199,15 @@ const joinSession = async () => {
   try {
     joining.value = true
 
-    // Rejoindre directement le lobby de la session
     const sessionId = foundSession.value.id || foundSession.value._id
 
     if (foundSession.value.status === 'lobby') {
-      // Aller au lobby
       router.push(`/quiz/session/${sessionId}/lobby`)
     } else if (
       foundSession.value.status === 'playing' &&
       foundSession.value.settings?.allowLateJoin
     ) {
-      // Rejoindre en cours de partie
-      await QuizService.joinSessionLobby(sessionId)
+      await SessionService.joinSessionLobby(sessionId)
       router.push(`/quiz/session/${sessionId}/play`)
     }
   } catch (error) {
@@ -249,7 +227,6 @@ const resetSearch = () => {
   error.value = ''
 }
 
-// Status helpers
 const getStatusColor = (status) => {
   switch (status) {
     case 'lobby':

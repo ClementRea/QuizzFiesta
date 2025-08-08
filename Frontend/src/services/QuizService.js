@@ -5,12 +5,12 @@ import AuthService from './AuthService'
 const getApiBaseUrl = () => {
   // Utilise la variable d'environnement ou l'URL de production
   const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
-  
+
   // Fallback pour le développement local
   if (window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
-  
+
   return `${apiUrl}/api`
 }
 
@@ -35,39 +35,39 @@ class QuizService {
   // ======== MÉTHODES POUR LES SESSIONS ========
 
   // Créer une nouvelle session de jeu
-  async createSession(quizId, settings = {}) {
-    try {
-      const response = await this.api.post(`/session/create/${quizId}`, { settings })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async createSession(quizId, settings = {}) {
+  //   try {
+  //     const response = await this.api.post(`/session/create/${quizId}`, { settings })
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Alias pour compatibilité
-  async createGameSession(quizId, settings = {}) {
-    return this.createSession(quizId, settings)
-  }
+  // async createGameSession(quizId, settings = {}) {
+  //   return this.createSession(quizId, settings)
+  // }
 
   // Rejoindre une session via son code
-  async joinSessionByCode(sessionCode) {
-    try {
-      const response = await this.api.get(`/session/join/${sessionCode}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async joinSessionByCode(sessionCode) {
+  //   try {
+  //     const response = await this.api.get(`/session/join/${sessionCode}`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Rejoindre une session par ID
-  async joinSession(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/join`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async joinSession(sessionId) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/lobby/join`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   async getQuizById(quizId) {
     try {
@@ -191,130 +191,130 @@ class QuizService {
   // ======== MÉTHODES POUR LES SESSIONS LOBBY ========
 
   // Rejoindre le lobby d'une session
-  async joinSessionLobby(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/join`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async joinSessionLobby(sessionId) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/lobby/join`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Quitter le lobby d'une session
-  async leaveSessionLobby(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/leave`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async leaveSessionLobby(sessionId) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/lobby/leave`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Récupérer les participants du lobby d'une session
-  async getSessionParticipants(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/lobby/participants`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async getSessionParticipants(sessionId) {
+  //   try {
+  //     const response = await this.api.get(`/session/${sessionId}/lobby/participants`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Marquer comme prêt/pas prêt dans le lobby
-  async setSessionReady(sessionId, isReady) {
-    try {
-      const response = await this.api.put(`/session/${sessionId}/lobby/ready`, { isReady })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async setSessionReady(sessionId, isReady) {
+  //   try {
+  //     const response = await this.api.put(`/session/${sessionId}/lobby/ready`, { isReady })
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Démarrer la session (organisateur seulement)
-  async startGameSession(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/start`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async startGameSession(sessionId) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/start`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Récupérer l'état d'une session
-  async getSessionState(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/state`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async getSessionState(sessionId) {
+  //   try {
+  //     const response = await this.api.get(`/session/${sessionId}/state`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Terminer une session (organisateur seulement)
-  async endGameSession(sessionId) {
-    try {
-      const response = await this.api.delete(`/session/${sessionId}/end`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async endGameSession(sessionId) {
+  //   try {
+  //     const response = await this.api.delete(`/session/${sessionId}/end`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
 
   // ======== MÉTHODES POUR LE GAMEPLAY DE SESSION ========
 
   // Récupérer les questions d'une session (question courante)
-  async getSessionQuestions(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/questions`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async getSessionQuestions(sessionId) {
+  //   try {
+  //     const response = await this.api.get(`/session/${sessionId}/questions`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Soumettre une réponse dans une session
-  async submitSessionAnswer(sessionId, questionId, answer) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/answer`, {
-        questionId,
-        answer
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async submitSessionAnswer(sessionId, questionId, answer) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/answer`, {
+  //       questionId,
+  //       answer
+  //     })
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Passer à la question suivante (organisateur)
-  async nextSessionQuestion(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/next-question`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async nextSessionQuestion(sessionId) {
+  //   try {
+  //     const response = await this.api.post(`/session/${sessionId}/next-question`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Récupérer le classement d'une session
-  async getSessionLeaderboard(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/leaderboard`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async getSessionLeaderboard(sessionId) {
+  //   try {
+  //     const response = await this.api.get(`/session/${sessionId}/leaderboard`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
   // Récupérer l'état d'un participant dans une session
-  async getParticipantState(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/participant/state`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  // async getParticipantState(sessionId) {
+  //   try {
+  //     const response = await this.api.get(`/session/${sessionId}/participant/state`)
+  //     return response.data
+  //   } catch (error) {
+  //     throw error.response?.data || error
+  //   }
+  // }
 
 
 

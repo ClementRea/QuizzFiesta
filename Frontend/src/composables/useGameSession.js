@@ -10,34 +10,34 @@ import SocketService from 'src/services/SocketService'
  */
 export function useGameSession(sessionId, onSocketConnected = null) {
   const $q = useQuasar()
-  
+
   // État de la session
   const session = ref(null)
   const currentUser = ref(null)
   const currentQuestion = ref(null)
   const participantState = ref(null)
   const leaderboard = ref([])
-  
+
   // États de jeu
   const gameState = ref('loading') // loading, waiting, playing, waitingNextQuestion, finished, error
   const errorMessage = ref('')
   const currentQuestionIndex = ref(0)
   const totalQuestions = ref(0)
   const participantsCount = ref(0)
-  
+
   // État WebSocket
   const socketConnected = ref(false)
-  
+
   // Computed
   const isOrganizer = computed(() => {
     if (!currentUser.value || !session.value) return false
     return currentUser.value._id === session.value.organizerId
   })
-  
+
   const isLastQuestion = computed(() => {
     return currentQuestionIndex.value >= totalQuestions.value - 1
   })
-  
+
   // Méthodes principales
   const loadSession = async () => {
     try {
@@ -95,7 +95,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     try {
       const [stateResponse, leaderboardResponse] = await Promise.all([
         SessionService.getParticipantState(sessionId.value),
-        SessionService.getLeaderboard(sessionId.value),
+        SessionService.getSessionLeaderboard(sessionId.value),
       ])
 
       participantState.value = stateResponse.data.participant
@@ -111,7 +111,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
       currentQuestion.value = data.question
       currentQuestionIndex.value = data.gameState.currentQuestionIndex
       totalQuestions.value = data.gameState.totalQuestions
-      
+
       gameState.value = 'playing'
     })
 
@@ -199,11 +199,11 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     totalQuestions,
     participantsCount,
     socketConnected,
-    
+
     // Computed
     isOrganizer,
     isLastQuestion,
-    
+
     // Méthodes
     loadSession,
     loadFinalResults,

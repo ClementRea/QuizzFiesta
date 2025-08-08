@@ -15,7 +15,6 @@
       </div>
     </div>
 
-    <!-- Quiz Publics Populaires -->
     <div v-if="publicQuizzes.length > 0">
       <div class="text-start q-mb-lg">
         <div class="flex row items-center q-mb-sm">
@@ -30,7 +29,6 @@
         <QuizObject :quiz="publicQuizzes[0]" size="md" />
       </div>
 
-      <!-- Load More Button -->
       <div v-if="publicQuizzes.length > displayLimit" class="text-center q-mt-xl">
         <q-btn
           :label="showingAll ? 'Voir Moins' : 'Voir Plus'"
@@ -38,14 +36,12 @@
           outline
           rounded
           size="md"
-          @click="$emit('toggle-show-all')"
           no-caps
           class="shadow-2"
         />
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-if="!loading && publicQuizzes.length === 0 && !dailyQuiz" class="text-center q-pa-xl">
       <q-card class="q-pa-xl" flat>
         <q-icon name="quiz" size="4rem" color="grey-5" class="q-mb-lg" />
@@ -65,7 +61,6 @@
       </q-card>
     </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="text-center q-pa-xl">
       <q-card class="q-pa-xl" flat>
         <q-spinner-dots size="3rem" color="secondary" class="q-mb-md" />
@@ -76,7 +71,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import QuizObject from '../quiz/QuizObject.vue'
 
@@ -103,58 +97,5 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['play-quiz', 'view-quiz', 'share-quiz', 'toggle-show-all'])
-
 const router = useRouter()
-
-const displayedQuizzes = computed(() => {
-  const limit = props.showingAll ? props.publicQuizzes.length : props.displayLimit
-  return props.publicQuizzes.slice(0, limit)
-})
-
-const calculateTotalTime = (questions) => {
-  if (!questions || questions.length === 0) return 0
-  const totalSeconds = questions.reduce((total, question) => {
-    return total + (question.timeGiven || 45)
-  }, 0)
-  return Math.ceil(totalSeconds / 60)
-}
 </script>
-
-<style lang="scss" scoped>
-.daily-quiz-card {
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  }
-}
-
-.quiz-card {
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  }
-}
-
-.quiz-logo {
-  border-radius: 12px 12px 0 0;
-}
-
-.quiz-logo-placeholder {
-  height: 120px;
-  border-radius: 12px 12px 0 0;
-}
-
-.quiz-logo-container {
-  position: relative;
-  overflow: hidden;
-}
-</style>

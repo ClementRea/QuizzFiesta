@@ -1,85 +1,112 @@
+const  QuizService = require('../../src/services/QuizService').default
+const axios = require('axios')
+
+jest.mock('axios')
+
 describe('QuizService utility functions', () => {
+  it('should validate correct hexadecimal codes', () => {
+    expect(QuizService.validateJoinCode('ABC123')).toBe(true)
+    expect(QuizService.validateJoinCode('def456')).toBe(true)
+    expect(QuizService.validateJoinCode('123ABC')).toBe(true)
+  })
 
-  const validateJoinCode = (code) => {
-    const hexPattern = /^[A-Fa-f0-9]{6}$/
-    return hexPattern.test(code)
-  }
+  it('should reject invalid join codes', () => {
+    expect(QuizService.validateJoinCode('ABCG23')).toBe(false)
+    expect(QuizService.validateJoinCode('ABC12')).toBe(false)
+    expect(QuizService.validateJoinCode('ABC1234')).toBe(false)
+    expect(QuizService.validateJoinCode('')).toBe(false)
+  })
 
-  const formatJoinCode = (code) => {
-    return code.replace(/\s/g, '').toUpperCase()
-  }
+  it('should format join codes correctly', () => {
+    expect(QuizService.formatJoinCode('abc 123')).toBe('ABC123')
+    expect(QuizService.formatJoinCode('  def456  ')).toBe('DEF456')
+    expect(QuizService.formatJoinCode('a b c 1 2 3')).toBe('ABC123')
+  })
 
-  const isQuizActive = (quiz) => {
+  it('should detect active quiz', () => {
     const now = new Date()
-    const startDate = new Date(quiz.startDate)
-    const endDate = quiz.endDate ? new Date(quiz.endDate) : null
-
-    return startDate <= now && (!endDate || endDate >= now)
-  }
-
-  describe('validateJoinCode', () => {
-    it('should validate correct hexadecimal codes', () => {
-      expect(validateJoinCode('ABC123')).toBe(true)
-      expect(validateJoinCode('def456')).toBe(true)
-      expect(validateJoinCode('123ABC')).toBe(true)
-    })
-
-    it('should reject invalid join codes', () => {
-      expect(validateJoinCode('ABCG23')).toBe(false)
-      expect(validateJoinCode('ABC12')).toBe(false)
-      expect(validateJoinCode('ABC1234')).toBe(false)
-      expect(validateJoinCode('')).toBe(false)
-    })
+    const activeQuiz = {
+      startDate: new Date(now.getTime() - 10000).toISOString(),
+      endDate: new Date(now.getTime() + 10000).toISOString()
+    }
+    expect(QuizService.isQuizActive(activeQuiz)).toBe(true)
   })
 
-  describe('formatJoinCode', () => {
-    it('should format join codes correctly', () => {
-      expect(formatJoinCode('abc 123')).toBe('ABC123')
-      expect(formatJoinCode('  def456  ')).toBe('DEF456')
-      expect(formatJoinCode('a b c 1 2 3')).toBe('ABC123')
-    })
+  it('should detect inactive quiz', () => {
+    const now = new Date()
+    const futureQuiz = {
+      startDate: new Date(now.getTime() + 10000).toISOString(),
+      endDate: new Date(now.getTime() + 20000).toISOString()
+    }
+    expect(QuizService.isQuizActive(futureQuiz)).toBe(false)
   })
 
-  describe('isQuizActive', () => {
-    beforeEach(() => {
-      jest.useFakeTimers()
-    })
+  it('should get quiz time status', () => {
+    const now = new Date()
+    const quizNotStarted = {
+      startDate: new Date(now.getTime() + 10000).toISOString(),
+      endDate: new Date(now.getTime() + 20000).toISOString()
+    }
+    const quizEnded = {
+      startDate: new Date(now.getTime() - 20000).toISOString(),
+      endDate: new Date(now.getTime() - 10000).toISOString()
+    }
+    const quizActive = {
+      startDate: new Date(now.getTime() - 10000).toISOString(),
+      endDate: new Date(now.getTime() + 10000).toISOString()
+    }
+    expect(QuizService.getQuizTimeStatus(quizNotStarted).status).toBe('not_started')
+    expect(QuizService.getQuizTimeStatus(quizEnded).status).toBe('ended')
+    expect(QuizService.getQuizTimeStatus(quizActive).status).toBe('active')
+  })
+})
 
-    afterEach(() => {
-      jest.useRealTimers()
-    })
+describe('QuizService API methods', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-    it('should return true for active quiz', () => {
-      const now = new Date('2025-07-15T12:00:00Z')
-      jest.setSystemTime(now)
+  it('should get quiz by id', async () => {
+    axios.get.mockResolvedValue({ data: { id: 1, title: 'Test Quiz' } })
+    const quiz = await QuizService.getQuizById(1)
+    expect(quiz).toEqual({ id: 1, title: 'Test Quiz' })
+  })
 
-      const activeQuiz = {
-        startDate: '2025-07-15T10:00:00Z',
-        endDate: '2025-07-15T14:00:00Z'
-      }
-      expect(isQuizActive(activeQuiz)).toBe(true)
-    })
+  it('should get all quizzes', async () => {
+    axios.get.mockResolvedValue({ data: [{ id: 1 }, { id: 2 }] })
+    const quizzes = await QuizService.getAllQuizzes()
+    expect(quizzes).toEqual([{ id: 1 }, { id: 2 }])
+  })
 
-    it('should return false for quiz not started', () => {
-      const now = new Date('2025-07-15T12:00:00Z')
-      jest.setSystemTime(now)
+  it('should create quiz', async () => {
+    axios.post.mockResolvedValue({ data: { id: 2, title: 'New Quiz' } })
+    const quizData = { title: 'New Quiz', description: 'desc', questions: [] }
+    const quiz = await QuizService.createQuiz(quizData)
+    expect(quiz).toEqual({ id: 2, title: 'New Quiz' })
+  })
 
-      const futureQuiz = {
-        startDate: '2025-07-15T14:00:00Z',
-        endDate: '2025-07-15T16:00:00Z'
-      }
-      expect(isQuizActive(futureQuiz)).toBe(false)
-    })
+  it('should update quiz', async () => {
+    axios.put.mockResolvedValue({ data: { id: 2, title: 'Updated Quiz' } })
+    const quizData = { title: 'Updated Quiz', description: 'desc', questions: [] }
+    const quiz = await QuizService.updateQuiz(2, quizData)
+    expect(quiz).toEqual({ id: 2, title: 'Updated Quiz' })
+  })
 
-    it('should return false for ended quiz', () => {
-      const now = new Date('2025-07-15T12:00:00Z')
-      jest.setSystemTime(now)
+  it('should delete quiz', async () => {
+    axios.delete.mockResolvedValue({ data: { success: true } })
+    const result = await QuizService.deleteQuiz(1)
+    expect(result).toEqual({ success: true })
+  })
 
-      const endedQuiz = {
-        startDate: '2025-07-15T08:00:00Z',
-        endDate: '2025-07-15T10:00:00Z'
-      }
-      expect(isQuizActive(endedQuiz)).toBe(false)
-    })
+  it('should generate join code', async () => {
+    axios.post.mockResolvedValue({ data: { code: 'ABC123' } })
+    const result = await QuizService.generateJoinCode(1)
+    expect(result).toEqual({ code: 'ABC123' })
+  })
+
+  it('should add questions to quiz', async () => {
+    axios.put.mockResolvedValue({ data: { success: true } })
+    const result = await QuizService.addQuestionsToQuiz(1, [{ q: 'Q1' }])
+    expect(result).toEqual({ success: true })
   })
 })

@@ -70,10 +70,6 @@
             :display-limit="displayLimit"
             :showing-all="showingAll"
             :loading="loading"
-            @play-quiz="handlePlayQuiz"
-            @view-quiz="handleViewQuiz"
-            @share-quiz="handleShareQuiz"
-            @toggle-show-all="toggleShowAll"
           />
         </div>
       </div>
@@ -137,12 +133,10 @@ const getPublicQuizzes = async () => {
     })
 
     if (response && response.data && response.data.quizes) {
-      // Trier par date de création (utiliser startDate ou createdAt)
       publicQuizzes.value = response.data.quizes.sort(
         (a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt),
       )
 
-      // Sélectionner le quiz du jour
       if (publicQuizzes.value.length > 0) {
         dailyQuiz.value = publicQuizzes.value[0]
         publicQuizzes.value = publicQuizzes.value.slice(1)
@@ -162,80 +156,11 @@ const handleSearch = () => {
   // TODO: Implémenter la logique de recherche
 }
 
-const toggleShowAll = () => {
-  showingAll.value = !showingAll.value
-}
-
-const handlePlayQuiz = async (quiz) => {
-  try {
-    // Créer une nouvelle session pour ce quiz
-    const sessionResult = await QuizService.createSession(quiz._id, {
-      name: `Session ${quiz.title} - ${new Date().toLocaleString()}`,
-    })
-
-    const sessionId = sessionResult.data.session._id
-
-    // Rejoindre automatiquement la session en tant qu'organisateur
-    await QuizService.joinSession(sessionId)
-
-    // Rediriger vers le lobby de la nouvelle session
-    router.push(`/quiz/session/${sessionId}/lobby`)
-  } catch (error) {
-    console.error('Erreur lors de la création de session:', error)
-    $q.notify({
-      type: 'negative',
-      message: 'Erreur lors de la création de la session',
-      position: 'top',
-    })
-  }
-}
-
-const handleViewQuiz = (quiz) => {
-  // TODO: Implémenter la logique pour voir les détails d'un quiz
-  router.push(`/quiz/view/${quiz._id}`)
-}
-
-const handleShareQuiz = async (quiz) => {
-  try {
-    // Créer une session temporaire pour le partage
-    const sessionResult = await QuizService.createSession(quiz._id, {
-      name: `Session partagée ${quiz.title} - ${new Date().toLocaleString()}`,
-    })
-
-    const sessionCode = sessionResult.data.session.sessionCode
-    const shareUrl = `${window.location.origin}/quiz/session/join/${sessionCode}`
-
-    if (navigator.share) {
-      navigator.share({
-        title: quiz.title,
-        text: `${quiz.description} - Code: ${sessionCode}`,
-        url: shareUrl,
-      })
-    } else {
-      // Fallback pour les navigateurs qui ne supportent pas l'API de partage
-      navigator.clipboard.writeText(`${shareUrl}\nCode de session: ${sessionCode}`)
-      $q.notify({
-        color: 'positive',
-        message: 'Lien de session copié dans le presse-papier',
-        position: 'top',
-      })
-    }
-  } catch (error) {
-    console.error('Erreur lors du partage:', error)
-    $q.notify({
-      type: 'negative',
-      message: 'Erreur lors de la création du lien de partage',
-      position: 'top',
-    })
-  }
-}
-
 const initializePage = async () => {
   loading.value = true
   error.value = null
 
   try {
-    // Charger les données en parallèle
     await Promise.all([getUser(), getPublicQuizzes()])
   } catch (err) {
     console.error('Error initializing page:', err)

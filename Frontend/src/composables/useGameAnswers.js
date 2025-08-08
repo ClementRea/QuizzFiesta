@@ -50,7 +50,7 @@ export function useGameAnswers(sessionId, participantState) {
         hasAnswered.value = true
         canSubmit.value = false
       } else {
-        const response = await SessionService.submitAnswer(
+        const response = await SessionService.submitSessionAnswer(
           sessionId.value,
           currentQuestion.value?.id,
           currentAnswer.value.answer,

@@ -1,6 +1,18 @@
 import { io } from 'socket.io-client'
 import AuthService from './AuthService'
 
+const getSocketUrl = () => {
+  // Utilise la variable d'environnement ou l'URL de production
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+
+  // Fallback pour le développement local
+  if (window.location.hostname === 'localhost') {
+    return 'http://localhost:3000'
+  }
+
+  return apiUrl
+}
+
 class SocketService {
   constructor() {
     this.socket = null
@@ -20,7 +32,7 @@ class SocketService {
       return Promise.reject(new Error('Token manquant'))
     }
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    const backendUrl = getSocketUrl()
 
     this.socket = io(backendUrl, {
       auth: {

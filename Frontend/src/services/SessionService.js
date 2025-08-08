@@ -4,12 +4,12 @@ import axios from 'axios'
 const getApiBaseUrl = () => {
   // Utilise la variable d'environnement ou l'URL de production
   const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
-  
+
   // Fallback pour le développement local
   if (window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
-  
+
   return `${apiUrl}/api`
 }
 
@@ -78,7 +78,7 @@ class SessionService {
   }
 
   // Marquer un participant comme prêt/pas prêt
-  async setParticipantReady(sessionId, isReady) {
+  async setSessionReady(sessionId, isReady) {
     try {
       const response = await this.api.put(`/session/${sessionId}/lobby/ready`, { isReady })
       return response.data
@@ -88,7 +88,7 @@ class SessionService {
   }
 
   // Démarrer une session (organisateur)
-  async startSession(sessionId) {
+  async startGameSession(sessionId) {
     try {
       const response = await this.api.post(`/session/${sessionId}/start`)
       return response.data
@@ -108,7 +108,7 @@ class SessionService {
   }
 
   // Terminer une session
-  async endSession(sessionId) {
+  async endGameSession(sessionId) {
     try {
       const response = await this.api.delete(`/session/${sessionId}/end`)
       return response.data
@@ -130,7 +130,7 @@ class SessionService {
   }
 
   // Soumettre une réponse
-  async submitAnswer(sessionId, questionId, answer) {
+  async submitSessionAnswer(sessionId, questionId, answer) {
     try {
       const response = await this.api.post(`/session/${sessionId}/answer`, {
         questionId,
@@ -143,7 +143,7 @@ class SessionService {
   }
 
   // Passer à la question suivante (organisateur)
-  async nextQuestion(sessionId) {
+  async nextSessionQuestion(sessionId) {
     try {
       const response = await this.api.post(`/session/${sessionId}/next-question`)
       return response.data
@@ -153,7 +153,7 @@ class SessionService {
   }
 
   // Récupérer le classement d'une session
-  async getLeaderboard(sessionId) {
+  async getSessionLeaderboard(sessionId) {
     try {
       const response = await this.api.get(`/session/${sessionId}/leaderboard`)
       return response.data
@@ -176,29 +176,29 @@ class SessionService {
   // Pour faciliter la migration depuis QuizService
 
   // Alias pour compatibilité avec l'ancien code
-  async createGameSession(quizId, settings = {}) {
-    return this.createSession(quizId, settings)
-  }
+  // async createGameSession(quizId, settings = {}) {
+  //   return this.createSession(quizId, settings)
+  // }
 
-  async joinSession(sessionId) {
-    return this.joinSessionLobby(sessionId)
-  }
+  // async joinSession(sessionId) {
+  //   return this.joinSessionLobby(sessionId)
+  // }
 
-  async submitSessionAnswer(sessionId, questionId, answer) {
-    return this.submitAnswer(sessionId, questionId, answer)
-  }
+  // async submitSessionAnswer(sessionId, questionId, answer) {
+  //   return this.submitAnswer(sessionId, questionId, answer)
+  // }
 
-  async nextSessionQuestion(sessionId) {
-    return this.nextQuestion(sessionId)
-  }
+  // async nextSessionQuestion(sessionId) {
+  //   return this.nextQuestion(sessionId)
+  // }
 
-  async getSessionLeaderboard(sessionId) {
-    return this.getLeaderboard(sessionId)
-  }
+  // async getSessionLeaderboard(sessionId) {
+  //   return this.getLeaderboard(sessionId)
+  // }
 
-  async endGameSession(sessionId) {
-    return this.endSession(sessionId)
-  }
+  // async endGameSession(sessionId) {
+  //   return this.endSession(sessionId)
+  // }
 }
 
 // Export singleton instance

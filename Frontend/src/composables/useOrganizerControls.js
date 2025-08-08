@@ -9,12 +9,12 @@ import SocketService from 'src/services/SocketService'
  */
 export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
   const $q = useQuasar()
-  
+
   // État des contrôles organisateur
   const showOrganizerPanel = ref(false)
   const loadingNext = ref(false)
   const ending = ref(false)
-  
+
   // Méthodes de contrôle
   const nextQuestion = async () => {
     if (!isOrganizer.value) return
@@ -28,7 +28,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
         // La réponse sera gérée via les événements WebSocket
       } else {
         // Fallback HTTP
-        await SessionService.nextQuestion(sessionId.value)
+        await SessionService.nextSessionQuestion(sessionId.value)
       }
     } catch (error) {
       console.error('Erreur question suivante:', error)
@@ -54,7 +54,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
         // La fin sera gérée via les événements WebSocket
       } else {
         // Fallback HTTP
-        await SessionService.endSession(sessionId.value)
+        await SessionService.endGameSession(sessionId.value)
       }
     } catch (error) {
       console.error('Erreur fin de session:', error)
@@ -67,7 +67,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
       ending.value = false
     }
   }
-  
+
   // Configuration des événements WebSocket pour l'organisateur
   const setupOrganizerSocketListeners = () => {
     // Nouvelle question - réinitialiser l'état de chargement
@@ -80,7 +80,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
       ending.value = false
       loadingNext.value = false
     })
-    
+
     // Optionnel : notification quand un participant répond
     SocketService.onGameParticipantAnswered((data) => {
       if (isOrganizer.value) {
@@ -100,7 +100,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     showOrganizerPanel,
     loadingNext,
     ending,
-    
+
     // Méthodes
     nextQuestion,
     endSession,
