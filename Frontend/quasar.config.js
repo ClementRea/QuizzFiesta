@@ -11,7 +11,7 @@ export default defineConfig((/* ctx */) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-  boot: ['auth', 'analytics', 'perf'],
+    boot: ['auth', 'analytics', 'perf'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
@@ -37,7 +37,7 @@ export default defineConfig((/* ctx */) => {
         node: 'node20',
       },
 
-  vueRouterMode: 'history', // SEO-friendly URLs
+      vueRouterMode: 'history', // SEO-friendly URLs
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
