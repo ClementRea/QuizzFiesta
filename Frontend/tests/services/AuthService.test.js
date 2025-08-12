@@ -56,8 +56,8 @@ describe('AuthService', () => {
       data: {
         status: 'success',
         accessToken: 'newAccess',
-        refreshToken: 'newRefresh'
-      }
+        refreshToken: 'newRefresh',
+      },
     })
     const token = await AuthService.refreshAccessToken()
     expect(token).toBe('newAccess')

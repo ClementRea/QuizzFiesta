@@ -13,12 +13,11 @@ const getApiBaseUrl = () => {
 }
 
 const PaymentService = {
-
   async createCheckoutSession() {
     const apiUrl = `${getApiBaseUrl()}/payment/create-checkout-session`
     const response = await axios.post(apiUrl)
     return response.data
-  }
+  },
 }
 
 export default PaymentService

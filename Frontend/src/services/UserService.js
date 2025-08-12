@@ -23,7 +23,7 @@ const UserService = {
   async getMe() {
     try {
       const response = await axios.get(`${getApiBaseUrl()}/user/getMe`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       })
       return response.data
     } catch (error) {
@@ -49,14 +49,14 @@ const UserService = {
         const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
           headers: {
             ...getAuthHeaders(),
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         })
         return response.data
       } else {
         // Otherwise, send as classic JSON
         const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, userData, {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         })
         return response.data
       }
@@ -67,12 +67,16 @@ const UserService = {
 
   async updatePassword(currentPassword, newPassword) {
     try {
-      const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, {
-        currentPassword,
-        newPassword
-      }, {
-        headers: getAuthHeaders()
-      })
+      const response = await axios.put(
+        `${getApiBaseUrl()}/user/updateMe`,
+        {
+          currentPassword,
+          newPassword,
+        },
+        {
+          headers: getAuthHeaders(),
+        },
+      )
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -87,8 +91,8 @@ const UserService = {
       const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
         headers: {
           ...getAuthHeaders(),
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       })
       return response.data
     } catch (error) {
@@ -101,11 +105,11 @@ const UserService = {
       // Only profile data (no password, no avatar)
       const filteredData = {
         userName: profileData.userName,
-        email: profileData.email
+        email: profileData.email,
       }
 
       const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, filteredData, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       })
       return response.data
     } catch (error) {
@@ -116,7 +120,7 @@ const UserService = {
   async getUserById(userId) {
     try {
       const response = await axios.get(`${getApiBaseUrl()}/user/${userId}`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       })
       return response.data
     } catch (error) {
@@ -156,14 +160,14 @@ const UserService = {
     const allowedFields = ['userName', 'email', 'currentPassword', 'newPassword']
     const filtered = {}
 
-    Object.keys(userData).forEach(key => {
+    Object.keys(userData).forEach((key) => {
       if (allowedFields.includes(key) && userData[key]) {
         filtered[key] = userData[key]
       }
     })
 
     return filtered
-  }
+  },
 }
 
 export default UserService

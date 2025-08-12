@@ -3,7 +3,6 @@ import AuthService from 'src/services/AuthService'
 import axios from 'axios'
 
 export default boot(({ router }) => {
-
   axios.interceptors.request.use(
     async (config) => {
       // Skip auth for authentication endpoints
@@ -23,7 +22,7 @@ export default boot(({ router }) => {
       }
       return config
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   )
 
   axios.interceptors.response.use(
@@ -51,7 +50,7 @@ export default boot(({ router }) => {
       }
 
       return Promise.reject(error)
-    }
+    },
   )
 
   const accessToken = localStorage.getItem('accessToken')

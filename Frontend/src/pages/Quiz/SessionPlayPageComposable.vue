@@ -205,7 +205,7 @@ const {
   socketConnected,
   isOrganizer,
   isLastQuestion,
-  retry
+  retry,
 } = useGameSession(sessionId)
 
 const {
@@ -214,7 +214,7 @@ const {
   timeRemainingSeconds,
   isTimeUp,
   isTimerStarted,
-  setupTimerSocketListeners
+  setupTimerSocketListeners,
 } = useGameTimer()
 
 const {
@@ -224,7 +224,7 @@ const {
   onAnswerSelected,
   onAnswerChanged,
   submitCurrentAnswer,
-  setupAnswerSocketListeners
+  setupAnswerSocketListeners,
 } = useGameAnswers(sessionId, participantState)
 
 const {
@@ -233,7 +233,7 @@ const {
   ending,
   nextQuestion,
   endSession,
-  setupOrganizerSocketListeners
+  setupOrganizerSocketListeners,
 } = useOrganizerControls(sessionId, isOrganizer, socketConnected)
 
 // Méthodes simplifiées

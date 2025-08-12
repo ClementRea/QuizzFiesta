@@ -21,7 +21,7 @@
         <!-- Configuration de la session -->
         <div class="q-mb-lg">
           <div class="text-subtitle1 text-weight-medium q-mb-md">Configuration de la session</div>
-          
+
           <!-- Nombre max de participants -->
           <q-input
             v-model.number="settings.maxParticipants"
@@ -55,11 +55,7 @@
           </q-input>
 
           <!-- Options avancées -->
-          <q-expansion-item
-            icon="mdi-cog"
-            label="Options avancées"
-            class="q-mb-md"
-          >
+          <q-expansion-item icon="mdi-cog" label="Options avancées" class="q-mb-md">
             <div class="q-pa-md bg-grey-1 rounded-borders">
               <!-- Afficher les bonnes réponses -->
               <q-toggle
@@ -83,22 +79,17 @@
         <div class="bg-grey-1 rounded-borders q-pa-md">
           <div class="text-subtitle2 text-weight-medium q-mb-sm">Récapitulatif :</div>
           <div class="text-body2 text-grey-7">
-            • {{ quiz?.questions?.length || 0 }} questions<br>
-            • {{ settings.maxParticipants }} participants maximum<br>
-            • {{ settings.timePerQuestion }}s par question<br>
-            • Réponses {{ settings.showCorrectAnswers ? 'affichées' : 'cachées' }}<br>
+            • {{ quiz?.questions?.length || 0 }} questions<br />
+            • {{ settings.maxParticipants }} participants maximum<br />
+            • {{ settings.timePerQuestion }}s par question<br />
+            • Réponses {{ settings.showCorrectAnswers ? 'affichées' : 'cachées' }}<br />
             • Entrée tardive {{ settings.allowLateJoin ? 'autorisée' : 'interdite' }}
           </div>
         </div>
       </q-card-section>
 
       <q-card-actions align="right" class="q-pa-lg">
-        <q-btn
-          flat
-          label="Annuler"
-          color="grey-6"
-          @click="cancel"
-        />
+        <q-btn flat label="Annuler" color="grey-6" @click="cancel" />
         <q-btn
           label="Créer la session"
           color="secondary"
@@ -121,12 +112,12 @@ const $q = useQuasar()
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   quiz: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 })
 
 // Emits
@@ -141,13 +132,16 @@ const settings = ref({
   maxParticipants: 20,
   timePerQuestion: 30,
   showCorrectAnswers: true,
-  allowLateJoin: false
+  allowLateJoin: false,
 })
 
 // Watch pour la prop modelValue
-watch(() => props.modelValue, (newVal) => {
-  showDialog.value = newVal
-})
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    showDialog.value = newVal
+  },
+)
 
 watch(showDialog, (newVal) => {
   emit('update:modelValue', newVal)
@@ -157,20 +151,19 @@ watch(showDialog, (newVal) => {
 const createSession = async () => {
   try {
     creating.value = true
-    
+
     // Ici vous pouvez appeler l'API pour créer la session
     emit('session-created', {
       quizId: props.quiz._id,
-      settings: settings.value
+      settings: settings.value,
     })
-    
+
     showDialog.value = false
-    
   } catch (error) {
     console.error('Erreur création session:', error)
     $q.notify({
       type: 'negative',
-      message: 'Erreur lors de la création de la session'
+      message: 'Erreur lors de la création de la session',
     })
   } finally {
     creating.value = false

@@ -208,6 +208,6 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     loadSession,
     loadFinalResults,
     retry,
-    cleanupGameSocket
+    cleanupGameSocket,
   }
 }

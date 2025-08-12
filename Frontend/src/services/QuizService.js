@@ -70,8 +70,8 @@ const QuizService = {
 
         const response = await axios.post(`${getApiBaseUrl()}/quiz/create`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         })
         return response.data
       } else {
@@ -99,8 +99,8 @@ const QuizService = {
 
         const response = await axios.put(`${getApiBaseUrl()}/quiz/update/${quizId}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         })
         return response.data
       } else {
@@ -132,7 +132,9 @@ const QuizService = {
 
   async addQuestionsToQuiz(quizId, questions) {
     try {
-      const response = await axios.put(`${getApiBaseUrl()}/quiz/addQuestions/${quizId}`, { questions })
+      const response = await axios.put(`${getApiBaseUrl()}/quiz/addQuestions/${quizId}`, {
+        questions,
+      })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -161,31 +163,31 @@ const QuizService = {
         return {
           status: 'waiting',
           message: 'En attente des participants',
-          canJoin: true
+          canJoin: true,
         }
       case 'playing':
         return {
           status: 'active',
           message: 'Session en cours',
-          canJoin: session.settings?.allowLateJoin || false
+          canJoin: session.settings?.allowLateJoin || false,
         }
       case 'finished':
         return {
           status: 'finished',
           message: 'Session terminée',
-          canJoin: false
+          canJoin: false,
         }
       case 'cancelled':
         return {
           status: 'cancelled',
           message: 'Session annulée',
-          canJoin: false
+          canJoin: false,
         }
       default:
         return {
           status: 'unknown',
           message: 'Statut inconnu',
-          canJoin: false
+          canJoin: false,
         }
     }
   },
@@ -229,7 +231,7 @@ const QuizService = {
       return {
         status: 'not_started',
         timeRemaining: startDate - now,
-        message: 'The quiz has not started yet'
+        message: 'The quiz has not started yet',
       }
     }
 
@@ -237,16 +239,16 @@ const QuizService = {
       return {
         status: 'ended',
         timeRemaining: 0,
-        message: 'The quiz is over'
+        message: 'The quiz is over',
       }
     }
 
     return {
       status: 'active',
       timeRemaining: endDate ? endDate - now : null,
-      message: 'The quiz is in progress'
+      message: 'The quiz is in progress',
     }
-  }
+  },
 }
 
 export default QuizService

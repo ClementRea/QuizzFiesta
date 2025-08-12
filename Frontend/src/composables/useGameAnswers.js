@@ -89,14 +89,14 @@ export function useGameAnswers(sessionId, participantState) {
           type: 'positive',
           position: 'top',
           message: `Bonne réponse ! +${result.points} points`,
-          timeout: 2000
+          timeout: 2000,
         })
       } else {
         $q.notify({
           type: 'info',
           position: 'top',
           message: 'Réponse incorrecte',
-          timeout: 2000
+          timeout: 2000,
         })
       }
     })
@@ -134,6 +134,6 @@ export function useGameAnswers(sessionId, participantState) {
     resetAnswerState,
     submitCurrentAnswer,
     setupAnswerSocketListeners,
-    formatCorrectAnswer
+    formatCorrectAnswer,
   }
 }

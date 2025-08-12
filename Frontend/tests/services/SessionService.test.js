@@ -15,10 +15,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.createSession('quiz123', { maxPlayers: 10 })
 
-      expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/session/create/quiz123'),
-        { settings: { maxPlayers: 10 } }
-      )
+      expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('/session/create/quiz123'), {
+        settings: { maxPlayers: 10 },
+      })
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -26,7 +25,9 @@ describe('SessionService', () => {
       const mockError = { response: { data: { error: 'Quiz not found' } } }
       axios.post.mockRejectedValue(mockError)
 
-      await expect(SessionService.createSession('invalidQuiz')).rejects.toEqual({ error: 'Quiz not found' })
+      await expect(SessionService.createSession('invalidQuiz')).rejects.toEqual({
+        error: 'Quiz not found',
+      })
     })
 
     it('should join session by code', async () => {
@@ -43,7 +44,9 @@ describe('SessionService', () => {
       const mockError = { response: { data: { error: 'Session not found' } } }
       axios.get.mockRejectedValue(mockError)
 
-      await expect(SessionService.joinSessionByCode('INVALID')).rejects.toEqual({ error: 'Session not found' })
+      await expect(SessionService.joinSessionByCode('INVALID')).rejects.toEqual({
+        error: 'Session not found',
+      })
     })
 
     it('should join session lobby', async () => {
@@ -52,7 +55,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.joinSessionLobby('session123')
 
-      expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('/session/session123/lobby/join'))
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/lobby/join'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -62,7 +67,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.leaveSessionLobby('session123')
 
-      expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('/session/session123/lobby/leave'))
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/lobby/leave'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -72,7 +79,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.getSessionParticipants('session123')
 
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/session/session123/lobby/participants'))
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/lobby/participants'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -84,7 +93,7 @@ describe('SessionService', () => {
 
       expect(axios.put).toHaveBeenCalledWith(
         expect.stringContaining('/session/session123/lobby/ready'),
-        { isReady: true }
+        { isReady: true },
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -127,7 +136,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.getSessionQuestions('session123')
 
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/session/session123/questions'))
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/questions'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -139,7 +150,7 @@ describe('SessionService', () => {
 
       expect(axios.post).toHaveBeenCalledWith(
         expect.stringContaining('/session/session123/answer'),
-        { questionId: 'q1', answer: 'answer A' }
+        { questionId: 'q1', answer: 'answer A' },
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -148,8 +159,9 @@ describe('SessionService', () => {
       const mockError = { response: { data: { error: 'Time expired' } } }
       axios.post.mockRejectedValue(mockError)
 
-      await expect(SessionService.submitSessionAnswer('session123', 'q1', 'answer A'))
-        .rejects.toEqual({ error: 'Time expired' })
+      await expect(
+        SessionService.submitSessionAnswer('session123', 'q1', 'answer A'),
+      ).rejects.toEqual({ error: 'Time expired' })
     })
 
     it('should go to next session question', async () => {
@@ -158,7 +170,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.nextSessionQuestion('session123')
 
-      expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('/session/session123/next-question'))
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/next-question'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -167,15 +181,17 @@ describe('SessionService', () => {
         data: {
           leaderboard: [
             { participantId: 'p1', name: 'Player 1', score: 200 },
-            { participantId: 'p2', name: 'Player 2', score: 150 }
-          ]
-        }
+            { participantId: 'p2', name: 'Player 2', score: 150 },
+          ],
+        },
       }
       axios.get.mockResolvedValue(mockResponse)
 
       const result = await SessionService.getSessionLeaderboard('session123')
 
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/session/session123/leaderboard'))
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/leaderboard'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -185,7 +201,9 @@ describe('SessionService', () => {
 
       const result = await SessionService.getParticipantState('session123')
 
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/session/session123/participant/state'))
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining('/session/session123/participant/state'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
   })

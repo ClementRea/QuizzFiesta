@@ -22,11 +22,11 @@ const AuthService = {
   },
 
   getAccessToken() {
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem('accessToken')
   },
 
   getRefreshToken() {
-    return localStorage.getItem('refreshToken');
+    return localStorage.getItem('refreshToken')
   },
 
   clearTokens() {
@@ -43,7 +43,7 @@ const AuthService = {
 
     try {
       const response = await axios.post(`${getApiBaseUrl()}/auth/refresh-token`, {
-        refreshToken
+        refreshToken,
       })
 
       if (response.data.status === 'success') {
@@ -66,7 +66,7 @@ const AuthService = {
       const payload = JSON.parse(atob(token.split('.')[1]))
       const now = Date.now() / 1000
 
-      return payload.exp <= (now)
+      return payload.exp <= now
     } catch {
       return true
     }
@@ -106,7 +106,7 @@ const AuthService = {
     } finally {
       this.clearTokens()
     }
-  }
+  },
 }
 
 export default AuthService
