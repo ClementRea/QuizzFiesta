@@ -1,82 +1,34 @@
 import axios from 'axios'
-import AuthService from './AuthService'
 
-// Dynamic URL based on environment
 const getApiBaseUrl = () => {
-  // Utilise la variable d'environnement ou l'URL de production
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
-  
-  // Fallback pour le développement local
-  if (window.location.hostname === 'localhost') {
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
-  
+
   return `${apiUrl}/api`
 }
 
-class QuizService {
-  constructor() {
-    this.api = axios.create({
-      baseURL: getApiBaseUrl(),
-    })
-    // Note: Authentication is handled globally by AuthService
-  }
-
+const QuizService = {
   // ======== LEGACY METHODS (pour compatibilité) ========
   async joinQuizByCode(joinCode) {
     try {
-      const response = await this.api.get(`/quiz/join/${joinCode}`)
+      const response = await axios.get(`${getApiBaseUrl()}/quiz/join/${joinCode}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
-
-  // ======== MÉTHODES POUR LES SESSIONS ========
-
-  // Créer une nouvelle session de jeu
-  async createSession(quizId, settings = {}) {
-    try {
-      const response = await this.api.post(`/session/create/${quizId}`, { settings })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Alias pour compatibilité
-  async createGameSession(quizId, settings = {}) {
-    return this.createSession(quizId, settings)
-  }
-
-  // Rejoindre une session via son code
-  async joinSessionByCode(sessionCode) {
-    try {
-      const response = await this.api.get(`/session/join/${sessionCode}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Rejoindre une session par ID
-  async joinSession(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/join`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
+  },
 
   async getQuizById(quizId) {
     try {
-      const response = await this.api.get(`/quiz/${quizId}`)
+      const response = await axios.get(`${getApiBaseUrl()}/quiz/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async getAllQuizzes(filters = {}) {
     try {
@@ -89,21 +41,21 @@ class QuizService {
         params.append('active', filters.active)
       }
 
-      const response = await this.api.get(`/quiz/?${params.toString()}`)
+      const response = await axios.get(`${getApiBaseUrl()}/quiz/?${params.toString()}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async getMyQuizes() {
     try {
-      const response = await this.api.get('/quiz/myQuizes')
+      const response = await axios.get(`${getApiBaseUrl()}/quiz/myQuizes`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async createQuiz(quizData) {
     try {
@@ -111,26 +63,25 @@ class QuizService {
         const formData = new FormData()
 
         formData.append('logo', quizData.logo)
-
         formData.append('title', quizData.title)
         formData.append('description', quizData.description)
         formData.append('startDate', quizData.startDate)
         formData.append('questions', JSON.stringify(quizData.questions))
 
-        const response = await this.api.post('/quiz/create', formData, {
+        const response = await axios.post(`${getApiBaseUrl()}/quiz/create`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         })
         return response.data
       } else {
-        const response = await this.api.post('/quiz/create', quizData)
+        const response = await axios.post(`${getApiBaseUrl()}/quiz/create`, quizData)
         return response.data
       }
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async updateQuiz(quizId, quizData) {
     try {
@@ -146,195 +97,65 @@ class QuizService {
           formData.append('questions', JSON.stringify(quizData.questions))
         }
 
-        const response = await this.api.put(`/quiz/update/${quizId}`, formData, {
+        const response = await axios.put(`${getApiBaseUrl()}/quiz/update/${quizId}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         })
         return response.data
       } else {
-        const response = await this.api.put(`/quiz/update/${quizId}`, quizData)
+        const response = await axios.put(`${getApiBaseUrl()}/quiz/update/${quizId}`, quizData)
         return response.data
       }
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async deleteQuiz(quizId) {
     try {
-      const response = await this.api.delete(`/quiz/${quizId}`)
+      const response = await axios.delete(`${getApiBaseUrl()}/quiz/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async generateJoinCode(quizId) {
     try {
-      const response = await this.api.post(`/quiz/generateCode/${quizId}`)
+      const response = await axios.post(`${getApiBaseUrl()}/quiz/generateCode/${quizId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async addQuestionsToQuiz(quizId, questions) {
     try {
-      const response = await this.api.put(`/quiz/addQuestions/${quizId}`, { questions })
+      const response = await axios.put(`${getApiBaseUrl()}/quiz/addQuestions/${quizId}`, { questions })
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
-
-  // ======== MÉTHODES POUR LES SESSIONS LOBBY ========
-
-  // Rejoindre le lobby d'une session
-  async joinSessionLobby(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/join`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Quitter le lobby d'une session
-  async leaveSessionLobby(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/lobby/leave`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Récupérer les participants du lobby d'une session
-  async getSessionParticipants(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/lobby/participants`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Marquer comme prêt/pas prêt dans le lobby
-  async setSessionReady(sessionId, isReady) {
-    try {
-      const response = await this.api.put(`/session/${sessionId}/lobby/ready`, { isReady })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Démarrer la session (organisateur seulement)
-  async startGameSession(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/start`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Récupérer l'état d'une session
-  async getSessionState(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/state`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Terminer une session (organisateur seulement)
-  async endGameSession(sessionId) {
-    try {
-      const response = await this.api.delete(`/session/${sessionId}/end`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-
-  // ======== MÉTHODES POUR LE GAMEPLAY DE SESSION ========
-
-  // Récupérer les questions d'une session (question courante)
-  async getSessionQuestions(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/questions`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Soumettre une réponse dans une session
-  async submitSessionAnswer(sessionId, questionId, answer) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/answer`, {
-        questionId,
-        answer
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Passer à la question suivante (organisateur)
-  async nextSessionQuestion(sessionId) {
-    try {
-      const response = await this.api.post(`/session/${sessionId}/next-question`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Récupérer le classement d'une session
-  async getSessionLeaderboard(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/leaderboard`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-  // Récupérer l'état d'un participant dans une session
-  async getParticipantState(sessionId) {
-    try {
-      const response = await this.api.get(`/session/${sessionId}/participant/state`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  }
-
-
+  },
 
   // Validation des codes de session
-  static validateSessionCode(code) {
+  validateSessionCode(code) {
     const hexPattern = /^[A-Fa-f0-9]{6}$/
     return hexPattern.test(code)
-  }
+  },
 
-  static formatSessionCode(code) {
+  formatSessionCode(code) {
     return code.replace(/\s/g, '').toUpperCase()
-  }
+  },
 
   // Vérifier si une session est active
-  static isSessionActive(session) {
+  isSessionActive(session) {
     return session.status === 'playing' || session.status === 'lobby'
-  }
+  },
 
   // Obtenir le statut d'une session
-  static getSessionStatus(session) {
+  getSessionStatus(session) {
     switch (session.status) {
       case 'lobby':
         return {
@@ -367,10 +188,10 @@ class QuizService {
           canJoin: false
         }
     }
-  }
+  },
 
   // Calculer le temps restant pour une question
-  static getQuestionTimeRemaining(gameState, settings) {
+  getQuestionTimeRemaining(gameState, settings) {
     if (!gameState.currentQuestionStartTime) return 0
 
     const startTime = new Date(gameState.currentQuestionStartTime)
@@ -378,28 +199,28 @@ class QuizService {
     const timeLimit = (settings.timePerQuestion || 30) * 1000
 
     return Math.max(0, timeLimit - elapsed)
-  }
+  },
 
   // ======== LEGACY UTILITIES ========
 
-  static validateJoinCode(code) {
+  validateJoinCode(code) {
     const hexPattern = /^[A-Fa-f0-9]{6}$/
     return hexPattern.test(code)
-  }
+  },
 
-  static formatJoinCode(code) {
+  formatJoinCode(code) {
     return code.replace(/\s/g, '').toUpperCase()
-  }
+  },
 
-  static isQuizActive(quiz) {
+  isQuizActive(quiz) {
     const now = new Date()
     const startDate = new Date(quiz.startDate)
     const endDate = quiz.endDate ? new Date(quiz.endDate) : null
 
     return startDate <= now && (!endDate || endDate >= now)
-  }
+  },
 
-  static getQuizTimeStatus(quiz) {
+  getQuizTimeStatus(quiz) {
     const now = new Date()
     const startDate = new Date(quiz.startDate)
     const endDate = quiz.endDate ? new Date(quiz.endDate) : null
@@ -428,11 +249,4 @@ class QuizService {
   }
 }
 
-const quizServiceInstance = new QuizService()
-
-quizServiceInstance.validateJoinCode = QuizService.validateJoinCode
-quizServiceInstance.formatJoinCode = QuizService.formatJoinCode
-quizServiceInstance.isQuizActive = QuizService.isQuizActive
-quizServiceInstance.getQuizTimeStatus = QuizService.getQuizTimeStatus
-
-export default quizServiceInstance
+export default QuizService

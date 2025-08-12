@@ -203,7 +203,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import QuizService from 'src/services/QuizService'
+import SessionService from 'src/services/SessionService'
 import UserService from 'src/services/UserService'
 import SocketService from 'src/services/SocketService'
 import Avatar from 'src/components/user/GetAvatar.vue'
@@ -268,10 +268,10 @@ const loadSession = async () => {
     let sessionData
 
     if (sessionId.value) {
-      const response = await QuizService.getSessionState(sessionId.value)
+      const response = await SessionService.getSessionState(sessionId.value)
       sessionData = response.data.session
     } else if (sessionCodeFromRoute.value) {
-      const response = await QuizService.joinSessionByCode(sessionCodeFromRoute.value)
+      const response = await SessionService.joinSessionByCode(sessionCodeFromRoute.value)
       sessionData = response.data.session
     } else {
       throw new Error('Aucun identifiant de session fourni')
@@ -396,7 +396,7 @@ const toggleReady = async () => {
       // Le changement de statut sera mis à jour via l'événement WebSocket
     } else {
       // Fallback HTTP si WebSocket pas disponible
-      await QuizService.setSessionReady(actualSessionId, !isReady.value)
+      await SessionService.setSessionReady(actualSessionId, !isReady.value)
       isReady.value = !isReady.value
     }
   } catch (error) {
@@ -420,7 +420,7 @@ const startSession = async () => {
       // La redirection se fera via l'événement WebSocket
     } else {
       // Fallback HTTP si WebSocket pas disponible
-      await QuizService.startGameSession(actualSessionId)
+      await SessionService.startGameSession(actualSessionId)
       $q.notify({
         type: 'positive',
         position: 'top',
@@ -446,7 +446,7 @@ const leaveSession = async () => {
       SocketService.leaveLobby(actualSessionId)
     }
 
-    await QuizService.leaveSessionLobby(actualSessionId)
+    await SessionService.leaveSessionLobby(actualSessionId)
 
     $q.notify({
       type: 'info',

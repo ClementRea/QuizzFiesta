@@ -4,7 +4,6 @@
   "description": "A Quasar Project",
   "productName": "QuizzFiesta",
   "author": "Clément Rea <clement.rea@aidalinfo.fr>",
-  "type": "module",
   "private": true,
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{js,cjs,mjs,vue}\"",
@@ -28,12 +27,14 @@
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.0",
     "@eslint/js": "^9.14.0",
     "@quasar/app-vite": "^2.1.0",
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/test-utils": "^2.4.6",
     "@vue/vue3-jest": "^29.2.6",
     "autoprefixer": "^10.4.2",
+    "babel-jest": "^30.0.5",
     "eslint": "^9.14.0",
     "eslint-plugin-vue": "^9.30.0",
     "globals": "^15.12.0",

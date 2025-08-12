@@ -19,6 +19,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import ObjectLayout from '../../layouts/ObjectLayout.vue'
 import QuizService from 'src/services/QuizService'
+import SessionService from 'src/services/SessionService'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -70,14 +71,14 @@ const handleEdit = () => {
 const handlePlay = async () => {
   try {
     // Créer une nouvelle session pour ce quiz
-    const sessionResult = await QuizService.createSession(props.quiz._id, {
+    const sessionResult = await SessionService.createSession(props.quiz._id, {
       name: `Session ${props.quiz.title} - ${new Date().toLocaleString()}`,
     })
 
     const sessionId = sessionResult.data.session._id || sessionResult.data.session.id
 
     // Rejoindre automatiquement la session en tant qu'organisateur
-    await QuizService.joinSession(sessionId)
+    await SessionService.joinSessionLobby(sessionId)
 
     // Rediriger vers le lobby de la nouvelle session
     router.push(`/quiz/session/${sessionId}/lobby`)
@@ -95,7 +96,7 @@ const handlePlay = async () => {
 const handleShare = async () => {
   try {
     // Créer une session temporaire pour le partage
-    const sessionResult = await QuizService.createSession(props.quiz._id, {
+    const sessionResult = await SessionService.createSession(props.quiz._id, {
       name: `Session partagée ${props.quiz.title} - ${new Date().toLocaleString()}`,
     })
 

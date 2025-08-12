@@ -46,7 +46,6 @@
         <div class="flex flex-start">
           <q-btn
             outline
-            :unelevated="logoFile"
             icon="add_photo_alternate"
             :label="logoFile ? 'Changer le logo' : 'Choisir un logo'"
             @click="uploadFilesDialog = true"

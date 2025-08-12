@@ -1,11 +1,8 @@
-// Configuration Jest pour Vue 3 + Quasar
 import { config } from '@vue/test-utils'
 import { createQuasar } from 'quasar'
 
-// Configuration globale pour les tests Vue
 config.global.plugins = [createQuasar()]
 
-// Mock pour window.location
 Object.defineProperty(window, 'location', {
   value: {
     hostname: 'localhost',
@@ -15,7 +12,6 @@ Object.defineProperty(window, 'location', {
   writable: true
 })
 
-// Mock pour localStorage
 const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -24,7 +20,6 @@ const localStorageMock = {
 }
 global.localStorage = localStorageMock
 
-// Mock global pour les fonctions de navigateur
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),

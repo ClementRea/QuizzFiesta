@@ -3,24 +3,17 @@ import axios from 'axios'
 // Dynamic URL based on environment
 const getApiBaseUrl = () => {
   // Utilise la variable d'environnement ou l'URL de production
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
-  
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+
   // Fallback pour le développement local
-  if (window.location.hostname === 'localhost') {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
-  
+
   return `${apiUrl}/api`
 }
 
-class OrganisationService {
-  constructor() {
-    this.api = axios.create({
-      baseURL: getApiBaseUrl(),
-    })
-    // Note: Authentication is handled globally by AuthService
-  }
-
+const OrganisationService = {
   async getAllOrganisations(filters = {}) {
     try {
       const params = new URLSearchParams()
@@ -29,30 +22,30 @@ class OrganisationService {
         params.append('isActive', filters.isActive)
       }
 
-      const response = await this.api.get(`/organisations?${params.toString()}`)
+      const response = await axios.get(`${getApiBaseUrl()}/organisations?${params.toString()}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async getOrganisationById(organisationId) {
     try {
-      const response = await this.api.get(`/organisations/${organisationId}`)
+      const response = await axios.get(`${getApiBaseUrl()}/organisations/${organisationId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async getMyOrganisations() {
     try {
-      const response = await this.api.get('/organisations/myOrganisations')
+      const response = await axios.get(`${getApiBaseUrl()}/organisations/myOrganisations`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async createOrganisation(organisationData) {
     try {
@@ -70,7 +63,7 @@ class OrganisationService {
         formData.append('phone', organisationData.phone)
         formData.append('address', organisationData.address)
 
-        const response = await this.api.post('/organisations/create', formData, {
+        const response = await axios.post(`${getApiBaseUrl()}/organisations/create`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -78,60 +71,79 @@ class OrganisationService {
         return response.data
       } else {
         // Otherwise, send as classic JSON
-        const response = await this.api.post('/organisations/create', organisationData)
+        const response = await axios.post(`${getApiBaseUrl()}/organisations/create`, organisationData)
         return response.data
       }
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async updateOrganisation(organisationId, organisationData) {
     try {
-      const response = await this.api.put(`/organisations/update/${organisationId}`, organisationData)
+      const response = await axios.put(`${getApiBaseUrl()}/organisations/update/${organisationId}`, organisationData)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async deleteOrganisation(organisationId) {
     try {
-      const response = await this.api.delete(`/organisations/${organisationId}`)
+      const response = await axios.delete(`${getApiBaseUrl()}/organisations/${organisationId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async joinOrganisation(organisationId) {
     try {
-      const response = await this.api.post(`/organisations/join/${organisationId}`)
+      const response = await axios.post(`${getApiBaseUrl()}/organisations/join/${organisationId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async leaveOrganisation(organisationId) {
     try {
-      const response = await this.api.post(`/organisations/leave/${organisationId}`)
+      const response = await axios.post(`${getApiBaseUrl()}/organisations/leave/${organisationId}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 
   async getOrganisationMembers(organisationId) {
     try {
-      const response = await this.api.get(`/organisations/${organisationId}/members`)
+      const response = await axios.get(`${getApiBaseUrl()}/organisations/${organisationId}/members`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
     }
+  },
+
+  // Utility functions for tests
+  validateOrganisationName(name) {
+    return !!(name && name.length >= 3)
+  },
+
+  validateOrganisationEmail(email) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailPattern.test(email)
+  },
+
+  filterOrganisationFields(orgData) {
+    const allowedFields = ['name', 'description', 'email', 'phone', 'address']
+    const filtered = {}
+    Object.keys(orgData).forEach(key => {
+      if (allowedFields.includes(key) && orgData[key]) {
+        filtered[key] = orgData[key]
+      }
+    })
+    return filtered
   }
 }
 
-const organisationServiceInstance = new OrganisationService()
-
-export default organisationServiceInstance
+export default OrganisationService

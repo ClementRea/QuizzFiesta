@@ -1,15 +1,12 @@
 import axios from 'axios'
 
-// URL dynamique selon l'environnement
 const getApiBaseUrl = () => {
-  // Utilise la variable d'environnement ou l'URL de production
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
-  
-  // Fallback pour le développement local
-  if (window.location.hostname === 'localhost') {
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
-  
+
   return `${apiUrl}/api`
 }
 
@@ -38,7 +35,6 @@ const AuthService = {
     delete axios.defaults.headers.common['Authorization']
   },
 
-  // Nouvelle méthode pour renouveler automatiquement l'access token
   async refreshAccessToken() {
     const refreshToken = this.getRefreshToken()
     if (!refreshToken) {
@@ -51,37 +47,31 @@ const AuthService = {
       })
 
       if (response.data.status === 'success') {
-        // Sauvegarder les nouveaux tokens
         this.setTokens(response.data.accessToken, response.data.refreshToken)
         return response.data.accessToken
       } else {
         throw new Error('Failed to refresh token')
       }
     } catch (error) {
-      // Si le refresh échoue, nettoyer tous les tokens
       this.clearTokens()
       throw error
     }
   },
 
-  // Vérifier si le token est expiré ou proche de l'expiration
   isTokenExpired() {
     const token = this.getAccessToken()
     if (!token) return true
 
     try {
-      // Décoder le token JWT (partie payload)
       const payload = JSON.parse(atob(token.split('.')[1]))
       const now = Date.now() / 1000
 
-      // Vérifier si le token expire dans les 2 prochaines minutes
       return payload.exp <= (now)
     } catch {
       return true
     }
   },
 
-  // Méthode pour renouveler automatiquement si nécessaire
   async ensureValidToken() {
     if (this.isTokenExpired()) {
       try {
@@ -94,7 +84,6 @@ const AuthService = {
     return true
   },
 
-  // On vérifie la validité du token
   async verifyToken() {
     const token = localStorage.getItem('accessToken')
     if (!token) return false

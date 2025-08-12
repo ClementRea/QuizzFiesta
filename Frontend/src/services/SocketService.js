@@ -1,12 +1,22 @@
 import { io } from 'socket.io-client'
 import AuthService from './AuthService'
 
-class SocketService {
-  constructor() {
-    this.socket = null
-    this.isConnected = false
-    this.listeners = new Map()
+const getSocketUrl = () => {
+  // Utilise la variable d'environnement ou l'URL de production
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+
+  // Fallback pour le développement local
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:3000'
   }
+
+  return apiUrl
+}
+
+const SocketService = {
+  socket: null,
+  isConnected: false,
+  listeners: new Map(),
 
   // Connexion au serveur WebSocket
   connect() {
@@ -20,7 +30,7 @@ class SocketService {
       return Promise.reject(new Error('Token manquant'))
     }
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    const backendUrl = getSocketUrl()
 
     this.socket = io(backendUrl, {
       auth: {
@@ -49,7 +59,7 @@ class SocketService {
         reject(error)
       })
     })
-  }
+  },
 
   // Configuration des handlers d'événements de base
   setupEventHandlers() {
@@ -78,7 +88,7 @@ class SocketService {
     this.socket.on('error', (error) => {
       console.error('Erreur WebSocket:', error)
     })
-  }
+  },
 
   // Déconnexion
   disconnect() {
@@ -88,7 +98,7 @@ class SocketService {
       this.isConnected = false
       this.listeners.clear()
     }
-  }
+  },
 
   // === LOBBY METHODS ===
 
@@ -101,7 +111,7 @@ class SocketService {
 
     this.socket.emit('lobby:join', { sessionId })
     return true
-  }
+  },
 
   // Quitter un lobby
   leaveLobby(sessionId) {
@@ -109,7 +119,7 @@ class SocketService {
 
     this.socket.emit('lobby:leave', { sessionId })
     return true
-  }
+  },
 
   // Changer le statut prêt
   setReady(sessionId, isReady) {
@@ -117,7 +127,7 @@ class SocketService {
 
     this.socket.emit('lobby:ready', { sessionId, isReady })
     return true
-  }
+  },
 
   // Démarrer la session (organisateur)
   startSession(sessionId) {
@@ -125,7 +135,7 @@ class SocketService {
 
     this.socket.emit('lobby:start', { sessionId })
     return true
-  }
+  },
 
   // === GAME METHODS ===
 
@@ -135,7 +145,7 @@ class SocketService {
 
     this.socket.emit('game:join', { sessionId })
     return true
-  }
+  },
 
   // Soumettre une réponse
   submitAnswer(sessionId, questionId, answer) {
@@ -143,7 +153,7 @@ class SocketService {
 
     this.socket.emit('game:answer', { sessionId, questionId, answer })
     return true
-  }
+  },
 
   // Passer à la question suivante (organisateur)
   nextQuestion(sessionId) {
@@ -151,7 +161,7 @@ class SocketService {
 
     this.socket.emit('game:next-question', { sessionId })
     return true
-  }
+  },
 
   // Terminer la session (organisateur)
   endSession(sessionId) {
@@ -159,7 +169,7 @@ class SocketService {
 
     this.socket.emit('game:end', { sessionId })
     return true
-  }
+  },
 
   // === EVENT LISTENERS ===
 
@@ -177,7 +187,7 @@ class SocketService {
     this.listeners.get(event).add(callback)
 
     this.socket.on(event, callback)
-  }
+  },
 
   // Supprimer un listener d'événement
   off(event, callback) {
@@ -192,8 +202,7 @@ class SocketService {
       this.socket.off(event)
       this.listeners.delete(event)
     }
-
-  }
+  },
 
   // Supprimer tous les listeners
   removeAllListeners() {
@@ -203,19 +212,19 @@ class SocketService {
       this.socket.off(event)
     })
     this.listeners.clear()
-  }
+  },
 
   // === UTILITY METHODS ===
 
   // Vérifier si la connexion est active
   isSocketConnected() {
-    return this.socket && this.isConnected
-  }
+    return !!(this.socket && this.isConnected)
+  },
 
   // Obtenir l'ID du socket
   getSocketId() {
     return this.socket?.id || null
-  }
+  },
 
   // Émettre un événement personnalisé
   emit(event, data) {
@@ -226,76 +235,98 @@ class SocketService {
 
     this.socket.emit(event, data)
     return true
-  }
+  },
 
   // === LOBBY EVENT HANDLERS HELPERS ===
 
   // Helpers pour simplifier l'utilisation dans les composants
   onLobbyJoined(callback) {
     this.on('lobby:joined', callback)
-  }
+  },
 
   onLobbyParticipantsUpdated(callback) {
     this.on('lobby:participants-updated', callback)
-  }
+  },
 
   onLobbyUserJoined(callback) {
     this.on('lobby:user-joined', callback)
-  }
+  },
 
   onLobbyUserLeft(callback) {
     this.on('lobby:user-left', callback)
-  }
+  },
 
   onLobbyUserReadyChanged(callback) {
     this.on('lobby:user-ready-changed', callback)
-  }
+  },
 
   onLobbySessionStarted(callback) {
     this.on('lobby:session-started', callback)
-  }
+  },
 
   // === GAME EVENT HANDLERS HELPERS ===
 
   onGameCurrentQuestion(callback) {
     this.on('game:current-question', callback)
-  }
+  },
 
   onGameAnswerResult(callback) {
     this.on('game:answer-result', callback)
-  }
+  },
 
   onGameParticipantAnswered(callback) {
     this.on('game:participant-answered', callback)
-  }
-
+  },
 
   onGameLeaderboardUpdated(callback) {
     this.on('game:leaderboard-updated', callback)
-  }
+  },
 
   onGameNewQuestion(callback) {
     this.on('game:new-question', callback)
-  }
+  },
 
   onGameTimeUp(callback) {
     this.on('game:time-up', callback)
-  }
+  },
 
   onGameTimeUpOrganizer(callback) {
     this.on('game:time-up-organizer', callback)
-  }
+  },
 
   onGameSessionEnded(callback) {
     this.on('game:session-ended', callback)
-  }
+  },
 
   onError(callback) {
     this.on('error', callback)
+  },
+
+  // Utility functions
+  isValidSessionId(id) {
+    // Un id de session doit être une string non vide
+    return typeof id === 'string' && id.length > 0
+  },
+
+  getValidEvents() {
+    return [
+      'lobby:joined',
+      'lobby:participants-updated',
+      'lobby:user-joined',
+      'lobby:user-left',
+      'lobby:user-ready-changed',
+      'lobby:session-started',
+      'game:current-question',
+      'game:answer-result',
+      'game:participant-answered',
+      'game:leaderboard-updated',
+      'game:new-question',
+      'game:time-up',
+      'game:time-up-organizer',
+      'game:session-ended',
+      'error'
+    ]
   }
 }
 
-// Créer une instance singleton
-const socketService = new SocketService()
-
-export default socketService
+export default SocketService
