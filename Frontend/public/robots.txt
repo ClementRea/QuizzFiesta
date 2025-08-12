@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://quizzfiesta.fr/sitemap.xml
+Sitemap: https://quizz-fiesta-roan.vercel.app/sitemap.xml
