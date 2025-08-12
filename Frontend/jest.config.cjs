@@ -6,5 +6,8 @@ module.exports = {
   },
   moduleFileExtensions: ['vue', 'js', 'json'],
   testMatch: ['**/tests/**/*.test.js'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  collectCoverageFrom: [
+    "src/services/**/*.js",
+  ],
 }
