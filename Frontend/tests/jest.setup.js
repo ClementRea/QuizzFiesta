@@ -7,9 +7,9 @@ Object.defineProperty(window, 'location', {
   value: {
     hostname: 'localhost',
     protocol: 'http:',
-    href: 'http://localhost:9000'
+    href: 'http://localhost:9000',
   },
-  writable: true
+  writable: true,
 })
 
 const localStorageMock = {

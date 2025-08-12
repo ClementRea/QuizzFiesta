@@ -69,17 +69,20 @@ describe('SocketService', () => {
       const connectPromise = SocketService.connect()
 
       // Simulate successful connection
-      const connectCallback = mockSocket.once.mock.calls.find(call => call[0] === 'connect')[1]
+      const connectCallback = mockSocket.once.mock.calls.find((call) => call[0] === 'connect')[1]
       connectCallback()
 
       const result = await connectPromise
 
-      expect(io).toHaveBeenCalledWith('http://localhost:3000', expect.objectContaining({
-        auth: { token: 'mock-token' },
-        transports: ['websocket', 'polling'],
-        timeout: 10000,
-        forceNew: true
-      }))
+      expect(io).toHaveBeenCalledWith(
+        'http://localhost:3000',
+        expect.objectContaining({
+          auth: { token: 'mock-token' },
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
+          forceNew: true,
+        }),
+      )
       expect(result).toBe(mockSocket)
       expect(SocketService.socket).toBe(mockSocket)
     })
@@ -96,7 +99,9 @@ describe('SocketService', () => {
       const error = new Error('Connection failed')
 
       // Simulate connection error
-      const errorCallback = mockSocket.once.mock.calls.find(call => call[0] === 'connect_error')[1]
+      const errorCallback = mockSocket.once.mock.calls.find(
+        (call) => call[0] === 'connect_error',
+      )[1]
       errorCallback(error)
 
       await expect(connectPromise).rejects.toThrow('Connection failed')
@@ -156,7 +161,7 @@ describe('SocketService', () => {
     it('should handle connect event', () => {
       SocketService.setupEventHandlers()
 
-      const connectHandler = mockSocket.on.mock.calls.find(call => call[0] === 'connect')[1]
+      const connectHandler = mockSocket.on.mock.calls.find((call) => call[0] === 'connect')[1]
       connectHandler()
 
       expect(SocketService.isConnected).toBe(true)
@@ -166,7 +171,7 @@ describe('SocketService', () => {
       SocketService.isConnected = true
       SocketService.setupEventHandlers()
 
-      const disconnectHandler = mockSocket.on.mock.calls.find(call => call[0] === 'disconnect')[1]
+      const disconnectHandler = mockSocket.on.mock.calls.find((call) => call[0] === 'disconnect')[1]
       disconnectHandler('transport close')
 
       expect(SocketService.isConnected).toBe(false)
@@ -197,7 +202,10 @@ describe('SocketService', () => {
       const result = SocketService.setReady('session123', true)
 
       expect(result).toBe(true)
-      expect(mockSocket.emit).toHaveBeenCalledWith('lobby:ready', { sessionId: 'session123', isReady: true })
+      expect(mockSocket.emit).toHaveBeenCalledWith('lobby:ready', {
+        sessionId: 'session123',
+        isReady: true,
+      })
     })
 
     it('should start session', () => {
@@ -237,7 +245,7 @@ describe('SocketService', () => {
       expect(mockSocket.emit).toHaveBeenCalledWith('game:answer', {
         sessionId: 'session123',
         questionId: 'q1',
-        answer: 'answer A'
+        answer: 'answer A',
       })
     })
 
@@ -245,7 +253,9 @@ describe('SocketService', () => {
       const result = SocketService.nextQuestion('session123')
 
       expect(result).toBe(true)
-      expect(mockSocket.emit).toHaveBeenCalledWith('game:next-question', { sessionId: 'session123' })
+      expect(mockSocket.emit).toHaveBeenCalledWith('game:next-question', {
+        sessionId: 'session123',
+      })
     })
 
     it('should end session', () => {
@@ -313,7 +323,10 @@ describe('SocketService', () => {
 
       SocketService.on('test-event', jest.fn())
 
-      expect(console.warn).toHaveBeenCalledWith('Socket non initialisé pour l\'événement:', 'test-event')
+      expect(console.warn).toHaveBeenCalledWith(
+        "Socket non initialisé pour l'événement:",
+        'test-event',
+      )
     })
   })
 

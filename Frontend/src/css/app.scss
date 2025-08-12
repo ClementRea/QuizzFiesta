@@ -5,18 +5,22 @@
 
 //Main style
 body {
-	margin: 0;
-	display: flex;
-	flex-direction: column;
-	min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   background-color: $primary;
   position: relative;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: $secondary;
 }
-
 
 //Setup des background colors
 .bg-light10 {
@@ -50,7 +54,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: $dark100 !important;
 }
 
-.bg-blue{
+.bg-blue {
   background-color: $blue !important;
 }
 
@@ -107,7 +111,7 @@ h1, h2, h3, h4, h5, h6 {
   color: $dark100 !important;
 }
 
-.text-blue{
+.text-blue {
   color: $blue !important;
 }
 
@@ -132,40 +136,40 @@ h1, h2, h3, h4, h5, h6 {
   .q-field__control {
     border-radius: 14px !important;
   }
-  
+
   &.q-field--outlined .q-field__control:before {
     border: 1px solid $dark80 !important;
     border-radius: 14px !important;
   }
 }
 
-// Default styles for inputs and selects  
+// Default styles for inputs and selects
 .default-input {
   .q-field__control {
     background-color: white !important;
     border-radius: 14px !important;
   }
-  
+
   .q-field__label {
     color: $secondary !important;
   }
-  
+
   .q-field__native {
     color: $secondary !important;
   }
-  
+
   &.q-field--outlined .q-field__control:before {
     border: 1px solid $dark80 !important;
     border-radius: 14px !important;
   }
-  
+
   &.q-field--focused .q-field__control:before {
     border: 2px solid $secondary !important;
   }
 }
 
 //tooltip
-.q-tooltip{
+.q-tooltip {
   font-size: 14px;
 }
 
@@ -185,7 +189,7 @@ h1, h2, h3, h4, h5, h6 {
 // visible focus styles
 button:focus-visible,
 .q-btn:focus-visible,
-[role="button"]:focus-visible,
+[role='button']:focus-visible,
 [tabindex]:focus-visible:not(input):not(.q-input):not(.q-select):not(select):not(textarea) {
   outline: 2px solid $primary !important;
   outline-offset: 2px !important;
@@ -195,7 +199,7 @@ button:focus-visible,
 // improve contrast for interactive elements
 button:focus-visible,
 .q-btn:focus-visible,
-[role="button"]:focus-visible {
+[role='button']:focus-visible {
   outline: 2px solid $primary !important;
   outline-offset: 2px !important;
 }
@@ -205,9 +209,7 @@ button:focus-visible,
   min-height: 44px;
   min-width: 44px;
 }
-[role="button"] {
+[role='button'] {
   min-height: 44px;
   min-width: 44px;
 }
-
-

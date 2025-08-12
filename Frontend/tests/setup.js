@@ -1,17 +1,20 @@
 module.exports = {
   presets: [
-    ['@babel/preset-env', {
-      targets: {
-        node: 'current'
-      }
-    }]
-  ]
+    [
+      '@babel/preset-env',
+      {
+        targets: {
+          node: 'current',
+        },
+      },
+    ],
+  ],
 }
 
 Object.defineProperty(window, 'location', {
   value: {
     hostname: 'localhost',
-    protocol: 'http:'
+    protocol: 'http:',
   },
-  writable: true
+  writable: true,
 })

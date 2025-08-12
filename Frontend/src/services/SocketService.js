@@ -34,11 +34,11 @@ const SocketService = {
 
     this.socket = io(backendUrl, {
       auth: {
-        token: token
+        token: token,
       },
       transports: ['websocket', 'polling'],
       timeout: 10000,
-      forceNew: true
+      forceNew: true,
     })
 
     this.setupEventHandlers()
@@ -176,7 +176,7 @@ const SocketService = {
   // Ajouter un listener d'événement
   on(event, callback) {
     if (!this.socket) {
-      console.warn('Socket non initialisé pour l\'événement:', event)
+      console.warn("Socket non initialisé pour l'événement:", event)
       return
     }
 
@@ -324,9 +324,9 @@ const SocketService = {
       'game:time-up',
       'game:time-up-organizer',
       'game:session-ended',
-      'error'
+      'error',
     ]
-  }
+  },
 }
 
 export default SocketService

@@ -65,13 +65,16 @@ const OrganisationService = {
 
         const response = await axios.post(`${getApiBaseUrl()}/organisations/create`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         })
         return response.data
       } else {
         // Otherwise, send as classic JSON
-        const response = await axios.post(`${getApiBaseUrl()}/organisations/create`, organisationData)
+        const response = await axios.post(
+          `${getApiBaseUrl()}/organisations/create`,
+          organisationData,
+        )
         return response.data
       }
     } catch (error) {
@@ -81,7 +84,10 @@ const OrganisationService = {
 
   async updateOrganisation(organisationId, organisationData) {
     try {
-      const response = await axios.put(`${getApiBaseUrl()}/organisations/update/${organisationId}`, organisationData)
+      const response = await axios.put(
+        `${getApiBaseUrl()}/organisations/update/${organisationId}`,
+        organisationData,
+      )
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -137,13 +143,13 @@ const OrganisationService = {
   filterOrganisationFields(orgData) {
     const allowedFields = ['name', 'description', 'email', 'phone', 'address']
     const filtered = {}
-    Object.keys(orgData).forEach(key => {
+    Object.keys(orgData).forEach((key) => {
       if (allowedFields.includes(key) && orgData[key]) {
         filtered[key] = orgData[key]
       }
     })
     return filtered
-  }
+  },
 }
 
 export default OrganisationService

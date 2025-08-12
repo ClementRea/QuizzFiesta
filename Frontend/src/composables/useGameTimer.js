@@ -118,6 +118,6 @@ export function useGameTimer() {
     resetTimer,
     setTimeRemaining,
     setTimeLimit,
-    setupTimerSocketListeners
+    setupTimerSocketListeners,
   }
 }

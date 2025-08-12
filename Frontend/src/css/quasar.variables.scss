@@ -4,52 +4,52 @@
 // Blanc & beiges avec pastels énergisants pour un quiz captivant
 
 // === COULEURS PRINCIPALES ===
-$primary : #ffffff;
-$secondary : #16212c;
+$primary: #ffffff;
+$secondary: #16212c;
 // $primary : #ECE8D2;
 // $secondary : #2A2C64;
-$accent : #b3ffd5;
+$accent: #b3ffd5;
 
 // === GAMME DE BEIGES + PASTELS (light/normal/dark) ===
 
-$light10 : #F5F2E8;
-$light20 : #ECE8D2;
-$light30 : #E3DFC7;
-$normal40 : #D6D0B5;
-$normal50 : #C9C1A3;
-$normal60 : #BCB291;
-$dark70 : #2A2C64;
-$dark80 : #25276B;
-$dark90 : #1F2158;
-$dark100 : #191B45;
+$light10: #f5f2e8;
+$light20: #ece8d2;
+$light30: #e3dfc7;
+$normal40: #d6d0b5;
+$normal50: #c9c1a3;
+$normal60: #bcb291;
+$dark70: #2a2c64;
+$dark80: #25276b;
+$dark90: #1f2158;
+$dark100: #191b45;
 
 // === PASTELS ÉNERGISANTS ===
-$pastel-coral : #FFB3BA;
-$pastel-mint : #B8E6B8;
+$pastel-coral: #ffb3ba;
+$pastel-mint: #b8e6b8;
 
 // === COULEURS FONCTIONNELLES ===
-$success : #6BCF7F;
-$error : #FF8A80;
-$warning : #FFCC80;
-$info : #81C7F5;
+$success: #6bcf7f;
+$error: #ff8a80;
+$warning: #ffcc80;
+$info: #81c7f5;
 
 // === COULEURS SYSTÈME QUASAR ===
-$positive : #6BCF7F;
-$negative : #ff2613;
-$blue : #2196F3;
-$green : #4CAF50;
-$red : #F44336;
-$yellow : #FF9800;
+$positive: #6bcf7f;
+$negative: #ff2613;
+$blue: #2196f3;
+$green: #4caf50;
+$red: #f44336;
+$yellow: #ff9800;
 
 // === THÈME SOMBRE ===
-$dark : #2A2C64;
-$dark-page : #191B45;
+$dark: #2a2c64;
+$dark-page: #191b45;
 
 // === VARIABLES PERSONNALISÉES POUR LE QUIZ ===
-$quiz-bg : $primary;
-$quiz-card : $light10;
-$quiz-border : $normal40;
-$quiz-text : $secondary;
-$quiz-accent : $pastel-coral;
-$quiz-success : $pastel-mint;
-$quiz-hover : $light30;
+$quiz-bg: $primary;
+$quiz-card: $light10;
+$quiz-border: $normal40;
+$quiz-text: $secondary;
+$quiz-accent: $pastel-coral;
+$quiz-success: $pastel-mint;
+$quiz-hover: $light30;

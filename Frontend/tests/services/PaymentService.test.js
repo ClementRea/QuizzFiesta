@@ -19,8 +19,8 @@ describe('PaymentService', () => {
       data: {
         id: 'cs_test_123',
         url: 'https://checkout.stripe.com/pay/cs_test_123',
-        success: true
-      }
+        success: true,
+      },
     }
 
     axios.post.mockResolvedValue(mockResponse)
@@ -29,7 +29,7 @@ describe('PaymentService', () => {
 
     expect(result).toEqual(mockResponse.data)
     expect(axios.post).toHaveBeenCalledWith(
-      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session'
+      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session',
     )
     expect(axios.post).toHaveBeenCalledTimes(1)
   })
@@ -39,8 +39,8 @@ describe('PaymentService', () => {
     const mockResponse = {
       data: {
         id: 'cs_test_456',
-        url: 'https://checkout.stripe.com/pay/cs_test_456'
-      }
+        url: 'https://checkout.stripe.com/pay/cs_test_456',
+      },
     }
 
     axios.post.mockResolvedValue(mockResponse)
@@ -48,7 +48,7 @@ describe('PaymentService', () => {
     await PaymentService.createCheckoutSession()
 
     expect(axios.post).toHaveBeenCalledWith(
-      'https://custom-api.com/api/payment/create-checkout-session'
+      'https://custom-api.com/api/payment/create-checkout-session',
     )
   })
 
@@ -57,8 +57,8 @@ describe('PaymentService', () => {
     const mockResponse = {
       data: {
         id: 'cs_test_local',
-        url: 'https://checkout.stripe.com/pay/cs_test_local'
-      }
+        url: 'https://checkout.stripe.com/pay/cs_test_local',
+      },
     }
 
     axios.post.mockResolvedValue(mockResponse)
@@ -66,7 +66,7 @@ describe('PaymentService', () => {
     await PaymentService.createCheckoutSession()
 
     expect(axios.post).toHaveBeenCalledWith(
-      'http://localhost:3000/api/payment/create-checkout-session'
+      'http://localhost:3000/api/payment/create-checkout-session',
     )
   })
 
@@ -74,14 +74,14 @@ describe('PaymentService', () => {
     const mockError = new Error('Network Error')
     mockError.response = {
       status: 500,
-      data: { message: 'Internal Server Error' }
+      data: { message: 'Internal Server Error' },
     }
 
     axios.post.mockRejectedValue(mockError)
 
     await expect(PaymentService.createCheckoutSession()).rejects.toThrow('Network Error')
     expect(axios.post).toHaveBeenCalledWith(
-      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session'
+      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session',
     )
   })
 
@@ -90,8 +90,8 @@ describe('PaymentService', () => {
     mockError.response = {
       status: 400,
       data: {
-        message: 'Invalid payment parameters'
-      }
+        message: 'Invalid payment parameters',
+      },
     }
 
     axios.post.mockRejectedValue(mockError)
@@ -104,7 +104,7 @@ describe('PaymentService', () => {
       sessionId: 'cs_test_789',
       url: 'https://checkout.stripe.com/pay/cs_test_789',
       amount: 2000,
-      currency: 'eur'
+      currency: 'eur',
     }
     const mockResponse = { data: mockData }
 

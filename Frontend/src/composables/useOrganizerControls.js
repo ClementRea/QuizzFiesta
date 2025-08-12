@@ -104,6 +104,6 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     // Méthodes
     nextQuestion,
     endSession,
-    setupOrganizerSocketListeners
+    setupOrganizerSocketListeners,
   }
 }

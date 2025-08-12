@@ -73,7 +73,9 @@ const SessionService = {
   // Marquer un participant comme prêt/pas prêt
   async setSessionReady(sessionId, isReady) {
     try {
-      const response = await axios.put(`${getApiBaseUrl()}/session/${sessionId}/lobby/ready`, { isReady })
+      const response = await axios.put(`${getApiBaseUrl()}/session/${sessionId}/lobby/ready`, {
+        isReady,
+      })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -127,7 +129,7 @@ const SessionService = {
     try {
       const response = await axios.post(`${getApiBaseUrl()}/session/${sessionId}/answer`, {
         questionId,
-        answer
+        answer,
       })
       return response.data
     } catch (error) {
@@ -163,7 +165,7 @@ const SessionService = {
     } catch (error) {
       throw error.response?.data || error
     }
-  }
+  },
 }
 
 export default SessionService

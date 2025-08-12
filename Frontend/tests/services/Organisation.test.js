@@ -44,7 +44,7 @@ describe('OrganisationService', () => {
         address: '1 rue de la Paix',
         id: '123',
         owner: 'userId',
-        logo: null
+        logo: null,
       }
       const filtered = OrganisationService.filterOrganisationFields(orgData)
       expect(filtered).toEqual({
@@ -52,7 +52,7 @@ describe('OrganisationService', () => {
         description: 'Desc',
         email: 'org@example.com',
         phone: '0123456789',
-        address: '1 rue de la Paix'
+        address: '1 rue de la Paix',
       })
       expect(filtered.id).toBeUndefined()
       expect(filtered.owner).toBeUndefined()
@@ -65,19 +65,24 @@ describe('OrganisationService', () => {
         description: null,
         email: 'org@example.com',
         phone: '',
-        address: '1 rue de la Paix'
+        address: '1 rue de la Paix',
       }
       const filtered = OrganisationService.filterOrganisationFields(orgData)
       expect(filtered).toEqual({
         email: 'org@example.com',
-        address: '1 rue de la Paix'
+        address: '1 rue de la Paix',
       })
     })
   })
 
   describe('API methods', () => {
     it('should get all organisations', async () => {
-      const mockResponse = { data: [{ id: 1, name: 'Org 1' }, { id: 2, name: 'Org 2' }] }
+      const mockResponse = {
+        data: [
+          { id: 1, name: 'Org 1' },
+          { id: 2, name: 'Org 2' },
+        ],
+      }
       axios.get.mockResolvedValue(mockResponse)
 
       const result = await OrganisationService.getAllOrganisations()
@@ -100,7 +105,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Server error' } } }
       axios.get.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.getAllOrganisations()).rejects.toEqual({ error: 'Server error' })
+      await expect(OrganisationService.getAllOrganisations()).rejects.toEqual({
+        error: 'Server error',
+      })
     })
 
     it('should get organisation by id', async () => {
@@ -117,7 +124,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Organisation not found' } } }
       axios.get.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.getOrganisationById(999)).rejects.toEqual({ error: 'Organisation not found' })
+      await expect(OrganisationService.getOrganisationById(999)).rejects.toEqual({
+        error: 'Organisation not found',
+      })
     })
 
     it('should get my organisations', async () => {
@@ -126,7 +135,9 @@ describe('OrganisationService', () => {
 
       const result = await OrganisationService.getMyOrganisations()
 
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/organisations/myOrganisations'))
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining('/organisations/myOrganisations'),
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -139,12 +150,15 @@ describe('OrganisationService', () => {
         description: 'Description',
         email: 'org@example.com',
         phone: '0123456789',
-        address: '1 rue de la Paix'
+        address: '1 rue de la Paix',
       }
 
       const result = await OrganisationService.createOrganisation(orgData)
 
-      expect(axios.post).toHaveBeenCalledWith(expect.stringContaining('/organisations/create'), orgData)
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/organisations/create'),
+        orgData,
+      )
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -159,7 +173,7 @@ describe('OrganisationService', () => {
         email: 'org@example.com',
         phone: '0123456789',
         address: '1 rue de la Paix',
-        logo: mockFile
+        logo: mockFile,
       }
 
       const result = await OrganisationService.createOrganisation(orgData)
@@ -168,8 +182,8 @@ describe('OrganisationService', () => {
         expect.stringContaining('/organisations/create'),
         expect.any(FormData),
         expect.objectContaining({
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -178,7 +192,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Validation failed' } } }
       axios.post.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.createOrganisation({})).rejects.toEqual({ error: 'Validation failed' })
+      await expect(OrganisationService.createOrganisation({})).rejects.toEqual({
+        error: 'Validation failed',
+      })
     })
 
     it('should update organisation', async () => {
@@ -190,7 +206,7 @@ describe('OrganisationService', () => {
 
       expect(axios.put).toHaveBeenCalledWith(
         expect.stringContaining('/organisations/update/1'),
-        updateData
+        updateData,
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -199,7 +215,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Not authorized' } } }
       axios.put.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.updateOrganisation(1, {})).rejects.toEqual({ error: 'Not authorized' })
+      await expect(OrganisationService.updateOrganisation(1, {})).rejects.toEqual({
+        error: 'Not authorized',
+      })
     })
 
     it('should delete organisation', async () => {
@@ -216,7 +234,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Cannot delete organisation' } } }
       axios.delete.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.deleteOrganisation(1)).rejects.toEqual({ error: 'Cannot delete organisation' })
+      await expect(OrganisationService.deleteOrganisation(1)).rejects.toEqual({
+        error: 'Cannot delete organisation',
+      })
     })
 
     it('should join organisation', async () => {
@@ -233,7 +253,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Already a member' } } }
       axios.post.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.joinOrganisation(1)).rejects.toEqual({ error: 'Already a member' })
+      await expect(OrganisationService.joinOrganisation(1)).rejects.toEqual({
+        error: 'Already a member',
+      })
     })
 
     it('should leave organisation', async () => {
@@ -250,17 +272,19 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Not a member' } } }
       axios.post.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.leaveOrganisation(1)).rejects.toEqual({ error: 'Not a member' })
+      await expect(OrganisationService.leaveOrganisation(1)).rejects.toEqual({
+        error: 'Not a member',
+      })
     })
 
     it('should get organisation members', async () => {
-      const mockResponse = { 
-        data: { 
+      const mockResponse = {
+        data: {
           members: [
             { id: 1, name: 'User 1', role: 'owner' },
-            { id: 2, name: 'User 2', role: 'member' }
-          ] 
-        } 
+            { id: 2, name: 'User 2', role: 'member' },
+          ],
+        },
       }
       axios.get.mockResolvedValue(mockResponse)
 
@@ -274,7 +298,9 @@ describe('OrganisationService', () => {
       const mockError = { response: { data: { error: 'Access denied' } } }
       axios.get.mockRejectedValue(mockError)
 
-      await expect(OrganisationService.getOrganisationMembers(1)).rejects.toEqual({ error: 'Access denied' })
+      await expect(OrganisationService.getOrganisationMembers(1)).rejects.toEqual({
+        error: 'Access denied',
+      })
     })
 
     it('should handle network errors gracefully', async () => {
