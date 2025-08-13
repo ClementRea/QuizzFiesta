@@ -66,7 +66,7 @@ exports.quizCreate = async (req, res, next) => {
       await session.commitTransaction();
 
       const populatedQuiz = await Quiz.findById(quiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(201).json({
@@ -134,7 +134,7 @@ exports.getAllQuizes = async (req, res, next) => {
 
     const quizes = await Quiz.find(filter)
       .populate('createdBy', 'userName')
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -153,7 +153,7 @@ exports.getAllQuizes = async (req, res, next) => {
 exports.getMyQuizes = async (req, res, next) => {
   try {
     const quizes = await Quiz.find({ createdBy: req.user.id })
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -312,7 +312,7 @@ exports.quizUpdate = async (req, res, next) => {
       await session.commitTransaction();
 
       const populatedQuiz = await Quiz.findById(updatedQuiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(200).json({
@@ -386,7 +386,7 @@ exports.deleteQuiz = async (req, res, next) => {
 exports.getQuizByJoinCode = async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({ joinCode: req.params.joinCode.toUpperCase() })
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven answer')
       .populate('createdBy', 'userName');
 
     if (!quiz) {
@@ -467,7 +467,7 @@ exports.addQuestionsToQuiz = async (req, res, next) => {
       await session.commitTransaction();
 
       const updatedQuiz = await Quiz.findById(quiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(200).json({

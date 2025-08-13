@@ -4,8 +4,9 @@ const quizController = require('../controllers/quizController');
 const { protect } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const { compressImage } = require('../middlewares/imageCompression');
 
-// Configuration multer pour les logos de quiz
+// Config multer for logo
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, 'public/logos/');
@@ -17,7 +18,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtre pour n'accepter que les images
+// accept only images
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -26,19 +27,19 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Instance multer pour les logos (limite 5Mo)
+// limit 2mo images
 const uploadLogo = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, 
+  limits: { fileSize: 2 * 1024 * 1024 }, 
   fileFilter: fileFilter 
 });
 
 
 //POST
-router.post('/create', protect, uploadLogo.single('logo'), quizController.quizCreate);
+router.post('/create', protect, uploadLogo.single('logo'), compressImage, quizController.quizCreate);
 
 //PUT
-router.put('/update/:id', protect, uploadLogo.single('logo'), quizController.quizUpdate);
+router.put('/update/:id', protect, uploadLogo.single('logo'), compressImage, quizController.quizUpdate);
 router.put('/addQuestions/:id', protect, quizController.addQuestionsToQuiz);
 
 //GET

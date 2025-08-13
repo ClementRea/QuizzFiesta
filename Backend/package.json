@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:controllers": "jest controllers",
@@ -27,6 +28,7 @@
     "mongoose": "^8.10.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.2",
+    "sharp": "^0.34.3",
     "socket.io": "^4.8.1",
     "stripe": "^18.4.0"
   },

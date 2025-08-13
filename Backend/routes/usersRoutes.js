@@ -9,8 +9,9 @@ const {
 } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const { compressImage } = require('../middlewares/imageCompression');
 
-// Avatar storage configuration
+// config multer for logo
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, 'public/avatars/');
@@ -22,7 +23,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter to accept only images
+// accept only images
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -31,7 +32,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-//Only acccept images and limit size to 2MB
+//Only accept images and limit size to 2MB
 const upload = multer({
   storage: storage,
   limits: { fileSize: 2 * 1024 * 1024 }, 
@@ -40,7 +41,7 @@ const upload = multer({
 
 // public routes
 router.get('/getMe', protect, userController.getMe);
-router.put('/updateMe', protect, upload.single('avatar'), userController.updateMe);
+router.put('/updateMe', protect, upload.single('avatar'), compressImage, userController.updateMe);
 
 // View a specific user
 router.get('/:id', protect, checkOrganizationAccess, userController.getUserById);
