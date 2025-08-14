@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   }],
   organization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Organization'
+    ref: 'Organisation'
   },
   team: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,4 +1,3 @@
-const User = require('../models/User');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const LobbyParticipant = require('../models/LobbyParticipant');
@@ -36,11 +35,11 @@ exports.quizCreate = async (req, res, next) => {
     session.startTransaction();
 
     try {
-      // 1st create the quiz without questions
+      //create the quiz without questions
       const quiz = new Quiz(filteredBody);
       await quiz.save({ session });
 
-      // 2nd create the questions if provided
+      // create the questions if provided
       let questions = [];
       if (req.body.questions) {
         const parsedQuestions = typeof req.body.questions === 'string'
@@ -48,7 +47,7 @@ exports.quizCreate = async (req, res, next) => {
           : req.body.questions;
 
         if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
-          // Create all questions
+          // Create questions
           const questionPromises = parsedQuestions.map(async (questionData) => {
             questionData.quizId = quiz._id;
             const question = new Question(questionData);

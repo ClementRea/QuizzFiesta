@@ -2,7 +2,7 @@ const Organisation = require('../models/Organisation');
 const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
-const { compressImage } = require('../middlewares/imageCompression');
+const { compressImage } = require('../middlewares/imageCompressionMiddleware');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

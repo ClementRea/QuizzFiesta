@@ -4,7 +4,7 @@ const quizController = require('../controllers/quizController');
 const { protect } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
-const { compressImage } = require('../middlewares/imageCompression');
+const { compressImage } = require('../middlewares/imageCompressionMiddleware');
 
 // Config multer for logo
 const storage = multer.diskStorage({
