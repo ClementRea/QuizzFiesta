@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
         });
 
         const accessToken = tokenService.generateAccessToken(user._id, user.tokenVersion);
-        const refreshToken = tokenService.generateRefreshToken();
+        const refreshToken = tokenService.generateRefreshToken(user._id);
         const tokenFamily = tokenService.generateTokenFamily();
         const securityInfo = tokenService.extractSecurityInfo(req);
 
@@ -109,10 +109,8 @@ exports.login = async (req, res, next) => {
 
     tokenService.cleanExpiredTokens(user);
 
-    const tokenHash = await tokenService.hashRefreshToken(refreshToken);
     user.refreshTokens = user.refreshTokens || [];
     user.refreshTokens.push({
-        tokenHash,
         family: tokenFamily,
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -151,86 +149,52 @@ exports.refreshToken = async (req, res, next) => {
       });
     }
 
-    const user = await User.findOne({
-      'refreshTokens.expiresAt': { $gt: new Date() }
-    });
+    // Vérifier le JWT refresh token
+    const tokenVerification = tokenService.verifyRefreshToken(refreshToken);
+    
+    if (!tokenVerification.valid) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Invalid or expired refresh token'
+      });
+    }
 
+    // Extraire l'userId du token JWT
+    const { userId, family } = tokenVerification.payload;
+    
+    // Récupérer l'utilisateur directement avec l'userId
+    const user = await User.findById(userId);
+    
     if (!user) {
       return res.status(403).json({
         status: 'error',
-        message: 'No valid refresh token found'
+        message: 'User not found'
       });
     }
 
-    let matchingTokenIndex = -1;
-    let matchingToken = null;
-
-    for (let i = 0; i < user.refreshTokens.length; i++) {
-      const tokenObj = user.refreshTokens[i];
-      const isValid = await tokenService.verifyRefreshToken(refreshToken, tokenObj.tokenHash);
-      
-      if (isValid && tokenObj.expiresAt > new Date()) {
-        matchingTokenIndex = i;
-        matchingToken = tokenObj;
-        break;
-      }
-    }
-
-    if (!matchingToken) {
-
-      
-      tokenService.invalidateAllTokens(user);
-      user.suspiciousActivity = {
-        detected: true,
-        lastDetection: new Date(),
-        reason: 'Invalid refresh token reuse detected'
-      };
-      await user.save();
-
+    // Vérifier que la famille de token existe encore (pas révoquée)
+    const familyToken = user.refreshTokens.find(t => t.family === family && t.expiresAt > new Date());
+    
+    if (!familyToken) {
       return res.status(403).json({
         status: 'error',
-        message: 'Invalid refresh token - all sessions terminated for security'
+        message: 'Token family revoked or expired'
       });
     }
 
-    const timeSinceLastUse = Date.now() - (matchingToken.lastUsed?.getTime() || 0);
-    if (timeSinceLastUse < 1000) {
-      
-      tokenService.invalidateTokenFamily(user, matchingToken.family);
-      user.suspiciousActivity = {
-        detected: true,
-        lastDetection: new Date(),
-        reason: 'Possible refresh token reuse'
-      };
-      await user.save();
-
-      return res.status(403).json({
-        status: 'error',
-        message: 'Token reuse detected - session family terminated'
-      });
-    }
-
-    // ROTATION DES TOKENS - Générer de nouveaux tokens
+    // Générer nouveaux tokens
     const newAccessToken = tokenService.generateAccessToken(user._id, user.tokenVersion);
-    const newRefreshToken = tokenService.generateRefreshToken();
-    const newTokenHash = await tokenService.hashRefreshToken(newRefreshToken);
+    const newRefreshToken = tokenService.generateRefreshToken(user._id);
 
-    // Supprimer l'ancien refresh token
-    user.refreshTokens.splice(matchingTokenIndex, 1);
-
-    // Ajouter le nouveau refresh token
-    user.refreshTokens.push({
-      tokenHash: newTokenHash,
-      family: matchingToken.family, 
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      lastUsed: new Date(),
-      userAgent: securityInfo.userAgent,
-      ipAddress: securityInfo.ipAddress
-    });
+    // Mettre à jour la dernière utilisation de cette famille
+    const tokenIndex = user.refreshTokens.findIndex(t => t.family === family);
+    if (tokenIndex !== -1) {
+      user.refreshTokens[tokenIndex].lastUsed = new Date();
+      user.refreshTokens[tokenIndex].userAgent = securityInfo.userAgent;
+      user.refreshTokens[tokenIndex].ipAddress = securityInfo.ipAddress;
+    }
 
     tokenService.cleanExpiredTokens(user);
-
     await user.save();
 
     res.status(200).json({
@@ -252,24 +216,23 @@ exports.logout = async (req, res, next) => {
     const { refreshToken, logoutAll } = req.body;
 
     if (refreshToken) {
-      const user = await User.findOne({});
+      // Vérifier le JWT refresh token pour extraire l'userId
+      const tokenVerification = tokenService.verifyRefreshToken(refreshToken);
       
-      if (user) {
-        if (logoutAll) {
-          tokenService.invalidateAllTokens(user);
-        } else {
-          for (let i = 0; i < user.refreshTokens.length; i++) {
-            const tokenObj = user.refreshTokens[i];
-            const isValid = await tokenService.verifyRefreshToken(refreshToken, tokenObj.tokenHash);
-            
-            if (isValid) {
-              tokenService.invalidateTokenFamily(user, tokenObj.family);
-              break;
-            }
-          }
-        }
+      if (tokenVerification.valid) {
+        const { userId, family } = tokenVerification.payload;
+        const user = await User.findById(userId);
         
-        await user.save();
+        if (user) {
+          if (logoutAll) {
+            tokenService.invalidateAllTokens(user);
+          } else {
+            // Invalider seulement cette famille de tokens
+            tokenService.invalidateTokenFamily(user, family);
+          }
+          
+          await user.save();
+        }
       }
     }
 

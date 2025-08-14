@@ -4,14 +4,13 @@ const LobbyParticipant = require('../models/LobbyParticipant');
 const GameParticipant = require('../models/GameParticipant');
 const Question = require('../models/Question');
 
-// Créer une nouvelle session de jeu
+//Create new session
 exports.createGameSession = async (req, res) => {
   try {
     const { quizId } = req.params;
     const userId = req.user.id;
     const { settings = {} } = req.body;
 
-    // Vérifier que le quiz existe
     const quiz = await Quiz.findById(quizId);
     if (!quiz) {
       return res.status(404).json({
@@ -20,16 +19,13 @@ exports.createGameSession = async (req, res) => {
       });
     }
 
-    // Créer la session avec un code unique
     const session = await GameSession.createSession(quizId, userId, settings);
 
-    // Populate les données du quiz pour la réponse
     await session.populate([
       { path: 'quiz', select: 'title description logo' },
       { path: 'organizer', select: 'userName avatar' }
     ]);
 
-    // Compter le nombre de questions pour initialiser totalQuestions
     const questionsCount = await Question.countDocuments({ _id: { $in: quiz.questions } });
     session.gameState.totalQuestions = questionsCount;
     await session.save();
@@ -61,13 +57,12 @@ exports.createGameSession = async (req, res) => {
   }
 };
 
-// Rejoindre une session via le code
+// Join session by code => like ABC123
 exports.joinSessionByCode = async (req, res) => {
   try {
     const { sessionCode } = req.params;
     const userId = req.user.id;
 
-    // Trouver la session
     const session = await GameSession.findOne({ sessionCode })
       .populate([
         { path: 'quiz', select: 'title description logo questions' },
@@ -81,7 +76,6 @@ exports.joinSessionByCode = async (req, res) => {
       });
     }
 
-    // Vérifier si on peut rejoindre
     if (!session.canJoin() && !session.canLateJoin()) {
       return res.status(400).json({
         status: 'error',
@@ -91,7 +85,6 @@ exports.joinSessionByCode = async (req, res) => {
       });
     }
 
-    // Vérifier si l'utilisateur n'est pas déjà dans la session
     const existingParticipant = await LobbyParticipant.findOne({
       sessionId: session._id,
       userId
@@ -131,14 +124,13 @@ exports.joinSessionByCode = async (req, res) => {
   }
 };
 
-// Rejoindre le lobby d'une session
+// Join session lobby
 exports.joinSessionLobby = async (req, res) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user.id;
     const user = req.user;
 
-    // Vérifier que la session existe et qu'on peut la rejoindre
     const session = await GameSession.findById(sessionId);
     if (!session) {
       return res.status(404).json({
@@ -154,14 +146,12 @@ exports.joinSessionLobby = async (req, res) => {
       });
     }
 
-    // Vérifier si déjà participant
     let participant = await LobbyParticipant.findOne({
       sessionId,
       userId
     });
 
     if (participant) {
-      // Réactiver le participant
       participant.connectionStatus = 'connected';
       participant.lastSeen = new Date();
       await participant.save();
@@ -175,15 +165,13 @@ exports.joinSessionLobby = async (req, res) => {
         userName: user.userName,
         avatar: user.avatar,
         isOrganizer,
-        isReady: isOrganizer // L'organisateur est automatiquement prêt
+        isReady: isOrganizer
       });
       await participant.save();
 
-      // Mettre à jour le compteur de participants
       await session.updateParticipantCount(1);
     }
 
-    // Récupérer tous les participants du lobby
     const participants = await LobbyParticipant.find({
       sessionId,
       connectionStatus: { $ne: 'disconnected' }
@@ -213,7 +201,7 @@ exports.joinSessionLobby = async (req, res) => {
   }
 };
 
-// Quitter le lobby d'une session  
+// leave session  
 exports.leaveSessionLobby = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -227,21 +215,17 @@ exports.leaveSessionLobby = async (req, res) => {
       });
     }
 
-    // Supprimer le participant du lobby
     const result = await LobbyParticipant.deleteOne({
       sessionId,
       userId
     });
 
     if (result.deletedCount > 0) {
-      // Mettre à jour le compteur
       await session.updateParticipantCount(-1);
 
-      // Si c'était l'organisateur et qu'il reste des participants, transférer à quelqu'un d'autre
       if (session.organizerId.toString() === userId.toString()) {
         const remainingParticipants = await LobbyParticipant.find({ sessionId });
         if (remainingParticipants.length > 0) {
-          // Transférer à un autre participant
           const newOrganizer = remainingParticipants[0];
           newOrganizer.isOrganizer = true;
           await newOrganizer.save();
@@ -249,7 +233,6 @@ exports.leaveSessionLobby = async (req, res) => {
           session.organizerId = newOrganizer.userId;
           await session.save();
         } else {
-          // Personne dans le lobby, marquer la session comme annulée
           session.status = 'cancelled';
           await session.save();
         }
@@ -270,7 +253,7 @@ exports.leaveSessionLobby = async (req, res) => {
   }
 };
 
-// Récupérer les participants du lobby
+// get all participants
 exports.getSessionParticipants = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -296,7 +279,7 @@ exports.getSessionParticipants = async (req, res) => {
   }
 };
 
-// Marquer un participant comme prêt/pas prêt
+// Set ready or not to a participant
 exports.setParticipantReady = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -335,7 +318,7 @@ exports.setParticipantReady = async (req, res) => {
   }
 };
 
-// Démarrer la session (organisateur seulement)
+// Start session, organizer anly
 exports.startGameSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -349,7 +332,6 @@ exports.startGameSession = async (req, res) => {
       });
     }
 
-    // Vérifier que c'est l'organisateur
     if (session.organizerId.toString() !== userId.toString()) {
       return res.status(403).json({
         status: 'error',
@@ -357,7 +339,6 @@ exports.startGameSession = async (req, res) => {
       });
     }
 
-    // Vérifier qu'il y a au moins 1 participant prêt (incluant l'organisateur)
     const readyParticipants = await LobbyParticipant.countDocuments({
       sessionId,
       isReady: true
@@ -370,23 +351,19 @@ exports.startGameSession = async (req, res) => {
       });
     }
 
-    // Démarrer la session
     await session.startGame();
 
-    // Migrer tous les participants du lobby vers le jeu
     const lobbyParticipants = await LobbyParticipant.find({
       sessionId,
       connectionStatus: 'connected'
     });
 
-    // Supprimer les anciens GameParticipant pour ce quiz/utilisateurs (éviter les doublons)
     const userIds = lobbyParticipants.map(p => p.userId);
     await GameParticipant.deleteMany({
       quizId: session.quizId, 
       userId: { $in: userIds }
     });
 
-    // Créer les nouveaux GameParticipant
     const gameParticipants = lobbyParticipants.map(p => ({
       sessionId,
       quizId: session.quizId,
@@ -401,8 +378,6 @@ exports.startGameSession = async (req, res) => {
 
     await GameParticipant.insertMany(gameParticipants);
 
-    // Nettoyer le lobby (optionnel, on peut le garder pour le retour)
-    // await LobbyParticipant.deleteMany({ sessionId });
 
     res.json({
       status: 'success',
@@ -426,7 +401,7 @@ exports.startGameSession = async (req, res) => {
   }
 };
 
-// Récupérer l'état de la session
+// get session state to block joining during quiz game
 exports.getSessionState = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -460,7 +435,7 @@ exports.getSessionState = async (req, res) => {
   }
 };
 
-// Terminer une session (nettoyage)
+// end game session
 exports.endGameSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -474,7 +449,6 @@ exports.endGameSession = async (req, res) => {
       });
     }
 
-    // Seul l'organisateur peut terminer la session
     if (session.organizerId.toString() !== userId.toString()) {
       return res.status(403).json({
         status: 'error',
@@ -482,16 +456,13 @@ exports.endGameSession = async (req, res) => {
       });
     }
 
-    // Terminer la session
     await session.endSession();
 
-    // Marquer tous les participants comme terminés
     await GameParticipant.updateMany(
       { sessionId },
       { gameStatus: 'finished' }
     );
 
-    // Nettoyer le lobby
     await LobbyParticipant.deleteMany({ sessionId });
 
     res.json({

@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 class TokenService {
-    
-    // Générer un access token court et sécurisé
+
+    // Generate Access token
     generateAccessToken(userId, tokenVersion) {
         return jwt.sign(
             { 
@@ -21,28 +21,48 @@ class TokenService {
         );
     }
 
-    // Générer un refresh token cryptographiquement sécurisé
-    generateRefreshToken() {
-        return crypto.randomBytes(64).toString('hex');
+    // Generate Refresh token with userId
+    generateRefreshToken(userId) {
+        return jwt.sign(
+            { 
+                userId,
+                type: 'refresh',
+                family: this.generateTokenFamily()
+            },
+            process.env.JWT_SECRET,
+            { 
+                expiresIn: '7d',
+                issuer: 'quizzfiesta',
+                audience: 'quizzfiesta-client'
+            }
+        );
     }
 
-    // Générer un identifiant de famille unique
+    // Generate family identifier
     generateTokenFamily() {
         return crypto.randomUUID();
     }
 
-    // Hasher le refresh token pour le stockage
+    // Hash the refresh token for storage
     async hashRefreshToken(token) {
         const salt = await bcrypt.genSalt(12);
         return bcrypt.hash(token, salt);
     }
 
-    // Vérifier un refresh token hashé
-    async verifyRefreshToken(token, hash) {
-        return bcrypt.compare(token, hash);
+    // Verify refresh token
+    verifyRefreshToken(token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
+                issuer: 'quizzfiesta',
+                audience: 'quizzfiesta-client'
+            });
+            return { valid: true, payload: decoded };
+        } catch (error) {
+            return { valid: false, error: error.message };
+        }
     }
 
-    // Vérifier un access token
+    // Verify access token
     verifyAccessToken(token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET, {
@@ -55,7 +75,7 @@ class TokenService {
         }
     }
 
-    // Extraire les infos de sécurité depuis la requête
+    // Extract security info from request
     extractSecurityInfo(req) {
         return {
             userAgent: req.get('User-Agent') || 'unknown',
@@ -63,13 +83,13 @@ class TokenService {
         };
     }
 
-    // Détecter une activité suspecte
+    // Detect suspicious activity
     detectSuspiciousActivity(user, securityInfo) {
         const recentTokens = user.refreshTokens.filter(
             token => Date.now() - token.createdAt.getTime() < 60 * 60 * 1000 // 1 heure
         );
 
-        // Trop de tokens créés récemment
+        // 1 : To much usage
         if (recentTokens.length > 5) {
             return {
                 suspicious: true,
@@ -77,7 +97,7 @@ class TokenService {
             };
         }
 
-        // Connexions depuis des IPs très différentes
+        // Connexions from too muh ips
         const uniqueIPs = new Set(recentTokens.map(t => t.ipAddress));
         if (uniqueIPs.size > 3) {
             return {
@@ -89,7 +109,7 @@ class TokenService {
         return { suspicious: false };
     }
 
-    // Nettoyer les tokens expirés
+    // clear token
     cleanExpiredTokens(user) {
         const now = new Date();
         user.refreshTokens = user.refreshTokens.filter(
@@ -98,16 +118,16 @@ class TokenService {
         return user;
     }
 
-    // Invalider toute une famille de tokens (en cas de compromission)
+    // Invalidate token family
     invalidateTokenFamily(user, family) {
         user.refreshTokens = user.refreshTokens.filter(
             token => token.family !== family
         );
-        user.tokenVersion += 1; // Invalide tous les access tokens existants
+        user.tokenVersion += 1
         return user;
     }
 
-    // Invalider tous les tokens de l'utilisateur
+    // Invalidate all tokens
     invalidateAllTokens(user) {
         user.refreshTokens = [];
         user.tokenVersion += 1;

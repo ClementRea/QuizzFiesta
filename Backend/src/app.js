@@ -18,17 +18,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware de sécurité
+//Secrurity
 app.use(helmet());
 
-//On retire le header Cross-Origin-Resource-Policy pour les avatars
+//No CORS for images
 app.use('/avatars', (req, res, next) => {
   res.removeHeader('Cross-Origin-Resource-Policy');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, '../public/avatars')));
 
-//On retire le header Cross-Origin-Resource-Policy pour les logos
+//No CORS for logos
 app.use('/logos', (req, res, next) => {
   res.removeHeader('Cross-Origin-Resource-Policy');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -44,7 +44,6 @@ app.use(morgan('dev'));
 
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Route de base pour éviter les 404
 app.get('/', (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -59,10 +58,8 @@ app.get('/', (req, res) => {
     });
 });
 
-// Route pour favicon.ico
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Route test pour vérifier si le serv est correctement lancé
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -78,14 +75,12 @@ app.use('/api/organisation', organisationRoutes);
 app.use('/api/session', socketMiddleware, gameSessionRoutes);
 app.use('/api/payment', paymentRoutes);
 
-// Middleware de gestion des routes non trouvées
 app.use((req, res, next) => {
     const error = new Error('Not Found');
     error.status = 404;
     next(error);
 });
 
-// Middleware de gestion des erreurs
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(err.status || 500).json({

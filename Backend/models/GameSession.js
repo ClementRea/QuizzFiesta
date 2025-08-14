@@ -2,14 +2,12 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 
 const gameSessionSchema = new mongoose.Schema({
-  // Référence au quiz template
   quizId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quiz',
     required: true
   },
   
-  // Code unique pour rejoindre cette session de jeu
   sessionCode: {
     type: String,
     required: true,
@@ -18,27 +16,23 @@ const gameSessionSchema = new mongoose.Schema({
     length: 6
   },
   
-  // Organisateur de cette session (celui qui l'a créée)
   organizerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   
-  // État de la session
   status: {
     type: String,
     enum: ['lobby', 'playing', 'finished', 'cancelled'],
     default: 'lobby'
   },
   
-  // Indique si cette session est créée automatiquement pour la compatibilité legacy
   isLegacy: {
     type: Boolean,
     default: false
   },
   
-  // Configuration de la session
   settings: {
     maxParticipants: {
       type: Number,
@@ -48,7 +42,7 @@ const gameSessionSchema = new mongoose.Schema({
     },
     timePerQuestion: {
       type: Number,
-      default: 30, // secondes
+      default: 30,
       min: 5,
       max: 300
     },
@@ -62,7 +56,6 @@ const gameSessionSchema = new mongoose.Schema({
     }
   },
   
-  // État du jeu en cours
   gameState: {
     currentQuestionIndex: {
       type: Number,
@@ -82,13 +75,11 @@ const gameSessionSchema = new mongoose.Schema({
     }
   },
   
-  // Métadonnées de la session
   participantCount: {
     type: Number,
     default: 0
   },
   
-  // Dates importantes
   createdAt: {
     type: Date,
     default: Date.now
@@ -104,23 +95,20 @@ const gameSessionSchema = new mongoose.Schema({
     default: null
   },
   
-  // TTL pour nettoyer les sessions inactives (24h après création)
   expiresAt: {
     type: Date,
     default: function() {
-      return new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 heures
+      return new Date(Date.now() + 24 * 60 * 60 * 1000);
     }
   }
 }, {
   timestamps: true
 });
 
-// Index pour performance et nettoyage automatique
 gameSessionSchema.index({ quizId: 1, status: 1 });
 gameSessionSchema.index({ organizerId: 1 });
 gameSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Méthodes statiques
 gameSessionSchema.statics.generateSessionCode = function() {
   return crypto.randomBytes(3).toString('hex').toUpperCase();
 };
@@ -130,7 +118,6 @@ gameSessionSchema.statics.createSession = async function(quizId, organizerId, se
   let attempts = 0;
   const maxAttempts = 10;
   
-  // Générer un code unique (avec retry en cas de collision)
   do {
     sessionCode = this.generateSessionCode();
     const existingSession = await this.findOne({ sessionCode });
@@ -162,7 +149,6 @@ gameSessionSchema.statics.createSession = async function(quizId, organizerId, se
   return await session.save();
 };
 
-// Méthodes d'instance
 gameSessionSchema.methods.canJoin = function() {
   return this.status === 'lobby' && this.participantCount < this.settings.maxParticipants;
 };
@@ -191,12 +177,10 @@ gameSessionSchema.methods.nextQuestion = async function() {
   this.gameState.currentQuestionIndex += 1;
   this.gameState.currentQuestionStartTime = new Date();
   
-  // Vérifier si c'est la fin du quiz
   if (this.gameState.currentQuestionIndex >= this.gameState.totalQuestions) {
     this.status = 'finished';
     this.finishedAt = new Date();
   }
-  
   return await this.save();
 };
 
@@ -211,7 +195,6 @@ gameSessionSchema.methods.updateParticipantCount = async function(delta) {
   return await this.save();
 };
 
-// Populate virtuel pour les informations du quiz
 gameSessionSchema.virtual('quiz', {
   ref: 'Quiz',
   localField: 'quizId',
@@ -219,7 +202,6 @@ gameSessionSchema.virtual('quiz', {
   justOne: true
 });
 
-// Populate virtuel pour l'organisateur
 gameSessionSchema.virtual('organizer', {
   ref: 'User',
   localField: 'organizerId',
@@ -227,7 +209,6 @@ gameSessionSchema.virtual('organizer', {
   justOne: true
 });
 
-// S'assurer que les virtuals sont inclus dans JSON
 gameSessionSchema.set('toJSON', { virtuals: true });
 gameSessionSchema.set('toObject', { virtuals: true });
 

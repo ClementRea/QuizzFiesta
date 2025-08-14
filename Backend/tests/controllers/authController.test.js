@@ -1,9 +1,10 @@
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
-const { register, login } = require('../../controllers/authController');
+const { register, login, refreshToken, logout } = require('../../controllers/authController');
 
 jest.mock('../../models/User', () => ({
   findOne: jest.fn(),
+  findById: jest.fn(),
   create: jest.fn()
 }));
 
@@ -18,7 +19,10 @@ jest.mock('../../services/tokenService', () => ({
   extractSecurityInfo: jest.fn(() => ({ userAgent: 'test-agent', ipAddress: '127.0.0.1' })),
   detectSuspiciousActivity: jest.fn(() => ({ suspicious: false })),
   cleanExpiredTokens: jest.fn((user) => user),
-  hashRefreshToken: jest.fn(() => 'mocked-hash')
+  hashRefreshToken: jest.fn(() => 'mocked-hash'),
+  verifyRefreshToken: jest.fn(() => ({ valid: true, payload: { userId: 'u1', family: 'fam1' } })),
+  invalidateAllTokens: jest.fn(),
+  invalidateTokenFamily: jest.fn()
 }));
 
 describe('authController', () => {
@@ -64,6 +68,25 @@ describe('authController', () => {
         refreshToken: expect.any(String),
         data: { user: expect.objectContaining({ email: 'test@mail.com' }) }
       }));
+    });
+
+    it('should flag suspicious activity and invalidate tokens', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.detectSuspiciousActivity.mockReturnValue({ suspicious: true, reason: 'test' });
+      req.body = { email: 'suspicious@mail.com', password: '123', userName: 'sus', role: 'user' };
+      User.findOne.mockResolvedValue(null);
+      const userMock = { _id: '3', email: 'suspicious@mail.com', userName: 'sus', role: 'user', password: '123', refreshTokens: [], save: jest.fn().mockResolvedValue() };
+      User.create.mockResolvedValue(userMock);
+      await register(req, res, next);
+      expect(require('../../services/tokenService').invalidateAllTokens).toHaveBeenCalled();
+    });
+
+    it('should call next on creation error', async () => {
+      req.body = { email: 'err@mail.com', password: '123', userName: 'err', role: 'user' };
+      User.findOne.mockResolvedValue(null);
+      User.create.mockRejectedValue(new Error('db fail'));
+      await register(req, res, next);
+      expect(next).toHaveBeenCalled();
     });
   });
 
@@ -131,6 +154,94 @@ describe('authController', () => {
         refreshToken: expect.any(String),
         data: { user: expect.objectContaining({ email: 'test@mail.com' }) }
       }));
+    });
+
+    it('should detect suspicious activity on login', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.detectSuspiciousActivity.mockReturnValue({ suspicious: true, reason: 'multi ip' });
+      req.body = { email: 'sus@login.com', password: 'pw' };
+      const userMock = { _id: '5', email: 'sus@login.com', password: 'pw', refreshTokens: [], comparePassword: jest.fn().mockResolvedValue(true), save: jest.fn().mockResolvedValue() };
+      User.findOne.mockReturnValue({ select: jest.fn().mockResolvedValue(userMock) });
+      await login(req, res, next);
+      expect(require('../../services/tokenService').invalidateAllTokens).toHaveBeenCalled();
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('should return 401 if missing token', async () => {
+      req.body = {};
+      await refreshToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(401);
+    });
+
+    it('should return 403 if token invalid', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: false, error: 'bad' });
+      req.body = { refreshToken: 'x' };
+      await refreshToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+
+    it('should return 403 if user not found', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: true, payload: { userId: 'nope', family: 'fam1' } });
+      req.body = { refreshToken: 'good' };
+      User.findById.mockResolvedValue(null);
+      await refreshToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+
+    it('should return 403 if family revoked', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: true, payload: { userId: 'u10', family: 'famX' } });
+      req.body = { refreshToken: 'good' };
+      const userMock = { _id: 'u10', refreshTokens: [{ family: 'famY', expiresAt: new Date(Date.now() + 10000) }], save: jest.fn() };
+      User.findById.mockResolvedValue(userMock);
+      await refreshToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+
+    it('should refresh successfully', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: true, payload: { userId: 'u11', family: 'famZ' } });
+      req.body = { refreshToken: 'good' };
+      const tokenRecord = { family: 'famZ', expiresAt: new Date(Date.now() + 10000) };
+      const userMock = { _id: 'u11', refreshTokens: [tokenRecord], save: jest.fn() };
+      User.findById.mockResolvedValue(userMock);
+      await refreshToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ accessToken: expect.any(String), refreshToken: expect.any(String) }));
+    });
+  });
+
+  describe('logout', () => {
+    it('should logout without token', async () => {
+      req.body = {};
+      await logout(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Logged out successfully' }));
+    });
+
+    it('should logout all sessions', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: true, payload: { userId: 'u1', family: 'fam1' } });
+      const userMock = { _id: 'u1', refreshTokens: [], save: jest.fn() };
+      User.findById.mockResolvedValue(userMock);
+      req.body = { refreshToken: 'tok', logoutAll: true };
+      await logout(req, res, next);
+      expect(tokenService.invalidateAllTokens).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Logged out from all sessions' }));
+    });
+
+    it('should logout single session family', async () => {
+      const tokenService = require('../../services/tokenService');
+      tokenService.verifyRefreshToken.mockReturnValue({ valid: true, payload: { userId: 'u2', family: 'fam2' } });
+      const userMock = { _id: 'u2', refreshTokens: [], save: jest.fn() };
+      User.findById.mockResolvedValue(userMock);
+      req.body = { refreshToken: 'tok', logoutAll: false };
+      await logout(req, res, next);
+      expect(tokenService.invalidateTokenFamily).toHaveBeenCalledWith(userMock, 'fam2');
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Logged out successfully' }));
     });
   });
 });

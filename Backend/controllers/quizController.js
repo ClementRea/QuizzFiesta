@@ -1,4 +1,3 @@
-const User = require('../models/User');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const LobbyParticipant = require('../models/LobbyParticipant');
@@ -36,11 +35,11 @@ exports.quizCreate = async (req, res, next) => {
     session.startTransaction();
 
     try {
-      // 1st create the quiz without questions
+      //create the quiz without questions
       const quiz = new Quiz(filteredBody);
       await quiz.save({ session });
 
-      // 2nd create the questions if provided
+      // create the questions if provided
       let questions = [];
       if (req.body.questions) {
         const parsedQuestions = typeof req.body.questions === 'string'
@@ -48,7 +47,7 @@ exports.quizCreate = async (req, res, next) => {
           : req.body.questions;
 
         if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
-          // Create all questions
+          // Create questions
           const questionPromises = parsedQuestions.map(async (questionData) => {
             questionData.quizId = quiz._id;
             const question = new Question(questionData);
@@ -66,7 +65,7 @@ exports.quizCreate = async (req, res, next) => {
       await session.commitTransaction();
 
       const populatedQuiz = await Quiz.findById(quiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(201).json({
@@ -134,7 +133,7 @@ exports.getAllQuizes = async (req, res, next) => {
 
     const quizes = await Quiz.find(filter)
       .populate('createdBy', 'userName')
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -153,7 +152,7 @@ exports.getAllQuizes = async (req, res, next) => {
 exports.getMyQuizes = async (req, res, next) => {
   try {
     const quizes = await Quiz.find({ createdBy: req.user.id })
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -312,7 +311,7 @@ exports.quizUpdate = async (req, res, next) => {
       await session.commitTransaction();
 
       const populatedQuiz = await Quiz.findById(updatedQuiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(200).json({
@@ -386,7 +385,7 @@ exports.deleteQuiz = async (req, res, next) => {
 exports.getQuizByJoinCode = async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({ joinCode: req.params.joinCode.toUpperCase() })
-      .populate('questions')
+      .populate('questions', 'content type points timeGiven answer')
       .populate('createdBy', 'userName');
 
     if (!quiz) {
@@ -467,7 +466,7 @@ exports.addQuestionsToQuiz = async (req, res, next) => {
       await session.commitTransaction();
 
       const updatedQuiz = await Quiz.findById(quiz._id)
-        .populate('questions')
+        .populate('questions', 'content type points timeGiven answer')
         .populate('createdBy', 'userName');
 
       res.status(200).json({

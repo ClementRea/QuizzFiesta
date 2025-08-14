@@ -2,8 +2,8 @@ const Organisation = require('../models/Organisation');
 const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
+const { compressImage } = require('../middlewares/imageCompressionMiddleware');
 
-// Configuration multer pour upload de logo
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'public/logos/');
@@ -37,10 +37,13 @@ exports.createOrganisation = async (req, res, next) => {
         });
       }
 
+      if (req.file) {
+        await compressImage(req, res, () => {});
+      }
+
       const { name, description } = req.body;
       const userId = req.user._id;
 
-      // Vérifier que le nom est fourni
       if (!name || name.trim() === '') {
         return res.status(400).json({
           status: 'error',
@@ -48,7 +51,6 @@ exports.createOrganisation = async (req, res, next) => {
         });
       }
 
-      // Vérifier si une organisation avec ce nom existe déjà pour cet utilisateur
       const existingOrg = await Organisation.findOne({ 
         name: name.trim(),
         createdBy: userId
@@ -61,7 +63,6 @@ exports.createOrganisation = async (req, res, next) => {
         });
       }
 
-      // Créer l'organisation
       const organisationData = {
         name: name.trim(),
         description: description || '',
@@ -169,18 +170,16 @@ exports.getMyOrganisations = async (req, res, next) => {
   try {
     const userId = req.user._id;
 
-    // Organisations créées par l'utilisateur
     const createdOrganisations = await Organisation
       .find({ createdBy: userId })
       .populate('createdBy', 'userName email avatar')
       .populate('members', 'userName email avatar')
       .sort({ createdAt: -1 });
 
-    // Organisations où l'utilisateur est membre
     const memberOrganisations = await Organisation
       .find({ 
         members: userId,
-        createdBy: { $ne: userId } // Exclure celles déjà créées par lui
+        createdBy: { $ne: userId }
       })
       .populate('createdBy', 'userName email avatar')
       .populate('members', 'userName email avatar')
@@ -215,6 +214,10 @@ exports.updateOrganisation = async (req, res, next) => {
         });
       }
 
+      if (req.file) {
+        await compressImage(req, res, () => {});
+      }
+
       const { id } = req.params;
       const { name, description } = req.body;
       const userId = req.user._id;
@@ -228,7 +231,6 @@ exports.updateOrganisation = async (req, res, next) => {
         });
       }
 
-      // Vérifier que l'utilisateur est le propriétaire
       if (organisation.ownerId.toString() !== userId.toString()) {
         return res.status(403).json({
           status: 'error',
@@ -236,7 +238,6 @@ exports.updateOrganisation = async (req, res, next) => {
         });
       }
 
-      // Mettre à jour les champs
       const updateData = {};
       if (name && name.trim() !== '') updateData.name = name.trim();
       if (description !== undefined) updateData.description = description;
@@ -268,7 +269,7 @@ exports.updateOrganisation = async (req, res, next) => {
 exports.addMembersToOrganisation = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { memberIds } = req.body; // Array d'IDs d'utilisateurs
+    const { memberIds } = req.body;
     const userId = req.user._id;
 
     const organisation = await Organisation.findById(id);
@@ -280,7 +281,6 @@ exports.addMembersToOrganisation = async (req, res, next) => {
       });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire
     if (organisation.ownerId.toString() !== userId.toString()) {
       return res.status(403).json({
         status: 'error',
@@ -295,7 +295,6 @@ exports.addMembersToOrganisation = async (req, res, next) => {
       });
     }
 
-    // Vérifier que les utilisateurs existent
     const users = await User.find({ _id: { $in: memberIds } });
     
     if (users.length !== memberIds.length) {
@@ -305,7 +304,6 @@ exports.addMembersToOrganisation = async (req, res, next) => {
       });
     }
 
-    // Ajouter uniquement les nouveaux membres
     const newMembers = memberIds.filter(memberId => 
       !organisation.members.includes(memberId)
     );
@@ -342,7 +340,7 @@ exports.addMembersToOrganisation = async (req, res, next) => {
 exports.removeMembersFromOrganisation = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { memberIds } = req.body; // Array d'IDs d'utilisateurs
+    const { memberIds } = req.body; 
     const userId = req.user._id;
 
     const organisation = await Organisation.findById(id);
@@ -354,7 +352,6 @@ exports.removeMembersFromOrganisation = async (req, res, next) => {
       });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire
     if (organisation.ownerId.toString() !== userId.toString()) {
       return res.status(403).json({
         status: 'error',
@@ -369,7 +366,6 @@ exports.removeMembersFromOrganisation = async (req, res, next) => {
       });
     }
 
-    // Empêcher de retirer le propriétaire
     if (memberIds.includes(userId.toString())) {
       return res.status(400).json({
         status: 'error',
@@ -377,7 +373,6 @@ exports.removeMembersFromOrganisation = async (req, res, next) => {
       });
     }
 
-    // Retirer les membres
     organisation.members = organisation.members.filter(
       memberId => !memberIds.includes(memberId.toString())
     );
@@ -416,7 +411,6 @@ exports.deleteOrganisation = async (req, res, next) => {
       });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire
     if (organisation.ownerId.toString() !== userId.toString()) {
       return res.status(403).json({
         status: 'error',

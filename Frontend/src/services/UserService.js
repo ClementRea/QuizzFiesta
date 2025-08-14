@@ -1,11 +1,8 @@
 import axios from 'axios'
 
-// Dynamic URL based on environment
 const getApiBaseUrl = () => {
-  // Utilise la variable d'environnement ou l'URL de production
   const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
 
-  // Fallback pour le développement local
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
@@ -13,18 +10,11 @@ const getApiBaseUrl = () => {
   return `${apiUrl}/api`
 }
 
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('accessToken')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
 
 const UserService = {
   async getMe() {
     try {
-      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`, {
-        headers: getAuthHeaders(),
-      })
+      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -33,14 +23,11 @@ const UserService = {
 
   async updateMe(userData) {
     try {
-      // If there's an avatar (file), use FormData
       if (userData.avatar && userData.avatar instanceof File) {
         const formData = new FormData()
 
-        // Add the avatar file
         formData.append('avatar', userData.avatar)
 
-        // Add other user data
         if (userData.userName) formData.append('userName', userData.userName)
         if (userData.email) formData.append('email', userData.email)
         if (userData.currentPassword) formData.append('currentPassword', userData.currentPassword)
@@ -48,16 +35,12 @@ const UserService = {
 
         const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
           headers: {
-            ...getAuthHeaders(),
             'Content-Type': 'multipart/form-data',
           },
         })
         return response.data
       } else {
-        // Otherwise, send as classic JSON
-        const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, userData, {
-          headers: getAuthHeaders(),
-        })
+        const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, userData, {})
         return response.data
       }
     } catch (error) {
@@ -73,9 +56,7 @@ const UserService = {
           currentPassword,
           newPassword,
         },
-        {
-          headers: getAuthHeaders(),
-        },
+        {},
       )
       return response.data
     } catch (error) {
@@ -90,7 +71,6 @@ const UserService = {
 
       const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
         headers: {
-          ...getAuthHeaders(),
           'Content-Type': 'multipart/form-data',
         },
       })
@@ -102,15 +82,12 @@ const UserService = {
 
   async updateProfile(profileData) {
     try {
-      // Only profile data (no password, no avatar)
       const filteredData = {
         userName: profileData.userName,
         email: profileData.email,
       }
 
-      const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, filteredData, {
-        headers: getAuthHeaders(),
-      })
+      const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, filteredData, {})
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -119,9 +96,7 @@ const UserService = {
 
   async getUserById(userId) {
     try {
-      const response = await axios.get(`${getApiBaseUrl()}/user/${userId}`, {
-        headers: getAuthHeaders(),
-      })
+      const response = await axios.get(`${getApiBaseUrl()}/user/${userId}`, {})
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -135,12 +110,10 @@ const UserService = {
   },
 
   validateUsername(username) {
-    // Au moins 3 caractères, pas d'espaces
     return !!(username && username.length >= 3 && !/\s/.test(username))
   },
 
   validatePassword(password) {
-    // Au moins 6 caractères
     return !!(password && password.length >= 6)
   },
 

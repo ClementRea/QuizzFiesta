@@ -1,10 +1,7 @@
-// Backend/tests/models/User.test.js
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 
-// Mock de bcrypt
 jest.mock('bcryptjs');
 
 describe('User Model', () => {
@@ -13,7 +10,6 @@ describe('User Model', () => {
   });
 
   afterAll(async () => {
-    // Fermer la connexion mongoose après les tests
     await mongoose.connection.close();
   });
 
@@ -133,7 +129,6 @@ describe('User Model', () => {
 
   describe('Password Hashing (pre-save hook)', () => {
     beforeEach(() => {
-      // Mock bcrypt functions
       bcrypt.genSalt.mockResolvedValue('mockedsalt');
       bcrypt.hash.mockResolvedValue('hashedpassword123');
     });
@@ -145,9 +140,7 @@ describe('User Model', () => {
         password: 'plainpassword123'
       });
 
-      // Mock la méthode save pour déclencher le pre-save hook
       const saveMock = jest.spyOn(user, 'save').mockImplementation(async function() {
-        // Simuler l'exécution du pre-save hook
         if (this.isModified('password')) {
           this.password = 'hashedpassword123';
         }
@@ -167,13 +160,10 @@ describe('User Model', () => {
         password: 'alreadyhashed'
       });
 
-      // Simuler que le password n'a pas été modifié
       jest.spyOn(user, 'isModified').mockReturnValue(false);
 
       const saveMock = jest.spyOn(user, 'save').mockImplementation(async function() {
-        // Si pas modifié, ne pas hasher
         if (!this.isModified('password')) {
-          // Garder le password original
           return Promise.resolve(this);
         }
       });
@@ -191,7 +181,6 @@ describe('User Model', () => {
         password: 'plainpassword123'
       });
 
-      // Mock bcrypt pour qu'il lève une erreur
       bcrypt.genSalt.mockRejectedValue(new Error('Hashing failed'));
 
       jest.spyOn(user, 'isModified').mockReturnValue(true);
@@ -246,12 +235,10 @@ describe('User Model', () => {
 
   describe('getRandomAvatar function', () => {
     afterEach(() => {
-      // Restaurer Math.random après chaque test
       jest.restoreAllMocks();
     });
 
     it('should return avatar1.png when random returns 0', () => {
-      // Mock Math.random pour retourner 0 (premier élément)
       jest.spyOn(Math, 'random').mockReturnValue(0);
 
       const user = new User({
@@ -264,7 +251,6 @@ describe('User Model', () => {
     });
 
     it('should return avatar2.png when random returns 0.9', () => {
-      // Mock Math.random pour retourner 0.9 (deuxième élément)
       jest.spyOn(Math, 'random').mockReturnValue(0.9);
 
       const user = new User({
@@ -277,7 +263,6 @@ describe('User Model', () => {
     });
 
     it('should only return valid avatar options', () => {
-      // Tester avec différentes valeurs aléatoires
       const randomValues = [0, 0.1, 0.5, 0.7, 0.99];
       const results = [];
 
@@ -291,10 +276,9 @@ describe('User Model', () => {
         });
         
         results.push(user.avatar);
-        jest.restoreAllMocks(); // Nettoyer entre chaque itération
+        jest.restoreAllMocks();
       });
 
-      // Vérifier que tous les résultats sont des avatars valides
       results.forEach(avatar => {
         expect(['avatar1.png', 'avatar2.png']).toContain(avatar);
       });
@@ -303,12 +287,11 @@ describe('User Model', () => {
     it('should provide good distribution with multiple calls', () => {
       const results = [];
       
-      // Simuler alternance entre les deux valeurs
       jest.spyOn(Math, 'random')
-        .mockReturnValueOnce(0)    // avatar1.png
-        .mockReturnValueOnce(0.8)  // avatar2.png
-        .mockReturnValueOnce(0.2)  // avatar1.png
-        .mockReturnValueOnce(0.9); // avatar2.png
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(0.8)
+        .mockReturnValueOnce(0.2)
+        .mockReturnValueOnce(0.9);
 
       for (let i = 0; i < 4; i++) {
         const user = new User({
@@ -321,7 +304,6 @@ describe('User Model', () => {
 
       expect(results).toEqual(['avatar1.png', 'avatar2.png', 'avatar1.png', 'avatar2.png']);
       
-      // Vérifier qu'on a bien les deux avatars
       const uniqueAvatars = [...new Set(results)];
       expect(uniqueAvatars).toHaveLength(2);
       expect(uniqueAvatars).toContain('avatar1.png');
@@ -337,7 +319,6 @@ describe('User Model', () => {
         password: 'password123'
       });
 
-      // Vérifier que le password n'est pas sélectionné par défaut
       const schema = User.schema;
       expect(schema.paths.password.options.select).toBe(false);
     });
@@ -355,7 +336,7 @@ describe('User Model', () => {
       const schema = User.schema;
       
       expect(schema.paths.badges.options.type[0].ref).toBe('Badge');
-      expect(schema.paths.organization.options.ref).toBe('Organization');
+      expect(schema.paths.organization.options.ref).toBe('Organisation');
       expect(schema.paths.team.options.ref).toBe('Team');
     });
   });
