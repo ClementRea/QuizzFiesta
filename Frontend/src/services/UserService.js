@@ -10,7 +10,6 @@ const getApiBaseUrl = () => {
   return `${apiUrl}/api`
 }
 
-
 const UserService = {
   async getMe() {
     try {
