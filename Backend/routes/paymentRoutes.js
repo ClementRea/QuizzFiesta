@@ -1,7 +1,17 @@
-const express = require('express');
-const router = express.Router();
-const paymentController = require('../controllers/PaymentController');
+const express = require("express");
 
-router.post('/create-checkout-session', paymentController.createCheckoutSession);
+const router = express.Router();
+const paymentController = require("../controllers/PaymentController");
+
+router.post(
+  "/create-checkout-session",
+  paymentController.createCheckoutSession,
+);
+router.get("/predefined-amounts", paymentController.getPredefinedAmounts);
+router.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  paymentController.handleWebhook,
+);
 
 module.exports = router;

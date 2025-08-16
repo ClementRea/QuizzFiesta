@@ -1,88 +1,93 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const gameParticipantSchema = new mongoose.Schema({
-  // Référence à la session de jeu (plus au quiz directement)
-  sessionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'GameSession',
-    required: true
-  },
-  // On garde aussi quizId pour compatibilité et requêtes optimisées
-  quizId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Quiz',
-    required: true
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  userName: {
-    type: String,
-    required: true
-  },
-  avatar: {
-    type: String
-  },
-  // Ces champs sont maintenant gérés au niveau de la GameSession
-  // On les garde pour le state individuel du participant
-  currentQuestionIndex: {
-    type: Number,
-    default: 0
-  },
-  lastQuestionAnsweredAt: {
-    type: Date,
-    default: null
-  },
-  answers: [{
-    questionId: {
+const gameParticipantSchema = new mongoose.Schema(
+  {
+    // Référence à la session de jeu (plus au quiz directement)
+    sessionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question',
-      required: true
+      ref: "GameSession",
+      required: true,
     },
-    questionIndex: {
+    // On garde aussi quizId pour compatibilité et requêtes optimisées
+    quizId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Quiz",
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    userName: {
+      type: String,
+      required: true,
+    },
+    avatar: {
+      type: String,
+    },
+    // Ces champs sont maintenant gérés au niveau de la GameSession
+    // On les garde pour le state individuel du participant
+    currentQuestionIndex: {
       type: Number,
-      required: true
+      default: 0,
     },
-    answer: mongoose.Schema.Types.Mixed, // Number, Array, String selon le type
-    submittedAt: {
+    lastQuestionAnsweredAt: {
       type: Date,
-      default: Date.now
+      default: null,
     },
-    isCorrect: {
-      type: Boolean,
-      default: false
-    },
-    points: {
+    answers: [
+      {
+        questionId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Question",
+          required: true,
+        },
+        questionIndex: {
+          type: Number,
+          required: true,
+        },
+        answer: mongoose.Schema.Types.Mixed, // Number, Array, String selon le type
+        submittedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        isCorrect: {
+          type: Boolean,
+          default: false,
+        },
+        points: {
+          type: Number,
+          default: 0,
+        },
+        timeSpent: {
+          type: Number, // en millisecondes
+          default: 0,
+        },
+      },
+    ],
+    totalScore: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    timeSpent: {
-      type: Number, // en millisecondes
-      default: 0
-    }
-  }],
-  totalScore: {
-    type: Number,
-    default: 0
+    gameStatus: {
+      type: String,
+      enum: ["playing", "waiting", "finished", "disconnected"],
+      default: "playing",
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastActivity: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  gameStatus: {
-    type: String,
-    enum: ['playing', 'waiting', 'finished', 'disconnected'],
-    default: 'playing'
+  {
+    timestamps: true,
   },
-  joinedAt: {
-    type: Date,
-    default: Date.now
-  },
-  lastActivity: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
+);
 
 // Index unique par session (un user peut jouer plusieurs fois au même quiz dans des sessions différentes)
 gameParticipantSchema.index({ sessionId: 1, userId: 1 }, { unique: true });
@@ -96,6 +101,9 @@ gameParticipantSchema.index({ sessionId: 1, totalScore: -1 });
 // Nettoyer les sessions inactives (2 heures)
 gameParticipantSchema.index({ lastActivity: 1 }, { expireAfterSeconds: 7200 });
 
-const GameParticipant = mongoose.model('GameParticipant', gameParticipantSchema);
+const GameParticipant = mongoose.model(
+  "GameParticipant",
+  gameParticipantSchema,
+);
 
 module.exports = GameParticipant;

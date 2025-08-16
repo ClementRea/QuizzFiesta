@@ -1,6 +1,7 @@
-const sharp = require('sharp');
-const path = require('path');
-const fs = require('fs').promises;
+const sharp = require("sharp");
+
+const path = require("path");
+const fs = require("fs").promises;
 
 // No image found => continue
 const compressImage = async (req, res, next) => {
@@ -11,23 +12,29 @@ const compressImage = async (req, res, next) => {
   try {
     const originalPath = req.file.path;
     const fileExtension = path.extname(req.file.originalname).toLowerCase();
-    
-    if (!['.jpg', '.jpeg', '.png', '.webp'].includes(fileExtension)) {
+
+    if (![".jpg", ".jpeg", ".png", ".webp"].includes(fileExtension)) {
       return next();
     }
 
-    const compressedFilename = req.file.filename.replace(fileExtension, '.webp');
-    const compressedPath = path.join(path.dirname(originalPath), compressedFilename);
+    const compressedFilename = req.file.filename.replace(
+      fileExtension,
+      ".webp",
+    );
+    const compressedPath = path.join(
+      path.dirname(originalPath),
+      compressedFilename,
+    );
 
     // resize
     await sharp(originalPath)
-      .resize(800, 800, { 
-        fit: 'inside',
-        withoutEnlargement: true 
+      .resize(800, 800, {
+        fit: "inside",
+        withoutEnlargement: true,
       })
-      .webp({ 
+      .webp({
         quality: 80,
-        effort: 3 
+        effort: 3,
       })
       .toFile(compressedPath);
 
@@ -35,11 +42,11 @@ const compressImage = async (req, res, next) => {
 
     req.file.path = compressedPath;
     req.file.filename = compressedFilename;
-    req.file.mimetype = 'image/webp';
+    req.file.mimetype = "image/webp";
 
     next();
   } catch (error) {
-    console.error('Erreur compression image:', error);
+    console.error("Erreur compression image:", error);
     next();
   }
 };
