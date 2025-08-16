@@ -1,49 +1,52 @@
-const GameSession = require('../models/GameSession');
-const GameParticipant = require('../models/GameParticipant');
-const Quiz = require('../models/Quiz');
-const Question = require('../models/Question');
+const GameSession = require("../models/GameSession");
+const GameParticipant = require("../models/GameParticipant");
+const Quiz = require("../models/Quiz");
+const Question = require("../models/Question");
 
 function normalizeAnswer(answer) {
   return answer
     .toString()
     .trim()
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
 // Fonction pour extraire les bonnes réponses selon le type de question
 function getCorrectAnswers(question) {
   switch (question.type) {
-    case 'MULTIPLE_CHOICE':
+    case "MULTIPLE_CHOICE":
       const correctAnswers = question.answer
-        .map((ans, index) => ans.isCorrect ? index : null)
-        .filter(index => index !== null);
+        .map((ans, index) => (ans.isCorrect ? index : null))
+        .filter((index) => index !== null);
       return correctAnswers.length === 1 ? correctAnswers[0] : correctAnswers;
-    
-    case 'TRUE_FALSE':
-      const correctTF = question.answer.find(ans => ans.isCorrect);
-      return correctTF ? (correctTF.text.toLowerCase() === 'true' || correctTF.text.toLowerCase() === 'vrai') : false;
-    
-    case 'CLASSIC':
-      const correctClassic = question.answer.find(ans => ans.isCorrect);
-      return correctClassic ? correctClassic.text : '';
-    
-    case 'ORDER':
+
+    case "TRUE_FALSE":
+      const correctTF = question.answer.find((ans) => ans.isCorrect);
+      return correctTF
+        ? correctTF.text.toLowerCase() === "true" ||
+            correctTF.text.toLowerCase() === "vrai"
+        : false;
+
+    case "CLASSIC":
+      const correctClassic = question.answer.find((ans) => ans.isCorrect);
+      return correctClassic ? correctClassic.text : "";
+
+    case "ORDER":
       return question.answer
         .sort((a, b) => a.correctOrder - b.correctOrder)
-        .map(ans => ans.text);
-    
-    case 'ASSOCIATION':
-      return question.answer.filter(ans => ans.isCorrect);
-    
-    case 'FIND_INTRUDER':
-      const intruder = question.answer.find(ans => ans.isCorrect);
+        .map((ans) => ans.text);
+
+    case "ASSOCIATION":
+      return question.answer.filter((ans) => ans.isCorrect);
+
+    case "FIND_INTRUDER":
+      const intruder = question.answer.find((ans) => ans.isCorrect);
       return intruder ? question.answer.indexOf(intruder) : 0;
-    
+
     default:
       return null;
   }
@@ -58,32 +61,32 @@ exports.getSessionQuestions = async (req, res) => {
     const session = await GameSession.findById(sessionId);
     if (!session) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Session non trouvée'
+        status: "error",
+        message: "Session non trouvée",
       });
     }
 
     const participant = await GameParticipant.findOne({
       sessionId,
-      userId
+      userId,
     });
 
     if (!participant) {
       return res.status(403).json({
-        status: 'error',
-        message: 'Vous ne participez pas à cette session'
+        status: "error",
+        message: "Vous ne participez pas à cette session",
       });
     }
 
     const quiz = await Quiz.findById(session.quizId).populate({
-      path: 'questions',
-      model: 'Question'
+      path: "questions",
+      model: "Question",
     });
 
     if (!quiz) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Quiz non trouvé'
+        status: "error",
+        message: "Quiz non trouvé",
       });
     }
 
@@ -92,8 +95,8 @@ exports.getSessionQuestions = async (req, res) => {
 
     if (!currentQuestion) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Plus de questions disponibles'
+        status: "error",
+        message: "Plus de questions disponibles",
       });
     }
 
@@ -103,43 +106,45 @@ exports.getSessionQuestions = async (req, res) => {
       title: currentQuestion.title || currentQuestion.content,
       description: currentQuestion.description,
       type: currentQuestion.type,
-      answers: currentQuestion.answer ? currentQuestion.answer.map(answer => ({
-        text: answer.text,
-        description: answer.description
-      })) : [],
+      answers: currentQuestion.answer
+        ? currentQuestion.answer.map((answer) => ({
+            text: answer.text,
+            description: answer.description,
+          }))
+        : [],
       points: currentQuestion.points,
       timeLimit: currentQuestion.timeGiven || session.settings.timePerQuestion,
       image: currentQuestion.image,
       items: currentQuestion.items,
       questionIndex: currentQuestionIndex,
-      totalQuestions: session.gameState.totalQuestions
+      totalQuestions: session.gameState.totalQuestions,
     };
 
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         question: questionForClient,
         gameState: {
           currentQuestionIndex: session.gameState.currentQuestionIndex,
           totalQuestions: session.gameState.totalQuestions,
           currentQuestionStartTime: session.gameState.currentQuestionStartTime,
-          timeRemaining: currentQuestion.timeGiven || session.settings.timePerQuestion
+          timeRemaining:
+            currentQuestion.timeGiven || session.settings.timePerQuestion,
         },
         participant: {
           currentQuestionIndex: participant.currentQuestionIndex,
           totalScore: participant.totalScore,
-          gameStatus: participant.gameStatus
-        }
-      }
+          gameStatus: participant.gameStatus,
+        },
+      },
     });
-
   } catch (error) {
-    console.error('Erreur récupération questions session:', error);
-    console.error('Stack trace:', error.stack);
+    console.error("Erreur récupération questions session:", error);
+    console.error("Stack trace:", error.stack);
     res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors de la récupération des questions',
-      error: error.message
+      status: "error",
+      message: "Erreur lors de la récupération des questions",
+      error: error.message,
     });
   }
 };
@@ -154,107 +159,113 @@ exports.submitSessionAnswer = async (req, res) => {
     const session = await GameSession.findById(sessionId);
     if (!session) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Session non trouvée'
+        status: "error",
+        message: "Session non trouvée",
       });
     }
 
-    if (session.status !== 'playing') {
+    if (session.status !== "playing") {
       return res.status(400).json({
-        status: 'error',
-        message: 'La session n\'est pas en état de jeu'
+        status: "error",
+        message: "La session n'est pas en état de jeu",
       });
     }
 
     const participant = await GameParticipant.findOne({
       sessionId,
-      userId
+      userId,
     });
 
     if (!participant) {
       return res.status(403).json({
-        status: 'error',
-        message: 'Vous ne participez pas à cette session'
+        status: "error",
+        message: "Vous ne participez pas à cette session",
       });
     }
 
     const currentQuestionIndex = session.gameState.currentQuestionIndex;
-    
+
     const existingAnswer = participant.answers.find(
-      a => a.questionIndex === currentQuestionIndex
+      (a) => a.questionIndex === currentQuestionIndex,
     );
 
     if (existingAnswer) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Vous avez déjà répondu à cette question'
+        status: "error",
+        message: "Vous avez déjà répondu à cette question",
       });
     }
 
     const question = await Question.findById(questionId);
     if (!question) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Question non trouvée'
+        status: "error",
+        message: "Question non trouvée",
       });
     }
 
     // Calculer les points et vérifier la réponse
     let isCorrect = false;
     let points = 0;
-    const timeSpent = Date.now() - session.gameState.currentQuestionStartTime.getTime();
+    const timeSpent =
+      Date.now() - session.gameState.currentQuestionStartTime.getTime();
 
     const correctAnswers = getCorrectAnswers(question);
-    
+
     switch (question.type) {
-      case 'MULTIPLE_CHOICE':
+      case "MULTIPLE_CHOICE":
         if (Array.isArray(correctAnswers)) {
-          isCorrect = Array.isArray(answer) && 
+          isCorrect =
+            Array.isArray(answer) &&
             answer.length === correctAnswers.length &&
-            answer.every(a => correctAnswers.includes(a));
+            answer.every((a) => correctAnswers.includes(a));
         } else {
           isCorrect = answer === correctAnswers;
         }
         break;
-        
-      case 'TRUE_FALSE':
+
+      case "TRUE_FALSE":
         isCorrect = answer === correctAnswers;
         break;
-        
-      case 'CLASSIC':
+
+      case "CLASSIC":
         const userAnswer = normalizeAnswer(String(answer));
         const correctAnswer = normalizeAnswer(String(correctAnswers));
         isCorrect = userAnswer === correctAnswer;
         break;
-        
-      case 'ORDER':
-        isCorrect = Array.isArray(answer) && 
+
+      case "ORDER":
+        isCorrect =
+          Array.isArray(answer) &&
           Array.isArray(correctAnswers) &&
           answer.length === correctAnswers.length &&
           answer.every((item, index) => item === correctAnswers[index]);
         break;
-        
-      case 'ASSOCIATION':
-        isCorrect = Array.isArray(answer) && 
+
+      case "ASSOCIATION":
+        isCorrect =
+          Array.isArray(answer) &&
           Array.isArray(correctAnswers) &&
           answer.length === correctAnswers.length &&
-          answer.every(pair => 
-            correctAnswers.some(correctPair => 
-              correctPair.leftIndex === pair.leftIndex && 
-              correctPair.rightIndex === pair.rightIndex
-            )
+          answer.every((pair) =>
+            correctAnswers.some(
+              (correctPair) =>
+                correctPair.leftIndex === pair.leftIndex &&
+                correctPair.rightIndex === pair.rightIndex,
+            ),
           );
         break;
-        
-      case 'FIND_INTRUDER':
+
+      case "FIND_INTRUDER":
         isCorrect = answer === correctAnswers;
         break;
     }
 
     if (isCorrect) {
       const basePoints = question.points || 100;
-      const questionTime = question.timeGiven || session.settings.timePerQuestion;
-      const maxTime = questionTime * 1000; 
+      const questionTime =
+        question.timeGiven || session.settings.timePerQuestion;
+      const maxTime = questionTime * 1000;
       const timeBonus = Math.max(0, (maxTime - timeSpent) / maxTime);
       points = Math.round(basePoints * (0.5 + 0.5 * timeBonus));
     }
@@ -267,7 +278,7 @@ exports.submitSessionAnswer = async (req, res) => {
       submittedAt: new Date(),
       isCorrect,
       points,
-      timeSpent
+      timeSpent,
     });
 
     participant.totalScore += points;
@@ -277,21 +288,22 @@ exports.submitSessionAnswer = async (req, res) => {
     await participant.save();
 
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         isCorrect,
         points,
         totalScore: participant.totalScore,
-        correctAnswer: session.settings.showCorrectAnswers ? correctAnswers : undefined,
-        timeSpent
-      }
+        correctAnswer: session.settings.showCorrectAnswers
+          ? correctAnswers
+          : undefined,
+        timeSpent,
+      },
     });
-
   } catch (error) {
-    console.error('Erreur soumission réponse session:', error);
+    console.error("Erreur soumission réponse session:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors de la soumission de la réponse'
+      status: "error",
+      message: "Erreur lors de la soumission de la réponse",
     });
   }
 };
@@ -305,41 +317,40 @@ exports.nextSessionQuestion = async (req, res) => {
     const session = await GameSession.findById(sessionId);
     if (!session) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Session non trouvée'
+        status: "error",
+        message: "Session non trouvée",
       });
     }
 
     // Vérifier que c'est l'organisateur
     if (session.organizerId.toString() !== userId.toString()) {
       return res.status(403).json({
-        status: 'error',
-        message: 'Seul l\'organisateur peut passer à la question suivante'
+        status: "error",
+        message: "Seul l'organisateur peut passer à la question suivante",
       });
     }
 
-    if (session.status !== 'playing') {
+    if (session.status !== "playing") {
       return res.status(400).json({
-        status: 'error',
-        message: 'La session n\'est pas en cours'
+        status: "error",
+        message: "La session n'est pas en cours",
       });
     }
 
     await session.nextQuestion();
 
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         gameState: session.gameState,
-        sessionStatus: session.status
-      }
+        sessionStatus: session.status,
+      },
     });
-
   } catch (error) {
-    console.error('Erreur question suivante:', error);
+    console.error("Erreur question suivante:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors du passage à la question suivante'
+      status: "error",
+      message: "Erreur lors du passage à la question suivante",
     });
   }
 };
@@ -352,14 +363,14 @@ exports.getSessionLeaderboard = async (req, res) => {
     const session = await GameSession.findById(sessionId);
     if (!session) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Session non trouvée'
+        status: "error",
+        message: "Session non trouvée",
       });
     }
 
     const participants = await GameParticipant.find({ sessionId })
       .sort({ totalScore: -1, lastQuestionAnsweredAt: 1 })
-      .select('userId userName avatar totalScore answers gameStatus');
+      .select("userId userName avatar totalScore answers gameStatus");
 
     // rang de chaque participant
     const leaderboard = participants.map((participant, index) => ({
@@ -369,27 +380,26 @@ exports.getSessionLeaderboard = async (req, res) => {
       avatar: participant.avatar,
       totalScore: participant.totalScore,
       answersCount: participant.answers.length,
-      correctAnswers: participant.answers.filter(a => a.isCorrect).length,
-      gameStatus: participant.gameStatus
+      correctAnswers: participant.answers.filter((a) => a.isCorrect).length,
+      gameStatus: participant.gameStatus,
     }));
 
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         leaderboard,
         session: {
           id: session._id,
           status: session.status,
-          gameState: session.gameState
-        }
-      }
+          gameState: session.gameState,
+        },
+      },
     });
-
   } catch (error) {
-    console.error('Erreur leaderboard session:', error);
+    console.error("Erreur leaderboard session:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors de la récupération du classement'
+      status: "error",
+      message: "Erreur lors de la récupération du classement",
     });
   }
 };
@@ -402,40 +412,39 @@ exports.getParticipantState = async (req, res) => {
 
     const participant = await GameParticipant.findOne({
       sessionId,
-      userId
+      userId,
     });
 
     if (!participant) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Participant non trouvé dans cette session'
+        status: "error",
+        message: "Participant non trouvé dans cette session",
       });
     }
 
     const session = await GameSession.findById(sessionId);
 
     res.json({
-      status: 'success',
+      status: "success",
       data: {
         participant: {
           currentQuestionIndex: participant.currentQuestionIndex,
           totalScore: participant.totalScore,
           gameStatus: participant.gameStatus,
           answersCount: participant.answers.length,
-          correctAnswers: participant.answers.filter(a => a.isCorrect).length
+          correctAnswers: participant.answers.filter((a) => a.isCorrect).length,
         },
         session: {
           gameState: session.gameState,
-          status: session.status
-        }
-      }
+          status: session.status,
+        },
+      },
     });
-
   } catch (error) {
-    console.error('Erreur état participant:', error);
+    console.error("Erreur état participant:", error);
     res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors de la récupération de l\'état'
+      status: "error",
+      message: "Erreur lors de la récupération de l'état",
     });
   }
 };
