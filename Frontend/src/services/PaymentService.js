@@ -16,11 +16,15 @@ const PaymentService = {
   async createCheckoutSession(amount) {
     const apiUrl = `${getApiBaseUrl()}/payment/create-checkout-session`
     const token = localStorage.getItem('accessToken')
-    const response = await axios.post(apiUrl, { amount }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const response = await axios.post(
+      apiUrl,
+      { amount },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
     return response.data
   },
 
