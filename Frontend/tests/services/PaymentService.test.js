@@ -1,119 +1,93 @@
-const PaymentService = require('../../src/services/PaymentService').default
 const axios = require('axios')
-
 jest.mock('axios')
 
-// Mock window.location
-delete window.location
-window.location = { hostname: 'test.com' }
+Object.defineProperty(window, 'localStorage', {
+	value: {
+		getItem: jest.fn(() => 'mock-access'),
+		setItem: jest.fn(),
+		removeItem: jest.fn(),
+		clear: jest.fn()
+	},
+	writable: true
+})
+
+const loadService = () => require('../../src/services/PaymentService').default
 
 describe('PaymentService', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    delete process.env.VITE_API_URL
-    window.location.hostname = 'test.com'
-  })
+	let PaymentService
 
-  it('should create checkout session successfully', async () => {
-    const mockResponse = {
-      data: {
-        id: 'cs_test_123',
-        url: 'https://checkout.stripe.com/pay/cs_test_123',
-        success: true,
-      },
-    }
+	beforeEach(() => {
+		jest.clearAllMocks()
+		delete window.location
+		window.location = { hostname: 'localhost' }
+		process.env.VITE_API_URL = ''
+		PaymentService = loadService()
+	})
 
-    axios.post.mockResolvedValue(mockResponse)
+	describe('createCheckoutSession', () => {
+		it('envoie la requête POST avec le token', async () => {
+			const mockResp = { data: { url: 'https://checkout.stripe/test' } }
+			axios.post.mockResolvedValue(mockResp)
 
-    const result = await PaymentService.createCheckoutSession()
+			const result = await PaymentService.createCheckoutSession(500)
 
-    expect(result).toEqual(mockResponse.data)
-    expect(axios.post).toHaveBeenCalledWith(
-      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session',
-    )
-    expect(axios.post).toHaveBeenCalledTimes(1)
-  })
+			expect(axios.post).toHaveBeenCalledWith(
+				'http://localhost:3000/api/payment/create-checkout-session',
+				{ amount: 500 },
+				{ headers: { Authorization: 'Bearer mock-access' } }
+			)
+			expect(result).toEqual(mockResp.data)
+		})
 
-  it('should use environment variable for API URL', async () => {
-    process.env.VITE_API_URL = 'https://custom-api.com'
-    const mockResponse = {
-      data: {
-        id: 'cs_test_456',
-        url: 'https://checkout.stripe.com/pay/cs_test_456',
-      },
-    }
+		it('utilise Authorization: Bearer null si pas de token', async () => {
+			window.localStorage.getItem.mockReturnValueOnce(null)
+			const mockResp = { data: { url: 'https://stripe/no-token' } }
+			axios.post.mockResolvedValue(mockResp)
 
-    axios.post.mockResolvedValue(mockResponse)
+			const result = await PaymentService.createCheckoutSession(1000)
 
-    await PaymentService.createCheckoutSession()
+			expect(axios.post).toHaveBeenCalledWith(
+				'http://localhost:3000/api/payment/create-checkout-session',
+				{ amount: 1000 },
+				{ headers: { Authorization: 'Bearer null' } }
+			)
+			expect(result).toEqual(mockResp.data)
+		})
 
-    expect(axios.post).toHaveBeenCalledWith(
-      'https://custom-api.com/api/payment/create-checkout-session',
-    )
-  })
+		it('propage les erreurs (ex: réseau)', async () => {
+			const netErr = new Error('Network')
+			axios.post.mockRejectedValue(netErr)
 
-  it('should use localhost URL in development', async () => {
-    window.location.hostname = 'localhost'
-    const mockResponse = {
-      data: {
-        id: 'cs_test_local',
-        url: 'https://checkout.stripe.com/pay/cs_test_local',
-      },
-    }
+			await expect(PaymentService.createCheckoutSession(2000)).rejects.toThrow('Network')
+		})
+	})
 
-    axios.post.mockResolvedValue(mockResponse)
+	describe('getPredefinedAmounts', () => {
+		it('GET vers endpoint des montants', async () => {
+			const mockResp = { data: [{ amount: 100, label: '1€' }] }
+			axios.get.mockResolvedValue(mockResp)
 
-    await PaymentService.createCheckoutSession()
+			const result = await PaymentService.getPredefinedAmounts()
 
-    expect(axios.post).toHaveBeenCalledWith(
-      'http://localhost:3000/api/payment/create-checkout-session',
-    )
-  })
+			expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/payment/predefined-amounts')
+			expect(result).toEqual(mockResp.data)
+		})
 
-  it('should handle API errors properly', async () => {
-    const mockError = new Error('Network Error')
-    mockError.response = {
-      status: 500,
-      data: { message: 'Internal Server Error' },
-    }
+			it('base URL production quand hostname != localhost', async () => {
+				window.location.hostname = 'prod.example.com'
+				process.env.VITE_API_URL = 'https://prod.api'
+				const mockResp = { data: [{ amount: 500 }] }
+				axios.get.mockResolvedValue(mockResp)
+				const result = await PaymentService.getPredefinedAmounts()
+				expect(axios.get).toHaveBeenCalledWith('https://prod.api/api/payment/predefined-amounts')
+				expect(result).toEqual(mockResp.data)
+			})
 
-    axios.post.mockRejectedValue(mockError)
+		it('propage erreur backend', async () => {
+			const err = { response: { data: { error: 'Service indisponible' } } }
+			axios.get.mockRejectedValue(err)
+			await expect(PaymentService.getPredefinedAmounts()).rejects.toEqual(err)
+		})
+	})
 
-    await expect(PaymentService.createCheckoutSession()).rejects.toThrow('Network Error')
-    expect(axios.post).toHaveBeenCalledWith(
-      'https://quizzfiesta.onrender.com/api/payment/create-checkout-session',
-    )
-  })
-
-  it('should handle different error responses', async () => {
-    const mockError = new Error('Bad Request')
-    mockError.response = {
-      status: 400,
-      data: {
-        message: 'Invalid payment parameters',
-      },
-    }
-
-    axios.post.mockRejectedValue(mockError)
-
-    await expect(PaymentService.createCheckoutSession()).rejects.toThrow('Bad Request')
-  })
-
-  it('should return response data directly', async () => {
-    const mockData = {
-      sessionId: 'cs_test_789',
-      url: 'https://checkout.stripe.com/pay/cs_test_789',
-      amount: 2000,
-      currency: 'eur',
-    }
-    const mockResponse = { data: mockData }
-
-    axios.post.mockResolvedValue(mockResponse)
-
-    const result = await PaymentService.createCheckoutSession()
-
-    expect(result).toEqual(mockData)
-    expect(result.sessionId).toBe('cs_test_789')
-    expect(result.amount).toBe(2000)
-  })
 })

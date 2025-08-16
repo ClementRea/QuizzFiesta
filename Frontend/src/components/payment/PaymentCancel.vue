@@ -39,7 +39,7 @@
             no-caps
             rounded
             size="md"
-            to="/payment"
+            to="/payment/checkout"
             outline
             class="q-px-xl"
           />
