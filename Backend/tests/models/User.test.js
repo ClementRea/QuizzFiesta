@@ -157,7 +157,6 @@ describe("User Model", () => {
 
       jest.spyOn(user, "isModified").mockReturnValue(false);
 
-
       await user.save();
 
       expect(bcrypt.genSalt).not.toHaveBeenCalled();
@@ -310,7 +309,6 @@ describe("User Model", () => {
 
   describe("Password selection", () => {
     it("should not select password field by default", () => {
-
       const schema = User.schema;
       expect(schema.paths.password.options.select).toBe(false);
     });

@@ -15,9 +15,6 @@ const PREDEFINED_AMOUNTS = [
 
 exports.createCheckoutSession = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    console.log("Headers:", req.headers.authorization);
-
     const { amount } = req.body;
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -59,7 +56,6 @@ exports.createCheckoutSession = async (req, res) => {
       cancel_url: `${YOUR_DOMAIN}/payment/cancel`,
       metadata: {
         userId: userId.toString(),
-        amount: amount.toString(),
       },
     });
 
@@ -96,20 +92,62 @@ exports.handleWebhook = async (req, res) => {
       .send(`Webhook signature verification failed: ${err.message}`);
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
+  switch (event.type) {
+    // session OK
+    case "checkout.session.completed":
+      const session = event.data.object;
+      const userId = session?.metadata?.userId;
 
-    try {
-      const payment = await Payment.findOne({ stripeSessionId: session.id });
-      if (payment) {
-        payment.status = "completed";
-        payment.stripePaymentIntentId = session.payment_intent;
-        payment.updatedAt = new Date();
-        await payment.save();
+      try {
+        if (userId) {
+          const payment = await Payment.findOneAndUpdate(
+            {
+              stripeSessionId: session.id,
+              userId: userId,
+              status: "pending",
+            },
+            {
+              status: "completed",
+              stripePaymentIntentId: session.payment_intent,
+              updatedAt: new Date(),
+            },
+          );
+          if (!payment) {
+            return;
+          }
+        } else {
+          console.error(
+            "checkout.session.completed sans metadata.userId – paiement ignoré",
+          );
+        }
+      } catch (error) {
+        console.error("Erreur mise à jour paiement:", error);
       }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du paiement:", error);
-    }
+      break;
+
+    //Session expired
+    case "checkout.session.expired":
+      const expiredSession = event.data.object;
+      await Payment.findOneAndUpdate(
+        { stripeSessionId: expiredSession.id },
+        {
+          status: "canceled",
+          updatedAt: new Date(),
+        },
+      );
+      break;
+
+    // Payment fail
+    case "payment_intent.payment_failed":
+      const failedPayment = event.data.object;
+      await Payment.findOneAndUpdate(
+        { stripePaymentIntentId: failedPayment.id },
+        {
+          status: "failed",
+          updatedAt: new Date(),
+        },
+      );
+      break;
   }
 
   res.json({ received: true });

@@ -126,7 +126,13 @@ describe("PaymentController", () => {
       });
       mockConstructEvent.mockReturnValue({
         type: "checkout.session.completed",
-        data: { object: { id: "cs_done", payment_intent: "pi_123" } },
+        data: {
+          object: {
+            id: "cs_done",
+            payment_intent: "pi_123",
+            metadata: { userId: user._id.toString() },
+          },
+        },
       });
       const req = { headers: { "stripe-signature": "sig" }, body: {} };
       await paymentController.handleWebhook(req, res);
