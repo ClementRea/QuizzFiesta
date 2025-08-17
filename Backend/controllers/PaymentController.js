@@ -145,6 +145,43 @@ exports.handleWebhook = async (req, res) => {
       );
       break;
 
+    // Async payment succeeded
+    case "checkout.session.async_payment_succeeded":
+      const asyncSuccessSession = event.data.object;
+      const asyncUserId = asyncSuccessSession?.metadata?.userId;
+      
+      try {
+        if (asyncUserId) {
+          await Payment.findOneAndUpdate(
+            {
+              stripeSessionId: asyncSuccessSession.id,
+              userId: asyncUserId,
+              status: "pending",
+            },
+            {
+              status: "completed",
+              stripePaymentIntentId: asyncSuccessSession.payment_intent,
+              updatedAt: new Date(),
+            },
+          );
+        }
+      } catch (error) {
+        console.error("Erreur async payment succeeded:", error);
+      }
+      break;
+
+    // Async payment failed
+    case "checkout.session.async_payment_failed":
+      const asyncFailedSession = event.data.object;
+      await Payment.findOneAndUpdate(
+        { stripeSessionId: asyncFailedSession.id },
+        {
+          status: "failed",
+          updatedAt: new Date(),
+        },
+      );
+      break;
+
     // Payment fail
     case "payment_intent.payment_failed":
       const failedPayment = event.data.object;
