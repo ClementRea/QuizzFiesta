@@ -149,7 +149,7 @@ exports.handleWebhook = async (req, res) => {
     case "checkout.session.async_payment_succeeded":
       const asyncSuccessSession = event.data.object;
       const asyncUserId = asyncSuccessSession?.metadata?.userId;
-      
+
       try {
         if (asyncUserId) {
           await Payment.findOneAndUpdate(

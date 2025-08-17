@@ -16,7 +16,14 @@ const socketMiddleware = require("../middlewares/socketMiddleware");
 
 const app = express();
 
-app.use(express.json());
+// Middleware to handle JSON and raw body parsing for stripe session
+app.use((req, res, next) => {
+  if (req.path === "/api/payment/webhook" && req.method === "POST") {
+    express.raw({ type: "application/json" })(req, res, next);
+  } else {
+    express.json()(req, res, next);
+  }
+});
 app.use(express.urlencoded({ extended: true }));
 
 //Secrurity

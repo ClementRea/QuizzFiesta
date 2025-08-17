@@ -8,10 +8,6 @@ router.post(
   paymentController.createCheckoutSession,
 );
 router.get("/predefined-amounts", paymentController.getPredefinedAmounts);
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  paymentController.handleWebhook,
-);
+router.post("/webhook", paymentController.handleWebhook);
 
 module.exports = router;
