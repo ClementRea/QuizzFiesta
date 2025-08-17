@@ -272,7 +272,9 @@ class SocketManager {
         gameState: session.gameState,
       });
 
+      // Démarrer le timer et diffuser la première question
       await this.startQuestionTimerWithQuestionTime(sessionId);
+      await this.broadcastCurrentQuestion(sessionId);
     } catch (error) {
       console.error("Erreur lobby:start:", error);
       socket.emit("error", { message: "Erreur lors du démarrage" });
@@ -282,14 +284,18 @@ class SocketManager {
   async handleGameJoin(socket, { sessionId }) {
     try {
       const userId = socket.user._id.toString();
+      console.log(`🎮 handleGameJoin: User ${userId} joining session ${sessionId}`);
 
       const session = await GameSession.findById(sessionId);
       const participant = await GameParticipant.findOne({ sessionId, userId });
 
       if (!session || !participant) {
+        console.log("❌ Session ou participant non trouvé:", { session: !!session, participant: !!participant });
         socket.emit("error", { message: "Session ou participant non trouvé" });
         return;
       }
+
+      console.log(`✅ Session trouvée: ${session.status}, GameState:`, session.gameState);
 
       socket.join(`game_${sessionId}`);
       this.addToSessionRoom(sessionId, socket.id, "game");
@@ -544,10 +550,17 @@ class SocketManager {
 
   async sendGameState(socket, sessionId) {
     try {
+      console.log(`📤 sendGameState pour session ${sessionId}`);
       const session = await GameSession.findById(sessionId);
       const quiz = await Quiz.findById(session.quizId).populate("questions");
+      
+      console.log(`📊 Session gameState:`, session.gameState);
+      console.log(`📚 Quiz questions count: ${quiz.questions.length}`);
+      
       const currentQuestion =
         quiz.questions[session.gameState.currentQuestionIndex];
+
+      console.log(`📝 Current question index: ${session.gameState.currentQuestionIndex}, Question:`, !!currentQuestion);
 
       if (currentQuestion) {
         const questionForClient = {
@@ -570,11 +583,15 @@ class SocketManager {
 
         const questionTime =
           currentQuestion.timeGiven || session.settings.timePerQuestion;
+        
+        console.log(`📤 Envoi game:current-question via WebSocket`);
         socket.emit("game:current-question", {
           question: questionForClient,
           gameState: session.gameState,
           timeRemaining: this.getTimeRemaining(sessionId, questionTime),
         });
+      } else {
+        console.log(`❌ Aucune question courante disponible`);
       }
 
       const leaderboard = await this.getLeaderboard(sessionId);

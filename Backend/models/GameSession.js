@@ -173,8 +173,17 @@ gameSessionSchema.methods.startGame = async function () {
     throw new Error("La session doit être en état lobby pour démarrer");
   }
 
+  // Récupérer le nombre de questions du quiz
+  const Quiz = require("./Quiz");
+  const quiz = await Quiz.findById(this.quizId);
+  if (!quiz) {
+    throw new Error("Quiz non trouvé");
+  }
+
   this.status = "playing";
   this.startedAt = new Date();
+  this.gameState.currentQuestionIndex = 0;
+  this.gameState.totalQuestions = quiz.questions.length;
   this.gameState.currentQuestionStartTime = new Date();
 
   return await this.save();

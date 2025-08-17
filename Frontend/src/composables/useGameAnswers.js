@@ -41,18 +41,25 @@ export function useGameAnswers(sessionId, participantState) {
     try {
       submitting.value = true
 
-      if (socketConnected.value) {
-        SocketService.submitAnswer(
+      if (socketConnected.value && SocketService.isSocketConnected()) {
+        console.log('📤 Envoi réponse via WebSocket')
+        const success = SocketService.submitAnswer(
           sessionId.value,
-          currentQuestion.value?.id,
+          currentQuestion.value?.id || currentQuestion.value?._id,
           currentAnswer.value.answer,
         )
-        hasAnswered.value = true
-        canSubmit.value = false
+        
+        if (success) {
+          hasAnswered.value = true
+          canSubmit.value = false
+        } else {
+          throw new Error('Échec envoi WebSocket')
+        }
       } else {
+        console.log('📤 Envoi réponse via HTTP (fallback)')
         const response = await SessionService.submitSessionAnswer(
           sessionId.value,
-          currentQuestion.value?.id,
+          currentQuestion.value?.id || currentQuestion.value?._id,
           currentAnswer.value.answer,
         )
 

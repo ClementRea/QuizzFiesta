@@ -29,6 +29,22 @@ export function useGameSession(sessionId, onSocketConnected = null) {
   // État WebSocket
   const socketConnected = ref(false)
 
+  // Callbacks pour notifier les autres composables
+  const questionLoadedCallbacks = []
+  const onQuestionLoaded = (callback) => {
+    questionLoadedCallbacks.push(callback)
+  }
+
+  const notifyQuestionLoaded = (questionData, gameStateData) => {
+    questionLoadedCallbacks.forEach(callback => {
+      try {
+        callback(questionData, gameStateData)
+      } catch (error) {
+        console.error('Erreur dans callback onQuestionLoaded:', error)
+      }
+    })
+  }
+
   // Computed
   const isOrganizer = computed(() => {
     if (!currentUser.value || !session.value) return false
@@ -94,11 +110,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
 
       socketConnected.value = true
       gameState.value = 'playing'
-      console.log('🎯 État de jeu initialisé: playing')
-      
-      // Fallback : charger les questions via HTTP si WebSocket ne les envoie pas
-      console.log('📥 Chargement questions via HTTP (fallback)')
-      await loadCurrentQuestion()
+      console.log('🎯 État de jeu initialisé: playing - en attente des questions via WebSocket')
     } catch (error) {
       console.error('❌ Erreur connexion socket jeu:', error)
       gameState.value = 'error'
@@ -123,6 +135,9 @@ export function useGameSession(sessionId, onSocketConnected = null) {
         currentQuestionIndex.value = gameStateData.currentQuestionIndex || 0
         totalQuestions.value = gameStateData.totalQuestions || 1
         console.log('✅ Question courante chargée:', (currentQuestionIndex.value + 1), '/', totalQuestions.value)
+        
+        // Notifier les autres composables qu'une question a été chargée
+        notifyQuestionLoaded(questionData, gameStateData)
       } else {
         console.log('❌ Aucune question trouvée')
       }
@@ -152,6 +167,11 @@ export function useGameSession(sessionId, onSocketConnected = null) {
         currentQuestionIndex.value = questionIndex
         totalQuestions.value = quiz.questions.length
         console.log('✅ Question depuis quiz chargée:', (questionIndex + 1), '/', quiz.questions.length)
+        
+        // Notifier les autres composables
+        const questionData = quiz.questions[questionIndex]
+        const gameStateData = { currentQuestionIndex: questionIndex, totalQuestions: quiz.questions.length }
+        notifyQuestionLoaded(questionData, gameStateData)
       }
     } catch (error) {
       console.error('❌ Erreur chargement questions depuis quiz:', error)
@@ -175,11 +195,15 @@ export function useGameSession(sessionId, onSocketConnected = null) {
   const setupGameSocketListeners = () => {
     // Réception de la question courante
     SocketService.onGameCurrentQuestion((data) => {
+      console.log('🎯 Question reçue via WebSocket:', data)
       currentQuestion.value = data.question
       currentQuestionIndex.value = data.gameState.currentQuestionIndex
       totalQuestions.value = data.gameState.totalQuestions
 
       gameState.value = 'playing'
+      
+      // Notifier les autres composables qu'une question a été chargée
+      notifyQuestionLoaded(data.question, data.gameState)
     })
 
     // Mise à jour du classement en temps réel
@@ -190,6 +214,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
 
     // Nouvelle question
     SocketService.onGameNewQuestion((data) => {
+      console.log('🔄 Nouvelle question annoncée via WebSocket')
       gameState.value = 'waitingNextQuestion'
     })
 
@@ -269,5 +294,6 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     loadFinalResults,
     retry,
     cleanupGameSocket,
+    onQuestionLoaded,
   }
 }

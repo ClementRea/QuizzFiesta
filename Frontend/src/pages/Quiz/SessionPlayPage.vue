@@ -184,6 +184,7 @@ const setupAllSocketListeners = () => {
 }
 
 // Composables principaux
+const gameSession = useGameSession(sessionId, setupAllSocketListeners)
 const {
   session,
   currentQuestion,
@@ -198,10 +199,10 @@ const {
   isOrganizer,
   isLastQuestion,
   retry,
-} = useGameSession(sessionId, setupAllSocketListeners)
+} = gameSession
 
 const { timeLimit, timeRemainingSeconds, isTimeUp, isTimerStarted, setupTimerSocketListeners } =
-  useGameTimer()
+  useGameTimer(gameSession)
 
 const {
   hasAnswered,

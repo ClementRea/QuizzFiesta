@@ -22,13 +22,18 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     try {
       loadingNext.value = true
 
-      // Utiliser WebSocket pour passer à la question suivante
-      if (socketConnected.value) {
-        SocketService.nextQuestion(sessionId.value)
+      // Privilégier WebSocket
+      if (socketConnected.value && SocketService.isSocketConnected()) {
+        console.log('🔄 Question suivante via WebSocket')
+        const success = SocketService.nextQuestion(sessionId.value)
+        if (!success) {
+          throw new Error('Échec envoi commande WebSocket')
+        }
         // La réponse sera gérée via les événements WebSocket
       } else {
-        // Fallback HTTP
+        console.log('🔄 Question suivante via HTTP (fallback)')
         await SessionService.nextSessionQuestion(sessionId.value)
+        loadingNext.value = false
       }
     } catch (error) {
       console.error('Erreur question suivante:', error)
@@ -37,24 +42,33 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
         position: 'top',
         message: 'Erreur lors du passage à la question suivante',
       })
-    } finally {
       loadingNext.value = false
     }
   }
 
   const endSession = async () => {
-    if (!isOrganizer.value) return
+    if (!isOrganizer.value) {
+      console.log('❌ Non organisateur - fin de session refusée')
+      return
+    }
 
     try {
       ending.value = true
+      console.log('🛑 Tentative de fin de session:', sessionId.value)
 
-      // Utiliser WebSocket pour terminer la session
-      if (socketConnected.value) {
-        SocketService.endSession(sessionId.value)
+      // Privilégier WebSocket
+      if (socketConnected.value && SocketService.isSocketConnected()) {
+        console.log('🔌 Fin de session via WebSocket')
+        const success = SocketService.endSession(sessionId.value)
+        if (!success) {
+          throw new Error('Impossible d\'envoyer la commande via WebSocket')
+        }
         // La fin sera gérée via les événements WebSocket
       } else {
-        // Fallback HTTP
+        console.log('🌐 Fin de session via HTTP (fallback)')
         await SessionService.endGameSession(sessionId.value)
+        ending.value = false
+        console.log('✅ Fin de session HTTP réussie')
       }
     } catch (error) {
       console.error('Erreur fin de session:', error)
@@ -63,7 +77,6 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
         position: 'top',
         message: 'Erreur lors de la fin de session',
       })
-    } finally {
       ending.value = false
     }
   }
@@ -85,12 +98,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     SocketService.onGameParticipantAnswered((data) => {
       if (isOrganizer.value) {
         // Notification discrète pour l'organisateur
-        // $q.notify({
-        //   type: 'info',
-        //   message: `${data.userName} a répondu ${data.isCorrect ? 'correctement' : 'incorrectement'}`,
-        //   timeout: 1500,
-        //   position: 'bottom-right'
-        // })
+        console.log(`📝 ${data.userName} a répondu ${data.isCorrect ? 'correctement' : 'incorrectement'}`)
       }
     })
   }

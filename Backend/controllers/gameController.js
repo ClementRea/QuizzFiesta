@@ -128,8 +128,7 @@ exports.getSessionQuestions = async (req, res) => {
           currentQuestionIndex: session.gameState.currentQuestionIndex,
           totalQuestions: session.gameState.totalQuestions,
           currentQuestionStartTime: session.gameState.currentQuestionStartTime,
-          timeRemaining:
-            currentQuestion.timeGiven || session.settings.timePerQuestion,
+          timeRemaining: calculateTimeRemaining(session.gameState, currentQuestion),
         },
         participant: {
           currentQuestionIndex: participant.currentQuestionIndex,
@@ -403,6 +402,17 @@ exports.getSessionLeaderboard = async (req, res) => {
     });
   }
 };
+
+// Fonction utilitaire pour calculer le temps restant
+function calculateTimeRemaining(gameState, currentQuestion) {
+  if (!gameState.currentQuestionStartTime || !currentQuestion) return 0
+  
+  const questionTime = currentQuestion.timeGiven || 30 // défaut 30 secondes
+  const elapsedTime = Math.floor((Date.now() - gameState.currentQuestionStartTime.getTime()) / 1000)
+  const remaining = Math.max(0, questionTime - elapsedTime)
+  
+  return remaining
+}
 
 // Récupérer l'état d'un participant dans une session
 exports.getParticipantState = async (req, res) => {
