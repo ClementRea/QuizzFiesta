@@ -10,6 +10,12 @@ const {
   requireGestionnaireOrAdmin,
   checkOrganizationAccess,
 } = require("../middlewares/authMiddleware");
+const {
+  validateUpdateUser,
+  validateUserRole,
+  validateUserId,
+  validateOrganizationId,
+} = require("../middlewares/validationMiddleware");
 
 const path = require("path");
 
@@ -50,6 +56,7 @@ router.put(
   protect,
   upload.single("avatar"),
   compressImage,
+  validateUpdateUser,
   userController.updateMe,
 );
 
@@ -57,6 +64,7 @@ router.put(
 router.get(
   "/:id",
   protect,
+  validateUserId,
   checkOrganizationAccess,
   userController.getUserById,
 );
@@ -72,6 +80,7 @@ router.get(
   "/organization/:organizationId",
   protect,
   requireGestionnaireOrAdmin,
+  validateOrganizationId,
   userController.getUsersByOrganization,
 );
 
@@ -80,6 +89,8 @@ router.put(
   "/:id/role",
   protect,
   requireGestionnaireOrAdmin,
+  validateUserId,
+  validateUserRole,
   checkOrganizationAccess,
   userController.updateUserRole,
 );
@@ -87,6 +98,7 @@ router.delete(
   "/:id",
   protect,
   requireGestionnaireOrAdmin,
+  validateUserId,
   checkOrganizationAccess,
   userController.deleteUser,
 );

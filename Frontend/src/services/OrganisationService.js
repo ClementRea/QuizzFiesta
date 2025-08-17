@@ -15,119 +15,83 @@ const getApiBaseUrl = () => {
 
 const OrganisationService = {
   async getAllOrganisations(filters = {}) {
-    try {
-      const params = new URLSearchParams()
+    const params = new URLSearchParams()
 
-      if (filters.isActive !== undefined) {
-        params.append('isActive', filters.isActive)
-      }
-
-      const response = await axios.get(`${getApiBaseUrl()}/organisations?${params.toString()}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
+    if (filters.isActive !== undefined) {
+      params.append('isActive', filters.isActive)
     }
+
+    const response = await axios.get(`${getApiBaseUrl()}/organisation?${params.toString()}`)
+    return response.data
   },
 
   async getOrganisationById(organisationId) {
-    try {
-      const response = await axios.get(`${getApiBaseUrl()}/organisations/${organisationId}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.get(`${getApiBaseUrl()}/organisation/${organisationId}`)
+    return response.data
   },
 
   async getMyOrganisations() {
-    try {
-      const response = await axios.get(`${getApiBaseUrl()}/organisations/myOrganisations`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.get(`${getApiBaseUrl()}/organisation/myOrganisations`)
+    return response.data
   },
 
   async createOrganisation(organisationData) {
-    try {
-      // If there's a logo (file), use FormData
-      if (organisationData.logo && organisationData.logo instanceof File) {
-        const formData = new FormData()
+    // If there's a logo (file), use FormData
+    if (organisationData.logo && organisationData.logo instanceof File) {
+      const formData = new FormData()
 
-        // Add the logo file
-        formData.append('logo', organisationData.logo)
+      // Add the logo file
+      formData.append('logo', organisationData.logo)
 
-        // Add other organisation data
-        formData.append('name', organisationData.name)
-        formData.append('description', organisationData.description)
-        formData.append('email', organisationData.email)
-        formData.append('phone', organisationData.phone)
-        formData.append('address', organisationData.address)
+      // Add other organisation data
+      formData.append('name', organisationData.name)
+      formData.append('description', organisationData.description)
+      formData.append('email', organisationData.email)
+      formData.append('phone', organisationData.phone)
+      formData.append('address', organisationData.address)
 
-        const response = await axios.post(`${getApiBaseUrl()}/organisations/create`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        })
-        return response.data
-      } else {
-        // Otherwise, send as classic JSON
-        const response = await axios.post(
-          `${getApiBaseUrl()}/organisations/create`,
-          organisationData,
-        )
-        return response.data
-      }
-    } catch (error) {
-      throw error.response?.data || error
+      const response = await axios.post(`${getApiBaseUrl()}/organisation/create`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      return response.data
+    } else {
+      // Otherwise, send as classic JSON
+      const response = await axios.post(
+        `${getApiBaseUrl()}/organisation/create`,
+        organisationData,
+      )
+      return response.data
     }
   },
 
   async updateOrganisation(organisationId, organisationData) {
-    try {
-      const response = await axios.put(
-        `${getApiBaseUrl()}/organisations/update/${organisationId}`,
-        organisationData,
-      )
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.put(
+      `${getApiBaseUrl()}/organisation/update/${organisationId}`,
+      organisationData,
+    )
+    return response.data
   },
 
   async deleteOrganisation(organisationId) {
-    try {
-      const response = await axios.delete(`${getApiBaseUrl()}/organisations/${organisationId}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.delete(`${getApiBaseUrl()}/organisation/${organisationId}`)
+    return response.data
   },
 
   async joinOrganisation(organisationId) {
-    try {
-      const response = await axios.post(`${getApiBaseUrl()}/organisations/join/${organisationId}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.post(`${getApiBaseUrl()}/organisation/join/${organisationId}`)
+    return response.data
   },
 
   async leaveOrganisation(organisationId) {
-    try {
-      const response = await axios.post(`${getApiBaseUrl()}/organisations/leave/${organisationId}`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.post(`${getApiBaseUrl()}/organisation/leave/${organisationId}`)
+    return response.data
   },
 
   async getOrganisationMembers(organisationId) {
-    try {
-      const response = await axios.get(`${getApiBaseUrl()}/organisations/${organisationId}/members`)
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.get(`${getApiBaseUrl()}/organisation/${organisationId}/members`)
+    return response.data
   },
 
   // Utility functions for tests

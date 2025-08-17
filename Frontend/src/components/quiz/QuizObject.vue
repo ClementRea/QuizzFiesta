@@ -85,11 +85,6 @@ const handlePlay = async () => {
     emit('play', props.quiz)
   } catch (error) {
     console.error('Erreur lors de la création de session:', error)
-    $q.notify({
-      type: 'negative',
-      message: 'Erreur lors de la création de la session',
-      position: 'top',
-    })
   }
 }
 
@@ -121,11 +116,6 @@ const handleShare = async () => {
     emit('share', props.quiz)
   } catch (error) {
     console.error('Erreur lors du partage:', error)
-    $q.notify({
-      type: 'negative',
-      message: 'Erreur lors de la création du lien de partage',
-      position: 'top',
-    })
   }
 }
 

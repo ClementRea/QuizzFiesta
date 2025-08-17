@@ -262,6 +262,25 @@ const startDisabledReason = computed(() => {
   return ''
 })
 
+const loadParticipants = async () => {
+  try {
+    loadingParticipants.value = true
+    const actualSessionId = session.value.id || session.value._id
+    const response = await SessionService.getSessionParticipants(actualSessionId)
+    participants.value = response.data.participants || []
+    
+    // Trouver notre statut
+    const me = participants.value.find((p) => p.userId === currentUser.value._id)
+    if (me) {
+      isReady.value = me.isReady
+    }
+  } catch (error) {
+    console.error('Erreur chargement participants:', error)
+  } finally {
+    loadingParticipants.value = false
+  }
+}
+
 const loadSession = async () => {
   try {
     loading.value = true
@@ -280,6 +299,9 @@ const loadSession = async () => {
     session.value = sessionData
 
     if (sessionData.status === 'lobby') {
+      // Récupérer d'abord les participants via HTTP
+      await loadParticipants()
+      // Puis initialiser WebSocket pour les mises à jour en temps réel
       await initializeSocketConnection()
     }
   } catch (error) {
@@ -414,25 +436,21 @@ const startSession = async () => {
     starting.value = true
     const actualSessionId = session.value.id || session.value._id
 
-    // Utiliser WebSocket au lieu de HTTP
-    if (socketConnected.value) {
-      SocketService.startSession(actualSessionId)
-      // La redirection se fera via l'événement WebSocket
-    } else {
-      // Fallback HTTP si WebSocket pas disponible
-      await SessionService.startGameSession(actualSessionId)
-      $q.notify({
-        type: 'positive',
-        position: 'top',
-        message: 'Session démarrée !',
-      })
-      router.push(`/quiz/session/${actualSessionId}/play`)
-    }
-  } catch (error) {
+    // Utiliser toujours HTTP pour plus de fiabilité
+    await SessionService.startGameSession(actualSessionId)
+    
     $q.notify({
-      type: 'negative',
-      message: error.message || 'Erreur lors du démarrage',
+      type: 'positive',
+      position: 'top',
+      message: 'Session démarrée !',
     })
+    
+    // Redirection immédiate
+    router.push(`/quiz/session/${actualSessionId}/play`)
+    
+  } catch (error) {
+    console.error('Erreur démarrage session:', error)
+    // L'erreur est gérée par l'intercepteur global, mais on peut afficher un message spécifique
   } finally {
     starting.value = false
   }

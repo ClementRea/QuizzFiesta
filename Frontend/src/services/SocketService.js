@@ -2,10 +2,8 @@ import { io } from 'socket.io-client'
 import AuthService from './AuthService'
 
 const getSocketUrl = () => {
-  // Utilise la variable d'environnement ou l'URL de production
   const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
 
-  // Fallback pour le développement local
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000'
   }

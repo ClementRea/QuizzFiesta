@@ -63,10 +63,10 @@
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
-import { useQuasar } from 'quasar'
 import FormLayout from '../../layouts/FormLayout.vue'
 import Header from '../../components/auth/AuthHeader.vue'
 import AuthService from 'src/services/AuthService'
+import { showError, extractErrorMessage } from 'src/plugins/errorHandler'
 
 const email = ref('')
 const password = ref('')
@@ -74,14 +74,12 @@ const isPasswordVisible = ref(false)
 
 const router = useRouter()
 const route = useRoute()
-const $q = useQuasar()
 
 const isValidEmail = (email) => {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return emailRegex.test(email)
 }
 
-// On vérifie la validité du formulaire
 const isFormValid = computed(() => {
   return isValidEmail(email.value) && password.value.length > 0
 })
@@ -92,7 +90,6 @@ const validationMessage = computed(() => {
   return 'Veuillez remplir correctement tous les champs'
 })
 
-// On submit le formulaire
 const submitForm = async (type) => {
   if (type === 'register') {
     router.push('/register')
@@ -110,11 +107,9 @@ const submitForm = async (type) => {
       const redirectPath = route.query.redirect || '/accueil'
       router.push(redirectPath)
     } catch (error) {
+      const errorMessage = extractErrorMessage(error)
+      showError(errorMessage)
       console.error('Erreur lors de la connexion', error)
-      $q.notify({
-        color: 'negative',
-        message: 'Email ou mot de passe incorrect.',
-      })
     }
   }
 }

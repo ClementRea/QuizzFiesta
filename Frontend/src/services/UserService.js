@@ -10,117 +10,71 @@ const getApiBaseUrl = () => {
   return `${apiUrl}/api`
 }
 
-// Retrieve Authorization header (if a token is stored) in a consistent way
-const getAuthHeaders = () => {
-  if (typeof window === 'undefined' || !window.localStorage) return {}
-  // Single key lookup keeps test simple; test's mock returns value regardless of key
-  const token = window.localStorage.getItem('token')
-  if (!token) return {}
-  return { Authorization: `Bearer ${token}` }
-}
-
 const UserService = {
   async getMe() {
-    try {
-      const response = await axios.get(`${getApiBaseUrl()}/user/getMe`, {
-        headers: { ...getAuthHeaders() },
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.get(`${getApiBaseUrl()}/user/getMe`)
+    return response.data
   },
 
   async updateMe(userData) {
-    try {
-      if (userData.avatar && userData.avatar instanceof File) {
-        const formData = new FormData()
-
-        formData.append('avatar', userData.avatar)
-
-        if (userData.userName) formData.append('userName', userData.userName)
-        if (userData.email) formData.append('email', userData.email)
-        if (userData.currentPassword) formData.append('currentPassword', userData.currentPassword)
-        if (userData.newPassword) formData.append('newPassword', userData.newPassword)
-
-        const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...getAuthHeaders(),
-          },
-        })
-        return response.data
-      } else {
-        const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, userData, {
-          headers: { ...getAuthHeaders() },
-        })
-        return response.data
-      }
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  },
-
-  async updatePassword(currentPassword, newPassword) {
-    try {
-      const response = await axios.put(
-        `${getApiBaseUrl()}/user/updateMe`,
-        {
-          currentPassword,
-          newPassword,
-        },
-        {
-          headers: { ...getAuthHeaders() },
-        },
-      )
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
-  },
-
-  async updateAvatar(avatarFile) {
-    try {
+    if (userData.avatar && userData.avatar instanceof File) {
       const formData = new FormData()
-      formData.append('avatar', avatarFile)
+
+      formData.append('avatar', userData.avatar)
+
+      if (userData.userName) formData.append('userName', userData.userName)
+      if (userData.email) formData.append('email', userData.email)
+      if (userData.currentPassword) formData.append('currentPassword', userData.currentPassword)
+      if (userData.newPassword) formData.append('newPassword', userData.newPassword)
 
       const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          ...getAuthHeaders(),
         },
       })
       return response.data
-    } catch (error) {
-      throw error.response?.data || error
+    } else {
+      const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, userData)
+      return response.data
     }
+  },
+
+  async updatePassword(currentPassword, newPassword) {
+    const response = await axios.put(
+      `${getApiBaseUrl()}/user/updateMe`,
+      {
+        currentPassword,
+        newPassword,
+      }
+    )
+    return response.data
+  },
+
+  async updateAvatar(avatarFile) {
+    const formData = new FormData()
+    formData.append('avatar', avatarFile)
+
+    const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
   },
 
   async updateProfile(profileData) {
-    try {
-      const filteredData = {
-        userName: profileData.userName,
-        email: profileData.email,
-      }
-
-      const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, filteredData, {
-        headers: { ...getAuthHeaders() },
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
+    const filteredData = {
+      userName: profileData.userName,
+      email: profileData.email,
     }
+
+    const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, filteredData)
+    return response.data
   },
 
   async getUserById(userId) {
-    try {
-      const response = await axios.get(`${getApiBaseUrl()}/user/${userId}`, {
-        headers: { ...getAuthHeaders() },
-      })
-      return response.data
-    } catch (error) {
-      throw error.response?.data || error
-    }
+    const response = await axios.get(`${getApiBaseUrl()}/user/${userId}`)
+    return response.data
   },
 
   // Utility functions for tests

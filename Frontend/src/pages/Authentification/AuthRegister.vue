@@ -94,11 +94,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import axios from 'axios'
 import FormLayout from '../../layouts/FormLayout.vue'
 import Header from '../../components/auth/AuthHeader.vue'
 import AuthService from 'src/services/AuthService'
+import { showError, extractErrorMessage } from 'src/plugins/errorHandler'
 
 const userName = ref('')
 const email = ref('')
@@ -106,7 +106,6 @@ const password = ref('')
 const confirmPassword = ref('')
 const isFirstPwd = ref(true)
 const isSecondPwd = ref(true)
-const $q = useQuasar()
 
 const router = useRouter()
 
@@ -115,7 +114,6 @@ const isValidEmail = (email) => {
   return emailRegex.test(email)
 }
 
-// On vérifie la validité du formulaire
 const isFormValid = computed(() => {
   return (
     userName.value.length >= 3 &&
@@ -127,7 +125,6 @@ const isFormValid = computed(() => {
   )
 })
 
-// Message d'erreur de validation
 const validationMessage = computed(() => {
   if (userName.value.length < 3) return "Le nom d'utilisateur doit contenir au moins 3 caractères"
   if (!isValidEmail(email.value)) return 'Veuillez entrer une adresse email valide'
@@ -138,10 +135,8 @@ const validationMessage = computed(() => {
   return 'Veuillez remplir correctement tous les champs'
 })
 
-// On submit le formulaire
 const submitForm = async (type) => {
   if (type === 'login') {
-    // Si on clique sur "se connecter", rediriger vers la page de connexion
     router.push('/login')
   } else if (type === 'register' && isFormValid.value) {
     try {
@@ -157,11 +152,9 @@ const submitForm = async (type) => {
 
       router.push('/accueil')
     } catch (error) {
+      const errorMessage = extractErrorMessage(error)
+      showError(errorMessage)
       console.error("Erreur lors de l'inscription", error)
-      $q.notify({
-        color: 'negative',
-        message: "Erreur lors de l'inscription",
-      })
     }
   }
 }

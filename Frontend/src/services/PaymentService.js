@@ -14,23 +14,12 @@ const getApiBaseUrl = () => {
 
 const PaymentService = {
   async createCheckoutSession(amount) {
-    const apiUrl = `${getApiBaseUrl()}/payment/create-checkout-session`
-    const token = localStorage.getItem('accessToken')
-    const response = await axios.post(
-      apiUrl,
-      { amount },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    )
+    const response = await axios.post(`${getApiBaseUrl()}/payment/create-checkout-session`, { amount })
     return response.data
   },
 
   async getPredefinedAmounts() {
-    const apiUrl = `${getApiBaseUrl()}/payment/predefined-amounts`
-    const response = await axios.get(apiUrl)
+    const response = await axios.get(`${getApiBaseUrl()}/payment/predefined-amounts`)
     return response.data
   },
 }

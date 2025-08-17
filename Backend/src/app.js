@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const mongoSanitize = require("express-mongo-sanitize");
 
 require("dotenv").config();
 const authRoutes = require("../routes/authRoutes");
@@ -26,8 +27,9 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ extended: true }));
 
-//Secrurity
+//Security
 app.use(helmet());
+app.use(mongoSanitize());
 
 //No CORS for images
 app.use(
