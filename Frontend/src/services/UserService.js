@@ -40,13 +40,10 @@ const UserService = {
   },
 
   async updatePassword(currentPassword, newPassword) {
-    const response = await axios.put(
-      `${getApiBaseUrl()}/user/updateMe`,
-      {
-        currentPassword,
-        newPassword,
-      }
-    )
+    const response = await axios.put(`${getApiBaseUrl()}/user/updateMe`, {
+      currentPassword,
+      newPassword,
+    })
     return response.data
   },
 

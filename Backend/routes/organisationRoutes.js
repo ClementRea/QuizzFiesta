@@ -10,10 +10,21 @@ const {
 } = require("../middlewares/validationMiddleware");
 
 // POST
-router.post("/create", protect, validateCreateOrganisation, organisationController.createOrganisation);
+router.post(
+  "/create",
+  protect,
+  validateCreateOrganisation,
+  organisationController.createOrganisation,
+);
 
 // PUT
-router.put("/update/:id", protect, validateUserId, validateUpdateOrganisation, organisationController.updateOrganisation);
+router.put(
+  "/update/:id",
+  protect,
+  validateUserId,
+  validateUpdateOrganisation,
+  organisationController.updateOrganisation,
+);
 router.put(
   "/members/add/:id",
   protect,
@@ -28,7 +39,12 @@ router.put(
 );
 
 // DELETE
-router.delete("/:id", protect, validateUserId, organisationController.deleteOrganisation);
+router.delete(
+  "/:id",
+  protect,
+  validateUserId,
+  organisationController.deleteOrganisation,
+);
 
 // GET
 router.get("/", organisationController.getOrganisations);

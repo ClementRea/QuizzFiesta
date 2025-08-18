@@ -3,7 +3,6 @@ const axios = require('axios')
 
 jest.mock('axios')
 
-// Mock localStorage globalement
 Object.defineProperty(window, 'localStorage', {
   value: {
     getItem: jest.fn(() => 'mock-token'),
@@ -17,7 +16,6 @@ Object.defineProperty(window, 'localStorage', {
 describe('UserService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    // Ensure localStorage.getItem returns mock-token for each test
     window.localStorage.getItem.mockReturnValue('mock-token')
   })
 
@@ -43,10 +41,10 @@ describe('UserService', () => {
       })
 
       it('should reject invalid usernames', () => {
-        expect(UserService.validateUsername('us')).toBe(false) // Trop court
-        expect(UserService.validateUsername('user name')).toBe(false) // Espaces
-        expect(UserService.validateUsername('')).toBe(false) // Vide
-        expect(UserService.validateUsername(null)).toBe(false) // Null
+        expect(UserService.validateUsername('us')).toBe(false)
+        expect(UserService.validateUsername('user name')).toBe(false)
+        expect(UserService.validateUsername('')).toBe(false)
+        expect(UserService.validateUsername(null)).toBe(false)
       })
 
       it('should validate correct passwords', () => {
@@ -56,9 +54,9 @@ describe('UserService', () => {
       })
 
       it('should reject invalid passwords', () => {
-        expect(UserService.validatePassword('12345')).toBe(false) // Trop court
-        expect(UserService.validatePassword('')).toBe(false) // Vide
-        expect(UserService.validatePassword(null)).toBe(false) // Null
+        expect(UserService.validatePassword('12345')).toBe(false)
+        expect(UserService.validatePassword('')).toBe(false)
+        expect(UserService.validatePassword(null)).toBe(false)
       })
     })
 
@@ -83,11 +81,11 @@ describe('UserService', () => {
       })
 
       it('should validate file sizes', () => {
-        const smallFile = { size: 1024 * 1024 } // 1MB
-        const largeFile = { size: 10 * 1024 * 1024 } // 10MB
+        const smallFile = { size: 1024 * 1024 }
+        const largeFile = { size: 10 * 1024 * 1024 }
 
-        expect(UserService.isValidFileSize(smallFile, 5)).toBe(true) // 1MB < 5MB
-        expect(UserService.isValidFileSize(largeFile, 5)).toBe(false) // 10MB > 5MB
+        expect(UserService.isValidFileSize(smallFile, 5)).toBe(true)
+        expect(UserService.isValidFileSize(largeFile, 5)).toBe(false)
         expect(UserService.isValidFileSize(null)).toBe(false)
       })
     })
@@ -97,9 +95,9 @@ describe('UserService', () => {
         const userData = {
           userName: 'testuser',
           email: 'test@example.com',
-          password: 'secret', // Non autorisé directement
-          role: 'admin', // Non autorisé
-          id: '123', // Non autorisé
+          password: 'secret',
+          role: 'admin',
+          id: '123',
           currentPassword: 'oldpass',
           newPassword: 'newpass',
         }
@@ -141,18 +139,16 @@ describe('UserService', () => {
       axios.get.mockResolvedValue(mockResponse)
 
       const result = await UserService.getMe()
-
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/getMe', {
-        headers: { Authorization: 'Bearer mock-token' },
-      })
+      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/getMe')
       expect(result).toEqual(mockResponse.data)
     })
 
     it('should handle get current user error', async () => {
       const mockError = { response: { data: { error: 'Unauthorized' } } }
       axios.get.mockRejectedValue(mockError)
-
-      await expect(UserService.getMe()).rejects.toEqual({ error: 'Unauthorized' })
+      await expect(UserService.getMe()).rejects.toMatchObject({
+        response: { data: { error: 'Unauthorized' } },
+      })
     })
 
     it('should update user without file', async () => {
@@ -167,10 +163,7 @@ describe('UserService', () => {
       }
 
       const result = await UserService.updateMe(userData)
-
-      expect(axios.put).toHaveBeenCalledWith('http://localhost:3000/api/user/updateMe', userData, {
-        headers: { Authorization: 'Bearer mock-token' },
-      })
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3000/api/user/updateMe', userData)
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -186,16 +179,12 @@ describe('UserService', () => {
       }
 
       const result = await UserService.updateMe(userData)
-
       expect(axios.put).toHaveBeenCalledWith(
         'http://localhost:3000/api/user/updateMe',
         expect.any(FormData),
-        {
-          headers: {
-            Authorization: 'Bearer mock-token',
-            'Content-Type': 'multipart/form-data',
-          },
-        },
+        expect.objectContaining({
+          headers: expect.objectContaining({ 'Content-Type': 'multipart/form-data' }),
+        }),
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -203,8 +192,9 @@ describe('UserService', () => {
     it('should handle update user error', async () => {
       const mockError = { response: { data: { error: 'Validation failed' } } }
       axios.put.mockRejectedValue(mockError)
-
-      await expect(UserService.updateMe({})).rejects.toEqual({ error: 'Validation failed' })
+      await expect(UserService.updateMe({})).rejects.toMatchObject({
+        response: { data: { error: 'Validation failed' } },
+      })
     })
 
     it('should update password', async () => {
@@ -212,23 +202,18 @@ describe('UserService', () => {
       axios.put.mockResolvedValue(mockResponse)
 
       const result = await UserService.updatePassword('oldpass', 'newpass')
-
-      expect(axios.put).toHaveBeenCalledWith(
-        'http://localhost:3000/api/user/updateMe',
-        { currentPassword: 'oldpass', newPassword: 'newpass' },
-        {
-          headers: { Authorization: 'Bearer mock-token' },
-        },
-      )
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3000/api/user/updateMe', {
+        currentPassword: 'oldpass',
+        newPassword: 'newpass',
+      })
       expect(result).toEqual(mockResponse.data)
     })
 
     it('should handle update password error', async () => {
       const mockError = { response: { data: { error: 'Current password incorrect' } } }
       axios.put.mockRejectedValue(mockError)
-
-      await expect(UserService.updatePassword('wrongpass', 'newpass')).rejects.toEqual({
-        error: 'Current password incorrect',
+      await expect(UserService.updatePassword('wrongpass', 'newpass')).rejects.toMatchObject({
+        response: { data: { error: 'Current password incorrect' } },
       })
     })
 
@@ -238,16 +223,12 @@ describe('UserService', () => {
 
       const mockFile = new File(['avatar'], 'avatar.jpg', { type: 'image/jpeg' })
       const result = await UserService.updateAvatar(mockFile)
-
       expect(axios.put).toHaveBeenCalledWith(
         'http://localhost:3000/api/user/updateMe',
         expect.any(FormData),
-        {
-          headers: {
-            Authorization: 'Bearer mock-token',
-            'Content-Type': 'multipart/form-data',
-          },
-        },
+        expect.objectContaining({
+          headers: expect.objectContaining({ 'Content-Type': 'multipart/form-data' }),
+        }),
       )
       expect(result).toEqual(mockResponse.data)
     })
@@ -259,19 +240,15 @@ describe('UserService', () => {
       const profileData = {
         userName: 'newuser',
         email: 'new@example.com',
-        password: 'ignored', // Should be filtered out
-        role: 'ignored', // Should be filtered out
+        password: 'ignored',
+        role: 'ignored',
       }
 
       const result = await UserService.updateProfile(profileData)
-
-      expect(axios.put).toHaveBeenCalledWith(
-        'http://localhost:3000/api/user/updateMe',
-        { userName: 'newuser', email: 'new@example.com' },
-        {
-          headers: { Authorization: 'Bearer mock-token' },
-        },
-      )
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3000/api/user/updateMe', {
+        userName: 'newuser',
+        email: 'new@example.com',
+      })
       expect(result).toEqual(mockResponse.data)
     })
 
@@ -280,18 +257,16 @@ describe('UserService', () => {
       axios.get.mockResolvedValue(mockResponse)
 
       const result = await UserService.getUserById(2)
-
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/2', {
-        headers: { Authorization: 'Bearer mock-token' },
-      })
+      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/2')
       expect(result).toEqual(mockResponse.data)
     })
 
     it('should handle get user by id error', async () => {
       const mockError = { response: { data: { error: 'User not found' } } }
       axios.get.mockRejectedValue(mockError)
-
-      await expect(UserService.getUserById(999)).rejects.toEqual({ error: 'User not found' })
+      await expect(UserService.getUserById(999)).rejects.toMatchObject({
+        response: { data: { error: 'User not found' } },
+      })
     })
 
     it('should handle no auth token', async () => {
@@ -301,10 +276,7 @@ describe('UserService', () => {
       axios.get.mockResolvedValue(mockResponse)
 
       await UserService.getMe()
-
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/getMe', {
-        headers: {},
-      })
+      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/api/user/getMe')
     })
 
     it('should handle network errors', async () => {

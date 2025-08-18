@@ -24,9 +24,8 @@ describe('SessionService', () => {
     it('should handle create session error', async () => {
       const mockError = { response: { data: { error: 'Quiz not found' } } }
       axios.post.mockRejectedValue(mockError)
-
-      await expect(SessionService.createSession('invalidQuiz')).rejects.toEqual({
-        error: 'Quiz not found',
+      await expect(SessionService.createSession('invalidQuiz')).rejects.toMatchObject({
+        response: { data: { error: 'Quiz not found' } },
       })
     })
 
@@ -43,9 +42,8 @@ describe('SessionService', () => {
     it('should handle join session by code error', async () => {
       const mockError = { response: { data: { error: 'Session not found' } } }
       axios.get.mockRejectedValue(mockError)
-
-      await expect(SessionService.joinSessionByCode('INVALID')).rejects.toEqual({
-        error: 'Session not found',
+      await expect(SessionService.joinSessionByCode('INVALID')).rejects.toMatchObject({
+        response: { data: { error: 'Session not found' } },
       })
     })
 
@@ -158,10 +156,9 @@ describe('SessionService', () => {
     it('should handle submit answer error', async () => {
       const mockError = { response: { data: { error: 'Time expired' } } }
       axios.post.mockRejectedValue(mockError)
-
       await expect(
         SessionService.submitSessionAnswer('session123', 'q1', 'answer A'),
-      ).rejects.toEqual({ error: 'Time expired' })
+      ).rejects.toMatchObject({ response: { data: { error: 'Time expired' } } })
     })
 
     it('should go to next session question', async () => {

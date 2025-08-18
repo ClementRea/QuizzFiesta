@@ -7,7 +7,6 @@ import SocketService from 'src/services/SocketService'
  * Extrait de SessionPlayPage.vue pour réutilisabilité
  */
 export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
-
   // État des contrôles organisateur
   const showOrganizerPanel = ref(false)
   const loadingNext = ref(false)
@@ -55,7 +54,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
         console.log('🔌 Fin de session via WebSocket')
         const success = SocketService.endSession(sessionId.value)
         if (!success) {
-          throw new Error('Impossible d\'envoyer la commande via WebSocket')
+          throw new Error("Impossible d'envoyer la commande via WebSocket")
         }
         // La fin sera gérée via les événements WebSocket
       } else {
@@ -88,7 +87,9 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     SocketService.onGameParticipantAnswered((data) => {
       if (isOrganizer.value) {
         // Notification discrète pour l'organisateur
-        console.log(`📝 ${data.userName} a répondu ${data.isCorrect ? 'correctement' : 'incorrectement'}`)
+        console.log(
+          `📝 ${data.userName} a répondu ${data.isCorrect ? 'correctement' : 'incorrectement'}`,
+        )
       }
     })
   }

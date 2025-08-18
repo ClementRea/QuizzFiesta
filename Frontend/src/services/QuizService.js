@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const getApiBaseUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
 
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'

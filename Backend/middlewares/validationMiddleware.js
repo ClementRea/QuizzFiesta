@@ -3,7 +3,7 @@ const { body, param, query, validationResult } = require("express-validator");
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // Extraire le premier message d'erreur pour un format uniforme
+    // take the first message
     const firstError = errors.array()[0];
     return res.status(400).json({
       status: "error",
@@ -16,27 +16,30 @@ const handleValidationErrors = (req, res, next) => {
 // ========== AUTH VALIDATIONS ==========
 
 const validateRegister = [
-  body("email")
-    .isEmail()
-    .normalizeEmail()
-    .withMessage("Email valide requis"),
+  body("email").isEmail().normalizeEmail().withMessage("Email valide requis"),
   body("password")
     .isLength({ min: 8 })
     .withMessage("Le mot de passe doit contenir au moins 8 caractères")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage("Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre"),
+    .withMessage(
+      "Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre",
+    ),
   body("firstName")
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage("Le prénom doit contenir entre 2 et 50 caractères")
     .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage("Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes"),
+    .withMessage(
+      "Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes",
+    ),
   body("lastName")
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage("Le nom doit contenir entre 2 et 50 caractères")
     .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage("Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes"),
+    .withMessage(
+      "Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes",
+    ),
   body("organisationId")
     .optional()
     .isMongoId()
@@ -45,13 +48,8 @@ const validateRegister = [
 ];
 
 const validateLogin = [
-  body("email")
-    .isEmail()
-    .normalizeEmail()
-    .withMessage("Email valide requis"),
-  body("password")
-    .notEmpty()
-    .withMessage("Mot de passe requis"),
+  body("email").isEmail().normalizeEmail().withMessage("Email valide requis"),
+  body("password").notEmpty().withMessage("Mot de passe requis"),
   handleValidationErrors,
 ];
 
@@ -71,14 +69,18 @@ const validateUpdateUser = [
     .isLength({ min: 2, max: 50 })
     .withMessage("Le prénom doit contenir entre 2 et 50 caractères")
     .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage("Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes"),
+    .withMessage(
+      "Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes",
+    ),
   body("lastName")
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage("Le nom doit contenir entre 2 et 50 caractères")
     .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage("Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes"),
+    .withMessage(
+      "Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes",
+    ),
   body("email")
     .optional()
     .isEmail()
@@ -95,29 +97,20 @@ const validateUserRole = [
 ];
 
 const validateUserId = [
-  param("id")
-    .isMongoId()
-    .withMessage("ID utilisateur invalide"),
+  param("id").isMongoId().withMessage("ID utilisateur invalide"),
   handleValidationErrors,
 ];
 
 const validateOrganizationId = [
-  param("organizationId")
-    .isMongoId()
-    .withMessage("ID d'organisation invalide"),
+  param("organizationId").isMongoId().withMessage("ID d'organisation invalide"),
   handleValidationErrors,
 ];
 
 // ========== QUIZ VALIDATIONS ==========
 
 const validateCreateQuiz = [
-  body("title")
-    .trim()
-    .notEmpty()
-    .withMessage("Le titre est requis"),
-  body("description")
-    .optional()
-    .trim(),
+  body("title").trim().notEmpty().withMessage("Le titre est requis"),
+  body("description").optional().trim(),
   body("questions")
     .optional()
     .isArray()
@@ -139,9 +132,7 @@ const validateUpdateQuiz = [
     .trim()
     .notEmpty()
     .withMessage("Le titre ne peut pas être vide"),
-  body("description")
-    .optional()
-    .trim(),
+  body("description").optional().trim(),
   body("questions")
     .optional()
     .isArray()
@@ -154,9 +145,7 @@ const validateUpdateQuiz = [
 ];
 
 const validateQuizId = [
-  param("id")
-    .isMongoId()
-    .withMessage("ID de quiz invalide"),
+  param("id").isMongoId().withMessage("ID de quiz invalide"),
   handleValidationErrors,
 ];
 
@@ -166,16 +155,15 @@ const validateCreateOrganisation = [
   body("name")
     .trim()
     .isLength({ min: 2, max: 100 })
-    .withMessage("Le nom de l'organisation doit contenir entre 2 et 100 caractères"),
+    .withMessage(
+      "Le nom de l'organisation doit contenir entre 2 et 100 caractères",
+    ),
   body("description")
     .optional()
     .trim()
     .isLength({ max: 500 })
     .withMessage("La description ne peut pas dépasser 500 caractères"),
-  body("website")
-    .optional()
-    .isURL()
-    .withMessage("URL de site web invalide"),
+  body("website").optional().isURL().withMessage("URL de site web invalide"),
   handleValidationErrors,
 ];
 
@@ -184,16 +172,15 @@ const validateUpdateOrganisation = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 100 })
-    .withMessage("Le nom de l'organisation doit contenir entre 2 et 100 caractères"),
+    .withMessage(
+      "Le nom de l'organisation doit contenir entre 2 et 100 caractères",
+    ),
   body("description")
     .optional()
     .trim()
     .isLength({ max: 500 })
     .withMessage("La description ne peut pas dépasser 500 caractères"),
-  body("website")
-    .optional()
-    .isURL()
-    .withMessage("URL de site web invalide"),
+  body("website").optional().isURL().withMessage("URL de site web invalide"),
   handleValidationErrors,
 ];
 
@@ -216,7 +203,9 @@ const validateSearch = [
     .optional()
     .trim()
     .isLength({ min: 1, max: 100 })
-    .withMessage("Le terme de recherche doit contenir entre 1 et 100 caractères"),
+    .withMessage(
+      "Le terme de recherche doit contenir entre 1 et 100 caractères",
+    ),
   handleValidationErrors,
 ];
 
@@ -225,22 +214,22 @@ module.exports = {
   validateRegister,
   validateLogin,
   validateRefreshToken,
-  
+
   // Users
   validateUpdateUser,
   validateUserRole,
   validateUserId,
   validateOrganizationId,
-  
+
   // Quiz
   validateCreateQuiz,
   validateUpdateQuiz,
   validateQuizId,
-  
+
   // Organisation
   validateCreateOrganisation,
   validateUpdateOrganisation,
-  
+
   // Common
   validatePagination,
   validateSearch,

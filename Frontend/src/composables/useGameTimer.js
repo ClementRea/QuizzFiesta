@@ -73,8 +73,14 @@ export function useGameTimer() {
       const questionTimeLimit = (data.question.timeLimit || data.question.timeGiven || 30) * 1000
       const remainingTime = data.timeRemaining || questionTimeLimit
 
-      console.log('⏱️ Timer WebSocket - Limite:', questionTimeLimit, 'ms, Restant:', remainingTime, 'ms')
-      
+      console.log(
+        '⏱️ Timer WebSocket - Limite:',
+        questionTimeLimit,
+        'ms, Restant:',
+        remainingTime,
+        'ms',
+      )
+
       setTimeLimit(questionTimeLimit)
       setTimeRemaining(remainingTime)
       startTimer(remainingTime)

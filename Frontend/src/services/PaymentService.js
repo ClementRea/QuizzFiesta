@@ -14,7 +14,9 @@ const getApiBaseUrl = () => {
 
 const PaymentService = {
   async createCheckoutSession(amount) {
-    const response = await axios.post(`${getApiBaseUrl()}/payment/create-checkout-session`, { amount })
+    const response = await axios.post(`${getApiBaseUrl()}/payment/create-checkout-session`, {
+      amount,
+    })
     return response.data
   },
 

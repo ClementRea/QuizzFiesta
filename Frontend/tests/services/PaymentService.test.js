@@ -30,12 +30,12 @@ describe('PaymentService', () => {
       axios.post.mockResolvedValue(mockResp)
 
       const result = await PaymentService.createCheckoutSession(500)
-
-      expect(axios.post).toHaveBeenCalledWith(
-        'http://localhost:3000/api/payment/create-checkout-session',
-        { amount: 500 },
-        { headers: { Authorization: 'Bearer mock-access' } },
-      )
+      // L'intercepteur global (errorHandler) ajoute Authorization. Le service n'injecte plus manuellement les headers.
+      expect(axios.post).toHaveBeenCalledTimes(1)
+      const call = axios.post.mock.calls[0]
+      expect(call[0]).toBe('http://localhost:3000/api/payment/create-checkout-session')
+      expect(call[1]).toEqual({ amount: 500 })
+      // Pas de config explicite attendue ici (peut être undefined ou un objet injecté par d'autres couches)
       expect(result).toEqual(mockResp.data)
     })
 
@@ -45,12 +45,11 @@ describe('PaymentService', () => {
       axios.post.mockResolvedValue(mockResp)
 
       const result = await PaymentService.createCheckoutSession(1000)
-
-      expect(axios.post).toHaveBeenCalledWith(
-        'http://localhost:3000/api/payment/create-checkout-session',
-        { amount: 1000 },
-        { headers: { Authorization: 'Bearer null' } },
-      )
+      expect(axios.post).toHaveBeenCalledTimes(1)
+      const call = axios.post.mock.calls[0]
+      expect(call[0]).toBe('http://localhost:3000/api/payment/create-checkout-session')
+      expect(call[1]).toEqual({ amount: 1000 })
+      // Le header sera absent ou géré plus haut; on vérifie juste qu'on n'a pas crashé.
       expect(result).toEqual(mockResp.data)
     })
 

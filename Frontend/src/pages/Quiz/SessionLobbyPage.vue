@@ -268,7 +268,7 @@ const loadParticipants = async () => {
     const actualSessionId = session.value.id || session.value._id
     const response = await SessionService.getSessionParticipants(actualSessionId)
     participants.value = response.data.participants || []
-    
+
     // Trouver notre statut
     const me = participants.value.find((p) => p.userId === currentUser.value._id)
     if (me) {
@@ -438,16 +438,15 @@ const startSession = async () => {
 
     // Utiliser toujours HTTP pour plus de fiabilité
     await SessionService.startGameSession(actualSessionId)
-    
+
     $q.notify({
       type: 'positive',
       position: 'top',
       message: 'Session démarrée !',
     })
-    
+
     // Redirection immédiate
     router.push(`/quiz/session/${actualSessionId}/play`)
-    
   } catch (error) {
     console.error('Erreur démarrage session:', error)
     // L'erreur est gérée par l'intercepteur global, mais on peut afficher un message spécifique

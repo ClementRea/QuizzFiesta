@@ -63,7 +63,12 @@ router.put(
   validateUpdateQuiz,
   quizController.quizUpdate,
 );
-router.put("/addQuestions/:id", protect, validateQuizId, quizController.addQuestionsToQuiz);
+router.put(
+  "/addQuestions/:id",
+  protect,
+  validateQuizId,
+  quizController.addQuestionsToQuiz,
+);
 
 //GET
 router.get("/", protect, quizController.getAllQuizes);
