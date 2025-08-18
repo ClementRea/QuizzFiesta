@@ -19,6 +19,16 @@ jobs:
           cd Backend
           npm ci
 
+      - name: Lint backend
+        run: |
+          cd Backend
+          npm run lint
+
+      - name: Check backend formatting
+        run: |
+          cd Backend
+          npx prettier --check "**/*.{js,json,md}" --ignore-path .gitignore
+
       - name: Run backend tests
         run: |
           cd Backend

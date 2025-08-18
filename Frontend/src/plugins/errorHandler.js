@@ -16,7 +16,6 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
-// Messages d'erreur personnalisés en français
 const errorMessages = {
   // Erreurs d'authentification
   'Invalid email or password': 'Email ou mot de passe incorrect.',
@@ -38,27 +37,22 @@ const errorMessages = {
   'Request failed with status code 401': 'Non autorisé, veuillez vous reconnecter.',
 }
 
-// Fonction pour extraire le message d'erreur
+// extract error msg
 const extractErrorMessage = (error) => {
-  // Erreur réseau (pas de réponse du serveur)
   if (!error.response) {
     return errorMessages['Network Error'] || 'Erreur de connexion.'
   }
 
   const { status, data } = error.response
 
-  // Erreur avec message du serveur
   if (data?.message) {
-    // Vérifier si on a une traduction personnalisée
     const translatedMessage = errorMessages[data.message]
     if (translatedMessage) {
       return translatedMessage
     }
-    // Sinon retourner le message original s'il est en français
     return data.message
   }
 
-  // Messages par défaut selon le code de statut
   const statusMessages = {
     400: 'Données invalides.',
     401: 'Non autorisé, veuillez vous reconnecter.',
@@ -71,12 +65,12 @@ const extractErrorMessage = (error) => {
     503: 'Service indisponible.',
   }
 
-  return statusMessages[status] || 'Une erreur inattendue s\'est produite.'
+  return statusMessages[status] || "Une erreur inattendue s'est produite."
 }
 
 // Fonctions utilitaires pour les tokens
 const getApiBaseUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
+  const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:3000/api'
   }
@@ -109,9 +103,7 @@ const clearTokens = () => {
   delete axios.defaults.headers.common['Authorization']
 }
 
-// Configuration de l'intercepteur global unique
 const setupErrorInterceptor = () => {
-  // Intercepteur de requête pour ajouter le token
   axios.interceptors.request.use(
     (config) => {
       if (config.url?.includes('/auth/')) {
@@ -124,23 +116,20 @@ const setupErrorInterceptor = () => {
       }
       return config
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   )
 
-  // Intercepteur de réponse pour la gestion des erreurs
   axios.interceptors.response.use(
-    // Succès - on laisse passer
     (response) => response,
 
-    // Erreur - gestion unifiée
     async (error) => {
       const originalRequest = error.config
 
-      // Gestion spéciale des erreurs 401 pour le refresh token
-      if (error.response?.status === 401 &&
-          !originalRequest._retry &&
-          !originalRequest.url?.includes('/auth/')) {
-
+      if (
+        error.response?.status === 401 &&
+        !originalRequest._retry &&
+        !originalRequest.url?.includes('/auth/')
+      ) {
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject })
@@ -174,11 +163,8 @@ const setupErrorInterceptor = () => {
         }
       }
 
-      // Pour toutes les autres erreurs, afficher la notification
       const errorMessage = extractErrorMessage(error)
 
-      // Ne pas afficher de notification pour les erreurs de login/register
-      // (laissons les composants les gérer s'ils le souhaitent)
       const isAuthEndpoint = originalRequest.url?.includes('/auth/')
 
       if (!isAuthEndpoint) {
@@ -192,23 +178,18 @@ const setupErrorInterceptor = () => {
               icon: 'close',
               color: 'white',
               round: true,
-              handler: () => {}
-            }
-          ]
+              handler: () => {},
+            },
+          ],
         })
       }
 
-      // Log de l'erreur pour le debug
-      if (import.meta.env.DEV) {
-        console.error('API Error:', error)
-      }
-
       return Promise.reject(error)
-    }
+    },
   )
 }
 
-// Fonction utilitaire pour afficher manuellement une erreur
+// user notify for errors
 const showError = (message) => {
   Notify.create({
     color: 'negative',
@@ -220,9 +201,9 @@ const showError = (message) => {
         icon: 'close',
         color: 'white',
         round: true,
-        handler: () => {}
-      }
-    ]
+        handler: () => {},
+      },
+    ],
   })
 }
 

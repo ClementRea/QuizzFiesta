@@ -36,7 +36,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
   }
 
   const notifyQuestionLoaded = (questionData, gameStateData) => {
-    questionLoadedCallbacks.forEach(callback => {
+    questionLoadedCallbacks.forEach((callback) => {
       try {
         callback(questionData, gameStateData)
       } catch (error) {
@@ -123,19 +123,24 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     try {
       console.log('🔄 Récupération question courante session via HTTP')
       const response = await SessionService.getSessionQuestions(sessionId.value)
-      
+
       // Backend retourne {question, gameState, participant}
       const questionData = response.data.question
       const gameStateData = response.data.gameState
-      
+
       console.log('📝 Question reçue:', questionData ? 'Oui' : 'Non')
-      
+
       if (questionData) {
         currentQuestion.value = questionData
         currentQuestionIndex.value = gameStateData.currentQuestionIndex || 0
         totalQuestions.value = gameStateData.totalQuestions || 1
-        console.log('✅ Question courante chargée:', (currentQuestionIndex.value + 1), '/', totalQuestions.value)
-        
+        console.log(
+          '✅ Question courante chargée:',
+          currentQuestionIndex.value + 1,
+          '/',
+          totalQuestions.value,
+        )
+
         // Notifier les autres composables qu'une question a été chargée
         notifyQuestionLoaded(questionData, gameStateData)
       } else {
@@ -158,19 +163,27 @@ export function useGameSession(sessionId, onSocketConnected = null) {
       console.log('📥 Récupération questions depuis le quiz:', session.value.quizId)
       const response = await QuizService.getQuizById(session.value.quizId)
       const quiz = response.data.quiz
-      
+
       if (quiz && quiz.questions && quiz.questions.length > 0) {
         const gameState_local = session.value.gameState || {}
         const questionIndex = gameState_local.currentQuestionIndex || 0
-        
+
         currentQuestion.value = quiz.questions[questionIndex]
         currentQuestionIndex.value = questionIndex
         totalQuestions.value = quiz.questions.length
-        console.log('✅ Question depuis quiz chargée:', (questionIndex + 1), '/', quiz.questions.length)
-        
+        console.log(
+          '✅ Question depuis quiz chargée:',
+          questionIndex + 1,
+          '/',
+          quiz.questions.length,
+        )
+
         // Notifier les autres composables
         const questionData = quiz.questions[questionIndex]
-        const gameStateData = { currentQuestionIndex: questionIndex, totalQuestions: quiz.questions.length }
+        const gameStateData = {
+          currentQuestionIndex: questionIndex,
+          totalQuestions: quiz.questions.length,
+        }
         notifyQuestionLoaded(questionData, gameStateData)
       }
     } catch (error) {
@@ -201,7 +214,7 @@ export function useGameSession(sessionId, onSocketConnected = null) {
       totalQuestions.value = data.gameState.totalQuestions
 
       gameState.value = 'playing'
-      
+
       // Notifier les autres composables qu'une question a été chargée
       notifyQuestionLoaded(data.question, data.gameState)
     })

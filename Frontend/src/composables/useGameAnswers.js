@@ -48,7 +48,7 @@ export function useGameAnswers(sessionId, participantState) {
           currentQuestion.value?.id || currentQuestion.value?._id,
           currentAnswer.value.answer,
         )
-        
+
         if (success) {
           hasAnswered.value = true
           canSubmit.value = false

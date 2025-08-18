@@ -58,10 +58,7 @@ const OrganisationService = {
       return response.data
     } else {
       // Otherwise, send as classic JSON
-      const response = await axios.post(
-        `${getApiBaseUrl()}/organisation/create`,
-        organisationData,
-      )
+      const response = await axios.post(`${getApiBaseUrl()}/organisation/create`, organisationData)
       return response.data
     }
   },

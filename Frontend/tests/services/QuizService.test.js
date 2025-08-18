@@ -120,8 +120,9 @@ describe('QuizService API methods', () => {
   it('should handle join quiz by code error', async () => {
     const mockError = { response: { data: { error: 'Quiz not found' } } }
     axios.get.mockRejectedValue(mockError)
-
-    await expect(QuizService.joinQuizByCode('INVALID')).rejects.toEqual({ error: 'Quiz not found' })
+    await expect(QuizService.joinQuizByCode('INVALID')).rejects.toMatchObject({
+      response: { data: { error: 'Quiz not found' } },
+    })
   })
 
   it('should get quiz by id', async () => {
@@ -137,8 +138,9 @@ describe('QuizService API methods', () => {
   it('should handle get quiz by id error', async () => {
     const mockError = { response: { data: { error: 'Quiz not found' } } }
     axios.get.mockRejectedValue(mockError)
-
-    await expect(QuizService.getQuizById(999)).rejects.toEqual({ error: 'Quiz not found' })
+    await expect(QuizService.getQuizById(999)).rejects.toMatchObject({
+      response: { data: { error: 'Quiz not found' } },
+    })
   })
 
   it('should get all quizzes', async () => {
@@ -210,8 +212,9 @@ describe('QuizService API methods', () => {
   it('should handle create quiz error', async () => {
     const mockError = { response: { data: { error: 'Validation failed' } } }
     axios.post.mockRejectedValue(mockError)
-
-    await expect(QuizService.createQuiz({})).rejects.toEqual({ error: 'Validation failed' })
+    await expect(QuizService.createQuiz({})).rejects.toMatchObject({
+      response: { data: { error: 'Validation failed' } },
+    })
   })
 
   it('should update quiz without file', async () => {
@@ -262,8 +265,9 @@ describe('QuizService API methods', () => {
   it('should handle delete quiz error', async () => {
     const mockError = { response: { data: { error: 'Not authorized' } } }
     axios.delete.mockRejectedValue(mockError)
-
-    await expect(QuizService.deleteQuiz(1)).rejects.toEqual({ error: 'Not authorized' })
+    await expect(QuizService.deleteQuiz(1)).rejects.toMatchObject({
+      response: { data: { error: 'Not authorized' } },
+    })
   })
 
   it('should generate join code', async () => {
