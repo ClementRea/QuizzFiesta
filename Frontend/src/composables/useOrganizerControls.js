@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { useQuasar } from 'quasar'
 import SessionService from 'src/services/SessionService'
 import SocketService from 'src/services/SocketService'
 
@@ -8,7 +7,6 @@ import SocketService from 'src/services/SocketService'
  * Extrait de SessionPlayPage.vue pour réutilisabilité
  */
 export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
-  const $q = useQuasar()
 
   // État des contrôles organisateur
   const showOrganizerPanel = ref(false)
@@ -37,11 +35,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
       }
     } catch (error) {
       console.error('Erreur question suivante:', error)
-      $q.notify({
-        type: 'negative',
-        position: 'top',
-        message: 'Erreur lors du passage à la question suivante',
-      })
+      // Erreur gérée automatiquement par l'intercepteur global
       loadingNext.value = false
     }
   }
@@ -72,11 +66,7 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
       }
     } catch (error) {
       console.error('Erreur fin de session:', error)
-      $q.notify({
-        type: 'negative',
-        position: 'top',
-        message: 'Erreur lors de la fin de session',
-      })
+      // Erreur gérée automatiquement par l'intercepteur global
       ending.value = false
     }
   }

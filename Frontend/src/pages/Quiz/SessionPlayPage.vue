@@ -202,7 +202,7 @@ const {
 } = gameSession
 
 const { timeLimit, timeRemainingSeconds, isTimeUp, isTimerStarted, setupTimerSocketListeners } =
-  useGameTimer(gameSession)
+  useGameTimer()
 
 const {
   hasAnswered,

@@ -24,9 +24,12 @@ const io = new Server(server, {
 });
 
 // Initialiser le gestionnaire de sockets
+const SocketManager = require("../sockets/socketManager");
+const socketManager = new SocketManager(io);
 
 // Rendre io accessible dans l'app Express si nécessaire
 app.set("io", io);
+app.set("socketManager", socketManager);
 
 server.listen(PORT, () => {
   console.info(`Server is running on port ${PORT}`);

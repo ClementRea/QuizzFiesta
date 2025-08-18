@@ -7,7 +7,7 @@ import SocketService from 'src/services/SocketService'
  * Manager game answers
  */
 export function useGameAnswers(sessionId, participantState) {
-  const $q = useQuasar()
+  const $q = useQuasar() // Gardé pour les notifications de succès WebSocket
 
   const currentAnswer = ref(null)
   const hasAnswered = ref(false)
@@ -73,11 +73,7 @@ export function useGameAnswers(sessionId, participantState) {
       }
     } catch (error) {
       console.error('Erreur soumission réponse:', error)
-      $q.notify({
-        type: 'negative',
-        position: 'top',
-        message: error.message || "Erreur lors de l'envoi",
-      })
+      // Erreur gérée automatiquement par l'intercepteur global
     } finally {
       submitting.value = false
     }

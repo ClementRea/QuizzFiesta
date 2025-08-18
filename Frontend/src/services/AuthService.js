@@ -1,19 +1,6 @@
 import axios from 'axios'
 
-let isRefreshing = false
-let failedQueue = []
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error)
-    } else {
-      prom.resolve(token)
-    }
-  })
-
-  failedQueue = []
-}
+// Variables supprimées - gestion centralisée dans errorHandler.js
 
 const getApiBaseUrl = () => {
   const apiUrl = process.env.VITE_API_URL || 'https://quizzfiesta.onrender.com'
@@ -124,52 +111,7 @@ const AuthService = {
     }
   },
 
-  setupInterceptors() {
-    // Interceptor
-    axios.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          if (isRefreshing) {
-            // If token already => push in queue
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject })
-            })
-              .then((token) => {
-                originalRequest.headers.Authorization = `Bearer ${token}`
-                return axios(originalRequest)
-              })
-              .catch((err) => {
-                return Promise.reject(err)
-              })
-          }
-
-          originalRequest._retry = true
-          isRefreshing = true
-
-          try {
-            const newToken = await this.refreshAccessToken()
-            processQueue(null, newToken)
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
-            return axios(originalRequest)
-          } catch (refreshError) {
-            processQueue(refreshError, null)
-            this.clearTokens()
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login'
-            }
-            return Promise.reject(refreshError)
-          } finally {
-            isRefreshing = false
-          }
-        }
-
-        return Promise.reject(error)
-      },
-    )
-  },
+  // Méthode supprimée - la gestion est maintenant centralisée dans errorHandler.js
 }
 
 export default AuthService
