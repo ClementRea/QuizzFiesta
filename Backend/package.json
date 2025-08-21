@@ -13,10 +13,7 @@
     "test:models": "jest models",
     "test:middlewares": "jest middlewares",
     "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix",
-    "migrate:sessions": "node scripts/migrate-to-sessions.js migrate",
-    "migrate:sessions:clean": "node scripts/migrate-to-sessions.js migrate --clean",
-    "migrate:check": "node scripts/migrate-to-sessions.js check"
+    "lint:fix": "eslint . --ext .js --fix"
   },
   "keywords": [],
   "author": "",
