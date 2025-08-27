@@ -549,7 +549,6 @@ class SocketManager {
       const session = await GameSession.findById(sessionId);
       const quiz = await Quiz.findById(session.quizId).populate("questions");
 
-
       const currentQuestion =
         quiz.questions[session.gameState.currentQuestionIndex];
 
