@@ -104,7 +104,6 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     }
   }
 
-
   const loadFinalResults = async () => {
     try {
       const [stateResponse, leaderboardResponse] = await Promise.all([
@@ -146,7 +145,6 @@ export function useGameSession(sessionId, onSocketConnected = null) {
     SocketService.onGameSessionEnded((data) => {
       gameState.value = 'finished'
       leaderboard.value = data.finalLeaderboard || []
-
 
       loadFinalResults()
     })
