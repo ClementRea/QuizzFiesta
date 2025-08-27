@@ -58,23 +58,18 @@ export function useGameSession(sessionId, onSocketConnected = null) {
   // Méthodes principales
   const loadSession = async () => {
     try {
-      console.log('🎮 Chargement session:', sessionId.value)
       const response = await SessionService.getSessionState(sessionId.value)
       session.value = response.data.session
-      console.log('📊 État session reçu:', session.value.status, session.value)
 
       if (session.value.status === 'finished') {
-        console.log('🏁 Session terminée, chargement résultats')
         gameState.value = 'finished'
         await loadFinalResults()
         return
       }
 
       if (session.value.status === 'playing') {
-        console.log('🎯 Session en cours, initialisation WebSocket')
         await initializeGameSocket()
       } else {
-        console.log('⏳ Session en attente, statut:', session.value.status)
         gameState.value = 'waiting'
       }
     } catch (error) {
@@ -86,110 +81,29 @@ export function useGameSession(sessionId, onSocketConnected = null) {
 
   const initializeGameSocket = async () => {
     try {
-      console.log('🔌 Connexion WebSocket...')
-      // Connecter le socket et attendre la connexion
       const socket = await SocketService.connect()
       if (!socket) {
         throw new Error('Impossible de se connecter au serveur')
       }
-      console.log('✅ WebSocket connecté')
 
-      // Configurer les événements WebSocket
-      console.log('⚙️ Configuration des listeners WebSocket')
       setupGameSocketListeners()
 
-      // Appeler le callback pour initialiser les autres listeners
       if (onSocketConnected) {
-        console.log('🔧 Initialisation listeners additionnels')
         onSocketConnected()
       }
 
-      // Rejoindre la session de jeu
-      console.log('🎮 Rejoindre session de jeu:', sessionId.value)
       SocketService.joinGame(sessionId.value)
 
       socketConnected.value = true
       gameState.value = 'playing'
-      console.log('🎯 État de jeu initialisé: playing - en attente des questions via WebSocket')
     } catch (error) {
-      console.error('❌ Erreur connexion socket jeu:', error)
+      console.error('Erreur connexion socket jeu:', error)
       gameState.value = 'error'
       errorMessage.value = 'Impossible de se connecter au jeu'
       socketConnected.value = false
     }
   }
 
-  const loadCurrentQuestion = async () => {
-    try {
-      console.log('🔄 Récupération question courante session via HTTP')
-      const response = await SessionService.getSessionQuestions(sessionId.value)
-
-      // Backend retourne {question, gameState, participant}
-      const questionData = response.data.question
-      const gameStateData = response.data.gameState
-
-      console.log('📝 Question reçue:', questionData ? 'Oui' : 'Non')
-
-      if (questionData) {
-        currentQuestion.value = questionData
-        currentQuestionIndex.value = gameStateData.currentQuestionIndex || 0
-        totalQuestions.value = gameStateData.totalQuestions || 1
-        console.log(
-          '✅ Question courante chargée:',
-          currentQuestionIndex.value + 1,
-          '/',
-          totalQuestions.value,
-        )
-
-        // Notifier les autres composables qu'une question a été chargée
-        notifyQuestionLoaded(questionData, gameStateData)
-      } else {
-        console.log('❌ Aucune question trouvée')
-      }
-    } catch (error) {
-      console.error('❌ Erreur chargement question:', error)
-      // Essayer d'obtenir les questions depuis le quiz directement si l'utilisateur n'est pas encore participant
-      if (error.response?.status === 403) {
-        console.log('🔄 Tentative de récupération des questions depuis le quiz')
-        await loadQuestionsFromQuiz()
-      }
-    }
-  }
-
-  const loadQuestionsFromQuiz = async () => {
-    try {
-      if (!session.value?.quizId) return
-
-      console.log('📥 Récupération questions depuis le quiz:', session.value.quizId)
-      const response = await QuizService.getQuizById(session.value.quizId)
-      const quiz = response.data.quiz
-
-      if (quiz && quiz.questions && quiz.questions.length > 0) {
-        const gameState_local = session.value.gameState || {}
-        const questionIndex = gameState_local.currentQuestionIndex || 0
-
-        currentQuestion.value = quiz.questions[questionIndex]
-        currentQuestionIndex.value = questionIndex
-        totalQuestions.value = quiz.questions.length
-        console.log(
-          '✅ Question depuis quiz chargée:',
-          questionIndex + 1,
-          '/',
-          quiz.questions.length,
-        )
-
-        // Notifier les autres composables
-        const questionData = quiz.questions[questionIndex]
-        const gameStateData = {
-          currentQuestionIndex: questionIndex,
-          totalQuestions: quiz.questions.length,
-        }
-        notifyQuestionLoaded(questionData, gameStateData)
-      }
-    } catch (error) {
-      console.error('❌ Erreur chargement questions depuis quiz:', error)
-    }
-  }
 
   const loadFinalResults = async () => {
     try {
@@ -208,14 +122,12 @@ export function useGameSession(sessionId, onSocketConnected = null) {
   const setupGameSocketListeners = () => {
     // Réception de la question courante
     SocketService.onGameCurrentQuestion((data) => {
-      console.log('🎯 Question reçue via WebSocket:', data)
       currentQuestion.value = data.question
       currentQuestionIndex.value = data.gameState.currentQuestionIndex
       totalQuestions.value = data.gameState.totalQuestions
 
       gameState.value = 'playing'
 
-      // Notifier les autres composables qu'une question a été chargée
       notifyQuestionLoaded(data.question, data.gameState)
     })
 
@@ -227,7 +139,6 @@ export function useGameSession(sessionId, onSocketConnected = null) {
 
     // Nouvelle question
     SocketService.onGameNewQuestion((data) => {
-      console.log('🔄 Nouvelle question annoncée via WebSocket')
       gameState.value = 'waitingNextQuestion'
     })
 
@@ -236,17 +147,12 @@ export function useGameSession(sessionId, onSocketConnected = null) {
       gameState.value = 'finished'
       leaderboard.value = data.finalLeaderboard || []
 
-      // Notification gérée automatiquement par l'intercepteur global
-      console.log('Quiz terminé !')
 
-      // Charger les résultats finaux
       loadFinalResults()
     })
 
-    // Erreurs
     SocketService.onError((error) => {
       console.error('Erreur Socket jeu:', error)
-      // Erreur gérée automatiquement par l'intercepteur global
     })
   }
 

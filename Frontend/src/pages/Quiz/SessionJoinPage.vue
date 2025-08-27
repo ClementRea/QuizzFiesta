@@ -67,7 +67,7 @@
         <div class="col-12 col-md-8 col-lg-6">
           <div class="bg-white rounded-borders q-pa-xl shadow-8">
             <div class="q-mb-lg">
-              <QuizObject :quiz="foundSession.quiz" size="md" />
+              <QuizObject :quiz="foundSession.quiz" size="sm" />
             </div>
 
             <!-- organiser -->

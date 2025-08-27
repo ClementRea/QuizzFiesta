@@ -21,14 +21,12 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
 
       // Privilégier WebSocket
       if (socketConnected.value && SocketService.isSocketConnected()) {
-        console.log('🔄 Question suivante via WebSocket')
         const success = SocketService.nextQuestion(sessionId.value)
         if (!success) {
           throw new Error('Échec envoi commande WebSocket')
         }
         // La réponse sera gérée via les événements WebSocket
       } else {
-        console.log('🔄 Question suivante via HTTP (fallback)')
         await SessionService.nextSessionQuestion(sessionId.value)
         loadingNext.value = false
       }
@@ -41,27 +39,22 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
 
   const endSession = async () => {
     if (!isOrganizer.value) {
-      console.log('❌ Non organisateur - fin de session refusée')
       return
     }
 
     try {
       ending.value = true
-      console.log('🛑 Tentative de fin de session:', sessionId.value)
 
       // Privilégier WebSocket
       if (socketConnected.value && SocketService.isSocketConnected()) {
-        console.log('🔌 Fin de session via WebSocket')
         const success = SocketService.endSession(sessionId.value)
         if (!success) {
           throw new Error("Impossible d'envoyer la commande via WebSocket")
         }
         // La fin sera gérée via les événements WebSocket
       } else {
-        console.log('🌐 Fin de session via HTTP (fallback)')
         await SessionService.endGameSession(sessionId.value)
         ending.value = false
-        console.log('✅ Fin de session HTTP réussie')
       }
     } catch (error) {
       console.error('Erreur fin de session:', error)
@@ -81,16 +74,6 @@ export function useOrganizerControls(sessionId, isOrganizer, socketConnected) {
     SocketService.onGameSessionEnded(() => {
       ending.value = false
       loadingNext.value = false
-    })
-
-    // Optionnel : notification quand un participant répond
-    SocketService.onGameParticipantAnswered((data) => {
-      if (isOrganizer.value) {
-        // Notification discrète pour l'organisateur
-        console.log(
-          `📝 ${data.userName} a répondu ${data.isCorrect ? 'correctement' : 'incorrectement'}`,
-        )
-      }
     })
   }
 

@@ -69,17 +69,8 @@ export function useGameTimer() {
 
   const setupTimerSocketListeners = () => {
     SocketService.onGameCurrentQuestion((data) => {
-      console.log('⏱️ Timer: Question reçue via WebSocket:', data)
       const questionTimeLimit = (data.question.timeLimit || data.question.timeGiven || 30) * 1000
       const remainingTime = data.timeRemaining || questionTimeLimit
-
-      console.log(
-        '⏱️ Timer WebSocket - Limite:',
-        questionTimeLimit,
-        'ms, Restant:',
-        remainingTime,
-        'ms',
-      )
 
       setTimeLimit(questionTimeLimit)
       setTimeRemaining(remainingTime)
@@ -87,7 +78,6 @@ export function useGameTimer() {
     })
 
     SocketService.onGameTimeUp(() => {
-      console.log('⏰ Temps écoulé reçu via WebSocket')
       timeRemaining.value = 0
       stopTimer()
 
@@ -99,12 +89,10 @@ export function useGameTimer() {
     })
 
     SocketService.onGameNewQuestion(() => {
-      console.log('🔄 Nouvelle question - arrêt du timer')
       stopTimer()
     })
 
     SocketService.onGameSessionEnded(() => {
-      console.log('🏁 Session terminée - arrêt du timer')
       stopTimer()
     })
   }

@@ -24,22 +24,6 @@ const validateRegister = [
     .withMessage(
       "Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre",
     ),
-  body("firstName")
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Le prénom doit contenir entre 2 et 50 caractères")
-    .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage(
-      "Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes",
-    ),
-  body("lastName")
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Le nom doit contenir entre 2 et 50 caractères")
-    .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
-    .withMessage(
-      "Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes",
-    ),
   body("organisationId")
     .optional()
     .isMongoId()

@@ -80,19 +80,12 @@ exports.handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
-  console.log("Webhook reçu - signature:", sig ? "présente" : "absente");
-  console.log(
-    "STRIPE_WEBHOOK_SECRET:",
-    process.env.STRIPE_WEBHOOK_SECRET ? "configuré" : "manquant",
-  );
-
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
-    console.log("Webhook event type:", event.type);
   } catch (err) {
     console.error("Erreur verification webhook:", err.message);
     return res
