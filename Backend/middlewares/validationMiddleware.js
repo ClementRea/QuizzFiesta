@@ -97,7 +97,17 @@ const validateCreateQuiz = [
   body("description").optional().trim(),
   body("questions")
     .optional()
-    .isArray()
+    .custom((value) => {
+      if (typeof value === "string") {
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed);
+        } catch {
+          return false;
+        }
+      }
+      return Array.isArray(value);
+    })
     .withMessage("Les questions doivent être un tableau"),
   body("isPublic")
     .optional()
@@ -119,7 +129,17 @@ const validateUpdateQuiz = [
   body("description").optional().trim(),
   body("questions")
     .optional()
-    .isArray()
+    .custom((value) => {
+      if (typeof value === "string") {
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed);
+        } catch {
+          return false;
+        }
+      }
+      return Array.isArray(value);
+    })
     .withMessage("Les questions doivent être un tableau"),
   body("isPublic")
     .optional()
