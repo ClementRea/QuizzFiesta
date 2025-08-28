@@ -299,8 +299,8 @@
       >
         <q-chip
           v-if="object.questions"
-          color="blue-1"
-          text-color="blue-8"
+          color="blue-2"
+          text-color="secondary"
           icon="quiz"
           size="sm"
           class="text-weight-medium"
@@ -309,8 +309,8 @@
         </q-chip>
         <q-chip
           v-if="object.isPublic"
-          color="orange-1"
-          text-color="orange-8"
+          color="orange-2"
+          text-color="secondary"
           size="sm"
           icon="mdi-creation"
           class="text-weight-medium"
